@@ -1,35 +1,15 @@
 CC = gcc
+FLAGS = -Wall -Wextra -Werror --std=c11 -fanalyzer -pedantic
+C_FILES = s21_add.c s21_calc.c s21_cmp.c s21_cpy.c s21_search.c
+ADDITIONAL = -pthread -lcheck_pic -pthread -lrt -lm -lsubunit
+H_FILES = s21_string.h
+C_TEST = unit_tests.c
+TARGET_TEST = s21_test
 
-FLAGS = -Wall -Werror -Wextra
+all: clean test
 
-SRC = s21_string.c
-
-TEST = unit_tests.c s21_string.c
-
-STANDARD = -std=c11
-
-TARGET = s21_string
-TEST_TARGET = s21_test
-
-# required: all, clean, test, s21_string.a, gcov_report
-
-all: clean s21_string test #s21_string.a gcov_report
-
-test:
-	$(CC) $(STANDARD) $(TEST) -lcheck -lsubunit -lm -o $(TEST_TARGET)
-
-#s21_string.a:
-
-#gcov_report:
+test: $(C_FILES) $(H_FILES)
+	$(CC) $(FLAGS) $(C_FILES) $(C_TEST) $(H_FILES) -o $(TARGET_TEST) $(ADDITIONAL)
 
 clean:
-	rm -f $(TARGET)
-
-s21_string:
-	$(CC) $(FLAGS) $(STANDARD) $(SRC) -o $(TARGET)
-
-build_no_flags:
-	$(CC) $(STANDARD) $(SRC) -o $(TARGET)
-
-run:
-	./$(TARGET)
+	rm -f s21_string
