@@ -30,6 +30,33 @@ START_TEST(strcmp_bacis) {
     ck_assert_int_eq(my_res, std_res);
 }
 
+START_TEST(strchr_basic) {
+    char* haystack = "tests";
+
+    char* my_res = s21_strchr(haystack, 's');
+    char* std_res = strchr(haystack, 's');
+
+    ck_assert_str_eq(my_res, std_res);
+}
+
+START_TEST(strstr_basic) {
+    char* haystack = "test";
+
+    char* my_res = s21_strstr(haystack, "st");
+    char* std_res = strstr(haystack, "st");
+
+    ck_assert_str_eq(my_res, std_res);
+}
+
+START_TEST(strstr_doesnt_find) {
+    char* haystack = "test";
+
+    char* my_res = s21_strstr(haystack, "not_exist");
+    char* std_res = strstr(haystack, "not_exist");
+
+    ck_assert_ptr_eq(my_res, std_res);
+}
+
 Suite *string_suite(void) {
   Suite *s = suite_create("String");
 
@@ -42,9 +69,18 @@ Suite *string_suite(void) {
   TCase *strcmp_cases = tcase_create("StrCmp");
   tcase_add_test(strcmp_cases, strcmp_bacis);
 
+  TCase *strchr_cases = tcase_create("StrChr");
+  tcase_add_test(strchr_cases, strchr_basic);
+
+  TCase *strstr_cases = tcase_create("StrStr");
+  tcase_add_test(strstr_cases, strstr_basic);
+  tcase_add_test(strstr_cases, strstr_doesnt_find);
+
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strcat_cases);
   suite_add_tcase(s, strcmp_cases);
+  suite_add_tcase(s, strchr_cases);
+  suite_add_tcase(s, strstr_cases);
 
   return s;
 }
