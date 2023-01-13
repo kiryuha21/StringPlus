@@ -57,55 +57,39 @@ START_TEST(strstr_doesnt_find) {
   ck_assert_ptr_eq(my_res, std_res);
 }
 
+void strtok_test(char s21_haystack[], char str_haystack[], char delim[]) {
+    char* my_res = s21_strtok(s21_haystack, delim);
+    char* std_res = strtok(str_haystack, delim);
+
+    while (my_res && std_res) {
+        ck_assert_str_eq(my_res, std_res);
+        my_res = s21_strtok(NULL, delim);
+        std_res = strtok(NULL, delim);
+    }
+
+    ck_assert_str_eq(s21_haystack, str_haystack);
+    ck_assert_ptr_eq(my_res, std_res);
+}
+
 START_TEST(strtok_basic) {
   char s21_haystack[] = "co\no,l un--it tee\n\n,est";
   char str_haystack[] = "co\no,l un--it tee\n\n,est";
 
-  char* my_res = s21_strtok(s21_haystack, ",-");
-  char* std_res = strtok(str_haystack, ",-");
-
-  while (my_res && std_res) {
-    ck_assert_str_eq(my_res, std_res);
-    my_res = s21_strtok(NULL, ",-");
-    std_res = strtok(NULL, ",-");
-  }
-
-  ck_assert_str_eq(s21_haystack, str_haystack);
-  ck_assert_ptr_eq(my_res, std_res);
+  strtok_test(s21_haystack, str_haystack, ",-");
 }
 
 START_TEST(strtok_doesnt_find) {
   char* s21_haystack = "Hello, world!";
   char* str_haystack = "Hello, world!";
 
-  char* my_res = s21_strtok(s21_haystack, ".");
-  char* std_res = strtok(str_haystack, ".");
-
-  while (my_res && std_res) {
-    ck_assert_str_eq(my_res, std_res);
-    my_res = s21_strtok(NULL, "imp");
-    std_res = strtok(NULL, "imp");
-  }
-
-  ck_assert_str_eq(s21_haystack, str_haystack);
-  ck_assert_ptr_eq(my_res, std_res);
+  strtok_test(s21_haystack, str_haystack, ".");
 }
 
 START_TEST(strtok_only_delims) {
   char* s21_haystack = "._.";
   char* str_haystack = "._.";
 
-  char* my_res = s21_strtok(s21_haystack, "._");
-  char* std_res = strtok(str_haystack, "._");
-
-  while (my_res && std_res) {
-    ck_assert_str_eq(my_res, std_res);
-    my_res = s21_strtok(NULL, "._");
-    std_res = strtok(NULL, "._");
-  }
-
-  ck_assert_str_eq(s21_haystack, str_haystack);
-  ck_assert_ptr_eq(my_res, std_res);
+  strtok_test(s21_haystack, str_haystack, "._");
 }
 
 Suite* string_suite(void) {
