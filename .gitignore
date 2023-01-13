@@ -1,9 +1,18 @@
 *
 !.gitignore
+
+# Library
 !src/s21_add.c
 !src/s21_calc.c
 !src/s21_cmp.c
 !src/s21_cpy.c
 !src/s21_search.c
 !src/s21_string.h
+
+# Tests
+!src/test_commons.c
+!src/test_commons.h
+!src/unit_tests.c
+
+# Makefile
 !src/Makefile

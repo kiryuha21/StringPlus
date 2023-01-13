@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "s21_string.h"
+#include "test_commons.h"
 
 START_TEST(strlen_basic) {
   char* str = "normal string";
@@ -57,39 +58,25 @@ START_TEST(strstr_doesnt_find) {
   ck_assert_ptr_eq(my_res, std_res);
 }
 
-void strtok_test(char s21_haystack[], char str_haystack[], char delim[]) {
-    char* my_res = s21_strtok(s21_haystack, delim);
-    char* std_res = strtok(str_haystack, delim);
-
-    while (my_res && std_res) {
-        ck_assert_str_eq(my_res, std_res);
-        my_res = s21_strtok(NULL, delim);
-        std_res = strtok(NULL, delim);
-    }
-
-    ck_assert_str_eq(s21_haystack, str_haystack);
-    ck_assert_ptr_eq(my_res, std_res);
-}
-
 START_TEST(strtok_basic) {
   char s21_haystack[] = "co\no,l un--it tee\n\n,est";
   char str_haystack[] = "co\no,l un--it tee\n\n,est";
 
-  strtok_test(s21_haystack, str_haystack, ",-");
+    strtok_test_common(s21_haystack, str_haystack, ",-");
 }
 
 START_TEST(strtok_doesnt_find) {
   char* s21_haystack = "Hello, world!";
   char* str_haystack = "Hello, world!";
 
-  strtok_test(s21_haystack, str_haystack, ".");
+    strtok_test_common(s21_haystack, str_haystack, ".");
 }
 
 START_TEST(strtok_only_delims) {
   char* s21_haystack = "._.";
   char* str_haystack = "._.";
 
-  strtok_test(s21_haystack, str_haystack, "._");
+    strtok_test_common(s21_haystack, str_haystack, "._");
 }
 
 Suite* string_suite(void) {
