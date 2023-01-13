@@ -11,5 +11,11 @@ all: clean test
 test: $(C_FILES) $(H_FILES)
 	$(CC) $(FLAGS) $(C_FILES) $(C_TEST) $(H_FILES) -o $(TARGET_TEST) $(ADDITIONAL)
 
+gcov_report:
+	$(CC) --coverage $(FLAGS) $(C_FILES) $(C_TEST) $(H_FILES) -o $(TARGET_TEST) $(ADDITIONAL)
+	./$(TARGET_TEST)
+	lcov -t "$(TARGET_TEST)" -o $(TARGET_TEST).info -c -d .
+	genhtml -o report $(TARGET_TEST).info
+
 clean:
 	rm -f s21_string
