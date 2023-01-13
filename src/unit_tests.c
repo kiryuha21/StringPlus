@@ -57,6 +57,23 @@ START_TEST(strstr_doesnt_find) {
     ck_assert_ptr_eq(my_res, std_res);
 }
 
+START_TEST(strtok_basic) {
+    char s21_haystack[] = "co\no,l un--it tee\n\n,est";
+    char str_haystack[] = "co\no,l un--it tee\n\n,est";
+
+    char* my_res = s21_strtok(s21_haystack, ",-");
+    char* std_res = strtok(str_haystack, ",-");
+
+    while (my_res && std_res) {
+        ck_assert_str_eq(my_res, std_res);
+        my_res = s21_strtok(NULL, ",-");
+        std_res = strtok(NULL, ",-");
+    }
+
+    ck_assert_str_eq(s21_haystack, str_haystack);
+    ck_assert_ptr_eq(my_res, std_res);
+}
+
 Suite *string_suite(void) {
   Suite *s = suite_create("String");
 
@@ -76,11 +93,15 @@ Suite *string_suite(void) {
   tcase_add_test(strstr_cases, strstr_basic);
   tcase_add_test(strstr_cases, strstr_doesnt_find);
 
+  TCase *strtok_cases = tcase_create("StrTok");
+  tcase_add_test(strtok_cases, strtok_basic);
+
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strcat_cases);
   suite_add_tcase(s, strcmp_cases);
   suite_add_tcase(s, strchr_cases);
   suite_add_tcase(s, strstr_cases);
+  suite_add_tcase(s, strtok_cases);
 
   return s;
 }
