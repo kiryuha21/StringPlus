@@ -20,6 +20,16 @@ START_TEST(strcat_basic) {
   ck_assert_str_eq(str1, str2);
 }
 
+START_TEST(strcmp_bacis) {
+    char* first = "test";
+    char* second = "test";
+
+    int my_res = s21_strcmp(first, second);
+    int std_res = strcmp(first, second);
+
+    ck_assert_int_eq(my_res, std_res);
+}
+
 Suite *string_suite(void) {
   Suite *s = suite_create("String");
 
@@ -29,8 +39,12 @@ Suite *string_suite(void) {
   TCase *strcat_cases = tcase_create("StrCat");
   tcase_add_test(strcat_cases, strcat_basic);
 
+  TCase *strcmp_cases = tcase_create("StrCmp");
+  tcase_add_test(strcmp_cases, strcmp_bacis);
+
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strcat_cases);
+  suite_add_tcase(s, strcmp_cases);
 
   return s;
 }
