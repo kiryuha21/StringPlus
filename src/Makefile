@@ -1,21 +1,24 @@
 CC = gcc
+
 FLAGS = -Wall -Wextra -Werror --std=c11 -fanalyzer -pedantic
-C_FILES = s21_add.c s21_calc.c s21_cmp.c s21_cpy.c s21_search.c
-ADDITIONAL = -lcheck -lsubunit -lm
-H_FILES = s21_string.h
-C_TEST = unit_tests.c
-TARGET_TEST = s21_test
+ADDITIONAL_FLAGS = -lcheck -lsubunit -lm
+
+SRC_FILES = s21_add.c s21_calc.c s21_cmp.c s21_cpy.c s21_search.c
+HEADER_FILES = s21_string.h
+TEST_FILES = unit_tests.c
+
+TEST_TARGET = s21_test
 
 all: clean test
 
-test: $(C_FILES) $(H_FILES)
-	$(CC) $(FLAGS) $(C_FILES) $(C_TEST) $(H_FILES) -o $(TARGET_TEST) $(ADDITIONAL)
+test: $(SRC_FILES) $(HEADER_FILES)
+	$(CC) $(FLAGS) $(SRC_FILES) $(TEST_FILES) $(HEADER_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
 
 gcov_report:
-	$(CC) --coverage $(FLAGS) $(C_FILES) $(C_TEST) $(H_FILES) -o $(TARGET_TEST) $(ADDITIONAL)
-	./$(TARGET_TEST)
-	lcov -t "$(TARGET_TEST)" -o $(TARGET_TEST).info -c -d .
-	genhtml -o report $(TARGET_TEST).info
+	$(CC) --coverage $(FLAGS) $(SRC_FILES) $(TEST_FILES) $(HEADER_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
+	./$(TEST_TARGET)
+	lcov -t "$(TEST_TARGET)" -o $(TEST_TARGET).info -c -d .
+	genhtml -o report $(TEST_TARGET).info
 
 clean:
-	rm -f s21_string
+	rm -f $(TEST_TARGET)
