@@ -20,7 +20,7 @@ START_TEST(strcat_basic) {
   ck_assert_str_eq(str1, str2);
 }
 
-START_TEST(strcmp_bacis) {
+START_TEST(strcmp_basic) {
     char* first = "test";
     char* second = "test";
 
@@ -84,7 +84,7 @@ Suite *string_suite(void) {
   tcase_add_test(strcat_cases, strcat_basic);
 
   TCase *strcmp_cases = tcase_create("StrCmp");
-  tcase_add_test(strcmp_cases, strcmp_bacis);
+  tcase_add_test(strcmp_cases, strcmp_basic);
 
   TCase *strchr_cases = tcase_create("StrChr");
   tcase_add_test(strchr_cases, strchr_basic);

@@ -10,37 +10,43 @@ char* s21_strcat(char* restrict destination, const char* restrict source) {
   return s21_strcpy(destination + dst_len, source) - dst_len;
 }
 
-char* s21_strtok(char* restrict str, const char* delim) {
-  static char* backup;
-  char* return_value = NULL;
-
-  if (str == NULL) {
-    str = backup;
-  }
-  if (str != NULL) {
-    int stop = 0;
-    while (s21_strchr(delim, *str) && !stop) {
-      ++str;
-      if (*str == '\0') {
-        stop = 1;
-      }
+char* s21_strtok(char *restrict str, const char *restrict sep) {
+    static char *last_stop;
+    if (str == NULL) {
+        str = last_stop;
     }
-    if (!stop) {
-      return_value = str;
-      while (!stop) {
-        if (*str == '\0') {
-          backup = str;
-          stop = 1;
-        } else if (s21_strchr(delim, *str)) {
-          *str = '\0';
-          backup = str + 1;
-          stop = 1;
-        } else {
-          ++str;
+    char *res = str;
+    if (str != NULL) {
+        int code = 0;
+        while (code == 0) {
+            if (s21_strchr(sep, *str)) {
+                str++;
+                res++;
+            } else if (*str == '\0') {
+                code = 1;
+            } else {
+                code = 2;
+            }
         }
-      }
+        if (code != 1) {
+            code = 0;
+            while (code == 0) {
+                if (*str == '\0') {
+                    last_stop = str;
+                    code = 1;
+                } else if (s21_strchr(sep, *str)) {
+                    *str = '\0';
+                    last_stop = str + 1;
+                    code = 1;
+                } else {
+                    str++;
+                }
+            }
+        } else {
+            res = NULL;
+        }
+    } else {
+        res = NULL;
     }
-  }
-
-  return return_value;
+    return res;
 }
