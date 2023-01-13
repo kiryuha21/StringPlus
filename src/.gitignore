@@ -1,0 +1,9 @@
+*
+!.gitignore
+!src/s21_add.c
+!src/s21_calc.c
+!src/s21_cmp.c
+!src/s21_cpy.c
+!src/s21_search.c
+!src/s21_string.h
+!src/Makefile

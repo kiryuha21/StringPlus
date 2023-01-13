@@ -1,5 +1,11 @@
 #include "s21_string.h"
 
+// void *memchr(const void *str, int c, size_t n)
+// char *strchr(const char *str, int c)
+// char *strpbrk(const char *str1, const char *str2)
+// char *strrchr(const char *str, int c)
+// char *strstr(const char *haystack, const char *needle)
+
 char* s21_strchr(const char* src, int sym) {
   char* res = NULL;
   int stop = 0;
