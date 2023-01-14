@@ -21,9 +21,9 @@ char* s21_strcat(char* restrict dest, const char* restrict src);
 char* s21_strncat(char* dest, const char* src, size_t n);
 
 // s21_cpy.c:
-// void *memcpy(void *dest, const void *src, size_t n);
-// void *memmove(void *dest, const void *src, size_t n);
-// void *memset(void *str, int c, size_t n);
+void* s21_memcpy(void* dest, const void* src, size_t n);
+void* s21_memmove(void* dest, const void* src, size_t n);
+void* s21_memset(void* str, int c, size_t n);
 char* s21_strcpy(char* restrict dest, const char* restrict src);
 char* s21_strncpy(char* dest, const char* src, size_t n);
 

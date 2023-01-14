@@ -15,20 +15,40 @@ START_TEST(strncat_basic) {
   char str1[15] = "Hello, ";
   char str2[15] = "Hello, ";
 
-  strncat(str1, "Worlds", 5);
-  s21_strncat(str2, "Worlds", 5);
+  char* std_res = strncat(str1, "Worlds", 5);
+  char* my_res = s21_strncat(str2, "Worlds", 5);
 
-  ck_assert_str_eq(str1, str2);
+  ck_assert_str_eq(std_res, my_res);
 }
 
 START_TEST(strcat_basic) {
   char str1[15] = "Hello, ";
   char str2[15] = "Hello, ";
 
-  strcat(str1, "World");
-  s21_strcat(str2, "World");
+  char* std_res = strcat(str1, "World");
+  char* my_res = s21_strcat(str2, "World");
 
-  ck_assert_str_eq(str1, str2);
+  ck_assert_str_eq(std_res, my_res);
+}
+
+START_TEST(memcpy_basic) {
+  char str1[15] = "Hello, ";
+  char str2[15] = "Hello, ";
+
+  char* std_res = memcpy(str1, "World", 4);
+  char* my_res = s21_memcpy(str2, "World", 4);
+
+  ck_assert_str_eq(std_res, my_res);
+}
+
+START_TEST(memset_basic) {
+  char str1[15] = "Hello, ";
+  char str2[15] = "Hello, ";
+
+  char* std_res = memset(str1, 'a', 4);
+  char* my_res = s21_memset(str2, 'a', 4);
+
+  ck_assert_str_eq(std_res, my_res);
 }
 
 START_TEST(strcmp_basic) {
@@ -116,6 +136,12 @@ Suite* string_suite(void) {
   tcase_add_test(strtok_cases, strtok_doesnt_find);
   tcase_add_test(strtok_cases, strtok_only_delims);
 
+  TCase* memcpy_cases = tcase_create("MemCpy");
+  tcase_add_test(memcpy_cases, memcpy_basic);
+
+  TCase* memset_cases = tcase_create("MemSet");
+  tcase_add_test(memset_cases, memset_basic);
+
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strcat_cases);
   suite_add_tcase(s, strncat_cases);
@@ -123,6 +149,8 @@ Suite* string_suite(void) {
   suite_add_tcase(s, strchr_cases);
   suite_add_tcase(s, strstr_cases);
   suite_add_tcase(s, strtok_cases);
+  suite_add_tcase(s, memcpy_cases);
+  suite_add_tcase(s, memset_cases);
 
   return s;
 }

@@ -6,6 +6,27 @@
 // char *strcpy(char *dest, const char *src)
 // char *strncpy(char *dest, const char *src, size_t n)
 
+void* s21_memcpy(void* restrict dest, const void* restrict src, size_t n) {
+  return s21_memmove(dest, src, n);
+}
+
+void* s21_memmove(void* dest, const void* src, size_t n) {
+  void* start_ptr = dest;
+
+  for (size_t i = 0; i < n; ++i, ++dest, ++src) {
+    *((char*)dest) = *((char*)src);
+  }
+
+  return start_ptr;
+}
+
+void* s21_memset(void* str, int c, size_t n) {
+  for (size_t i = 0; i < n; ++i) {
+    ((char*)str)[i] = (char)c;
+  }
+  return str;
+}
+
 char* s21_strncpy(char* dest, const char* src, size_t n) {
   size_t i;
 

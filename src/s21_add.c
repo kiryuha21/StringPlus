@@ -11,8 +11,7 @@ char* s21_strncat(char* dest, const char* src, size_t n) {
 }
 
 char* s21_strcat(char* restrict dest, const char* restrict src) {
-  size_t dest_len = s21_strlen(dest);
-  return s21_strcpy(dest + dest_len, src) - dest_len;
+  return s21_strncat(dest, src, s21_strlen(src));
 }
 
 char* s21_strtok(char* restrict str, const char* restrict sep) {
