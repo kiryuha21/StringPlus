@@ -14,7 +14,7 @@ TEST_TARGET = s21_test
 all: clean test
 
 test: $(SRC_C_FILES) $(SRC_H_FILES)
-	$(CC) $(FLAGS) $(SRC_C_FILES) $(TEST_C_FILES) test_commons.c test_commons.h $(SRC_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
+	$(CC) $(FLAGS) $(SRC_C_FILES) $(SRC_H_FILES) $(TEST_C_FILES) $(TEST_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
 
 gcov_report:
 	$(CC) --coverage $(FLAGS) $(SRC_C_FILES) $(TEST_C_FILES) $(SRC_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)

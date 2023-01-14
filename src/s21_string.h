@@ -17,15 +17,15 @@ char* s21_strstr(const char* haystack, const char* needle);
 // s21_add.c:
 char* s21_strtok(char* restrict str, const char* restrict delim);
 // char *strerror(int errnum);
-char* s21_strcat(char* restrict destination, const char* restrict source);
-// char *strncat(char *dest, const char *src, size_t n);
+char* s21_strcat(char* restrict dest, const char* restrict src);
+char* s21_strncat(char* dest, const char* src, size_t n);
 
 // s21_cpy.c:
 // void *memcpy(void *dest, const void *src, size_t n);
 // void *memmove(void *dest, const void *src, size_t n);
 // void *memset(void *str, int c, size_t n);
-char* s21_strcpy(char* restrict destination, const char* restrict source);
-// char *strncpy(char *dest, const char *src, size_t n);
+char* s21_strcpy(char* restrict dest, const char* restrict src);
+char* s21_strncpy(char* dest, const char* src, size_t n);
 
 // s21_cmp.c:
 // int memcmp(const void *str1, const void *str2, size_t n);

@@ -11,6 +11,16 @@ START_TEST(strlen_basic) {
   ck_assert_uint_eq(my_res, std_res);
 }
 
+START_TEST(strncat_basic) {
+  char str1[15] = "Hello, ";
+  char str2[15] = "Hello, ";
+
+  strncat(str1, "Worlds", 5);
+  s21_strncat(str2, "Worlds", 5);
+
+  ck_assert_str_eq(str1, str2);
+}
+
 START_TEST(strcat_basic) {
   char str1[15] = "Hello, ";
   char str2[15] = "Hello, ";
@@ -62,21 +72,21 @@ START_TEST(strtok_basic) {
   char s21_haystack[] = "co\no,l un--it tee\n\n,est";
   char str_haystack[] = "co\no,l un--it tee\n\n,est";
 
-    strtok_test_common(s21_haystack, str_haystack, ",-");
+  strtok_test_common(s21_haystack, str_haystack, ",-");
 }
 
 START_TEST(strtok_doesnt_find) {
   char* s21_haystack = "Hello, world!";
   char* str_haystack = "Hello, world!";
 
-    strtok_test_common(s21_haystack, str_haystack, ".");
+  strtok_test_common(s21_haystack, str_haystack, ".");
 }
 
 START_TEST(strtok_only_delims) {
   char* s21_haystack = "._.";
   char* str_haystack = "._.";
 
-    strtok_test_common(s21_haystack, str_haystack, "._");
+  strtok_test_common(s21_haystack, str_haystack, "._");
 }
 
 Suite* string_suite(void) {
@@ -87,6 +97,9 @@ Suite* string_suite(void) {
 
   TCase* strcat_cases = tcase_create("StrCat");
   tcase_add_test(strcat_cases, strcat_basic);
+
+  TCase* strncat_cases = tcase_create("StrNCat");
+  tcase_add_test(strncat_cases, strncat_basic);
 
   TCase* strcmp_cases = tcase_create("StrCmp");
   tcase_add_test(strcmp_cases, strcmp_basic);
@@ -105,6 +118,7 @@ Suite* string_suite(void) {
 
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strcat_cases);
+  suite_add_tcase(s, strncat_cases);
   suite_add_tcase(s, strcmp_cases);
   suite_add_tcase(s, strchr_cases);
   suite_add_tcase(s, strstr_cases);

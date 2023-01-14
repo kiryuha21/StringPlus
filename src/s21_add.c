@@ -5,9 +5,14 @@
 // char *strcat(char *dest, const char *src)
 // char *strncat(char *dest, const char *src, size_t n)
 
-char* s21_strcat(char* restrict destination, const char* restrict source) {
-  size_t dst_len = s21_strlen(destination);
-  return s21_strcpy(destination + dst_len, source) - dst_len;
+char* s21_strncat(char* dest, const char* src, size_t n) {
+  size_t dest_len = s21_strlen(dest);
+  return s21_strncpy(dest + dest_len, src, n) - dest_len;
+}
+
+char* s21_strcat(char* restrict dest, const char* restrict src) {
+  size_t dest_len = s21_strlen(dest);
+  return s21_strcpy(dest + dest_len, src) - dest_len;
 }
 
 char* s21_strtok(char* restrict str, const char* restrict sep) {
