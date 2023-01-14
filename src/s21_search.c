@@ -6,18 +6,23 @@
 // char *strrchr(const char *str, int c)
 // char *strstr(const char *haystack, const char *needle)
 
-char* s21_strchr(const char* src, int sym) {
-  char* res = NULL;
+void* s21_memchr(const void* str, int c, size_t n) {
+  void* res = NULL;
+
   int stop = 0;
-  while (*src != '\0' && !stop) {
-    if (*src == sym) {
-      res = (char*)src;
+  const char* temp_str = (char*)str;
+  for (size_t i = 0; i < n && !stop; ++i) {
+    if (temp_str[i] == c) {
+      res = (void*)(&temp_str[i]);
       stop = 1;
-    } else {
-      ++src;
     }
   }
+
   return res;
+}
+
+char* s21_strchr(const char* src, int sym) {
+  return (char*)s21_memchr((void*)src, sym, s21_strlen(src));
 }
 
 int compare(const char* haystack, const char* needle) {

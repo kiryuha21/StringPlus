@@ -8,7 +8,7 @@
 typedef unsigned long size_t;
 
 // s21_search.c:
-// void *memchr(const void *str, int c, size_t n);
+void* s21_memchr(const void* str, int c, size_t n);
 char* s21_strchr(const char* src, int sym);
 // char *strpbrk(const char *str1, const char *str2);
 // char *strrchr(const char *str, int c);
