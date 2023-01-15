@@ -8,13 +8,17 @@ SRC_H_FILES = s21_string.h
 TEST_C_FILES = unit_tests.c test_commons.c
 TEST_H_FILES = test_commons.h
 REPORT_DIR = report
-
+OBJ = $(patsubst %.c, %.o, $(SRC_C_FILES))
 TEST_TARGET = s21_test
 
 all: clean test
 
 test: $(SRC_C_FILES) $(SRC_H_FILES)
+	cp ../materials/linters/.clang-format .
+	clang-format -i *.[ch]
+	rm -f .clang-format
 	$(CC) $(FLAGS) $(SRC_C_FILES) $(SRC_H_FILES) $(TEST_C_FILES) $(TEST_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
+	./$(TEST_TARGET)
 
 gcov_report:
 	$(CC) --coverage $(FLAGS) $(SRC_C_FILES) $(TEST_C_FILES) $(SRC_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
@@ -23,12 +27,23 @@ gcov_report:
 	genhtml -o report $(TEST_TARGET).info
 	rm *.gcda *.gcno *.info
 
+s21_string.a: $(OBJ)
+	ar -rc s21_string.a $(OBJ)
+	rm -rf s21_string.o
+
+%.o : %.c
+	$(CC) $(FLAGS) -c $< -o $@ $(ADDITIONAL_FLAGS)
+
 clean_test:
 	rm -f $(TEST_TARGET)
 
 clean_report:
 	rm -rf $(REPORT_DIR)
 
-#clean_lib:
+clean_lib:
+	rm -f s21_string.a
 
-clean: clean_test clean_report #clean_lib
+clean_obj:
+	rm -f *.o
+
+clean: clean_test clean_report clean_lib clean_obj
