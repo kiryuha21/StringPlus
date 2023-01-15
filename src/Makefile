@@ -9,7 +9,9 @@ TEST_C_FILES = unit_tests.c test_commons.c
 TEST_H_FILES = test_commons.h
 REPORT_DIR = report
 OBJ = $(patsubst %.c, %.o, $(SRC_C_FILES))
+HEADER_OBJ = s21_string.o
 TEST_TARGET = s21_test
+LIB = s21_string.a
 
 all: clean test
 
@@ -27,9 +29,10 @@ gcov_report:
 	genhtml -o report $(TEST_TARGET).info
 	rm *.gcda *.gcno *.info
 
-s21_string.a: $(OBJ)
-	ar -rc s21_string.a $(OBJ)
-	rm -rf s21_string.o
+$(LIB): $(OBJ)
+	$(CC) $(FLAGS) -c $(SRC_H_FILES) -o $(HEADER_OBJ) $(ADDITIONAL_FLAGS)
+	ar -rc $(LIB) $(OBJ) $(HEADER_OBJ)
+	rm *.o
 
 %.o : %.c
 	$(CC) $(FLAGS) -c $< -o $@ $(ADDITIONAL_FLAGS)
@@ -41,7 +44,7 @@ clean_report:
 	rm -rf $(REPORT_DIR)
 
 clean_lib:
-	rm -f s21_string.a
+	rm -f $(LIB)
 
 clean_obj:
 	rm -f *.o
