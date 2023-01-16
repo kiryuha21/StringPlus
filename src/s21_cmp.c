@@ -2,7 +2,7 @@
 
 // int memcmp(const void *str1, const void *str2, size_t n)
 // int strcmp(const char *str1, const char *str2)
-// int s21_strncmp(const char *str1, const char *str2, size_t n)
+// int strncmp(const char *str1, const char *str2, size_t n)
 
 // TODO: Not sure to which type should void* memory be casted;
 // TODO: a lot of funcs depend on that, all of them should be rechecked in case
