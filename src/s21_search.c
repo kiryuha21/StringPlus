@@ -21,6 +21,36 @@ void* s21_memchr(const void* str, int c, size_t n) {
   return res;
 }
 
+char* s21_strpbrk(const char* str1, const char* str2) {
+  char* res = NULL;
+
+  int found = 0;
+  for (const char* i = str2; *i != '\0' && !found; ++i) {
+    res = s21_strchr(str1, *i);
+    if (res != NULL) {
+      found = 1;
+    }
+  }
+
+  return res;
+}
+
+char* s21_strrchr(const char* str, int c) {
+  char* res = NULL;
+
+  int len = (int)s21_strlen(str);
+
+  int found = 0;
+  for (int i = len - 1; i >= 0 && !found; --i) {
+    if (str[i] == c) {
+      res = (char*)&str[i];
+      found = 1;
+    }
+  }
+
+  return res;
+}
+
 char* s21_strchr(const char* src, int sym) {
   return (char*)s21_memchr((void*)src, sym, s21_strlen(src));
 }

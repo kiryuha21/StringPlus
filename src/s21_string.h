@@ -10,8 +10,8 @@ typedef unsigned long size_t;
 // s21_search.c:
 void* s21_memchr(const void* str, int c, size_t n);
 char* s21_strchr(const char* src, int sym);
-// char *strpbrk(const char *str1, const char *str2);
-// char *strrchr(const char *str, int c);
+char* s21_strpbrk(const char* str1, const char* str2);
+char* s21_strrchr(const char* str, int c);
 char* s21_strstr(const char* haystack, const char* needle);
 
 // s21_add.c:
@@ -28,9 +28,9 @@ char* s21_strcpy(char* restrict dest, const char* restrict src);
 char* s21_strncpy(char* dest, const char* src, size_t n);
 
 // s21_cmp.c:
-// int memcmp(const void *str1, const void *str2, size_t n);
+int s21_memcmp(const void* str1, const void* str2, size_t n);
 int s21_strcmp(const char* first, const char* second);
-// int strncmp(const char *str1, const char *str2, size_t n);
+int s21_strncmp(const char* str1, const char* str2, size_t n);
 
 // s21_calc.c:
 size_t s21_strlen(const char* str);

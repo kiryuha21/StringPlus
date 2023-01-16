@@ -11,6 +11,13 @@ START_TEST(strlen_basic) {
   ck_assert_uint_eq(my_res, std_res);
 }
 
+START_TEST(strrchr_basic) {
+  char* str = "normal string";
+  char* my_res = s21_strrchr(str, 'n');
+  char* std_res = strrchr(str, 'n');
+  ck_assert_str_eq(my_res, std_res);
+}
+
 START_TEST(strncat_basic) {
   char str1[15] = "Hello, ";
   char str2[15] = "Hello, ";
@@ -142,6 +149,9 @@ Suite* string_suite(void) {
   TCase* memset_cases = tcase_create("MemSet");
   tcase_add_test(memset_cases, memset_basic);
 
+  TCase* strrchr_cases = tcase_create("StrRChr");
+  tcase_add_test(strrchr_cases, strrchr_basic);
+
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strcat_cases);
   suite_add_tcase(s, strncat_cases);
@@ -151,6 +161,7 @@ Suite* string_suite(void) {
   suite_add_tcase(s, strtok_cases);
   suite_add_tcase(s, memcpy_cases);
   suite_add_tcase(s, memset_cases);
+  suite_add_tcase(s, strrchr_cases);
 
   return s;
 }

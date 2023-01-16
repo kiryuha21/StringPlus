@@ -5,13 +5,16 @@ ADDITIONAL_FLAGS = -lcheck -lsubunit -lm
 
 SRC_C_FILES = s21_add.c s21_calc.c s21_cmp.c s21_cpy.c s21_search.c
 SRC_H_FILES = s21_string.h
+
 TEST_C_FILES = unit_tests.c test_commons.c
 TEST_H_FILES = test_commons.h
-REPORT_DIR = report
+TEST_TARGET  = s21_test
+
 OBJ = $(patsubst %.c, %.o, $(SRC_C_FILES))
 HEADER_OBJ = s21_string.o
-TEST_TARGET = s21_test
 LIB = s21_string.a
+
+REPORT_DIR = report
 
 all: clean test
 
