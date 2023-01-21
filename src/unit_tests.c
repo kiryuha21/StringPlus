@@ -38,6 +38,7 @@ START_TEST(strcat_basic) {
   ck_assert_str_eq(std_res, my_res);
 }
 
+// TODO: should be tested with chars 0-255
 START_TEST(memcpy_basic) {
   char str1[15] = "Hello, ";
   char str2[15] = "Hello, ";
