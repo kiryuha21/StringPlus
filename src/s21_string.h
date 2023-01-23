@@ -12,6 +12,7 @@ typedef struct IntStringMap {
   char* value;
 } IntStringMap;
 
+// TODO: wrap into smth like #ifdef linux...
 static const IntStringMap sys_errlist[] = {
     {0, "Success"},
     {1, "Operation not permitted"},
@@ -179,5 +180,15 @@ int s21_strncmp(const char* str1, const char* str2, size_t n);
 size_t s21_strlen(const char* str);
 size_t s21_strspn(const char* str1, const char* str2);
 size_t s21_strcspn(const char* str1, const char* str2);
+
+// s21_format_functions.c:
+int s21_sscanf(const char* str, const char* format, ...);
+int s21_sprintf(char* str, const char* format, ...);
+
+// s21_extras.c
+void* s21_to_upper(const char* str);
+void* s21_to_lower(const char* str);
+void* s21_insert(const char* src, const char* str, size_t start_index);
+void* s21_trim(const char* src, const char* trim_chars);
 
 #endif  // C2_S21_STRINGPLUS_0_S21_STRING_H

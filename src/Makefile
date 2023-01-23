@@ -3,7 +3,7 @@ CC = gcc
 FLAGS = -Wall -Wextra -Werror --std=c11 -fanalyzer -pedantic
 ADDITIONAL_FLAGS = -lcheck -lsubunit -lm
 
-SRC_C_FILES = s21_add.c s21_calc.c s21_cmp.c s21_cpy.c s21_search.c
+SRC_C_FILES = s21_add.c s21_calc.c s21_cmp.c s21_cpy.c s21_search.c s21_format_functions.c s21_extras.c
 SRC_H_FILES = s21_string.h
 
 TEST_C_FILES = unit_tests.c test_commons.c
