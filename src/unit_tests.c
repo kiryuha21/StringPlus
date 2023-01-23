@@ -12,7 +12,7 @@ START_TEST(strlen_empty) { strlen_test_common(""); }
 START_TEST(strlen_with_null_terminator) { strlen_test_common("aaa\0bbb"); }
 
 START_TEST(strerror_basic) {
-  for (int i = 0; i < sys_nerr; ++i) {
+  for (int i = 0; i < sys_nerr + 1; ++i) {
     ck_assert_str_eq(strerror(i), s21_strerror(i));
   }
 }
@@ -136,6 +136,14 @@ START_TEST(strtok_only_delims) {
   strtok_test_common(s21_haystack, str_haystack, "._");
 }
 
+START_TEST(strcspn_basic) { strspn_test_common("000111222", "21", 0); }
+
+START_TEST(strcspn_zero_res) { strspn_test_common("000111222", "0", 0); }
+
+START_TEST(strspn_basic) { strspn_test_common("000111222", "01", 1); }
+
+START_TEST(strspn_zero_res) { strspn_test_common("000111222", "12", 1); }
+
 Suite* string_suite(void) {
   Suite* s = suite_create("String");
 
@@ -177,6 +185,14 @@ Suite* string_suite(void) {
   TCase* strrchr_cases = tcase_create("StrRChr");
   tcase_add_test(strrchr_cases, strrchr_basic);
 
+  TCase* strspn_cases = tcase_create("StrSpn");
+  tcase_add_test(strspn_cases, strspn_basic);
+  tcase_add_test(strspn_cases, strspn_zero_res);
+
+  TCase* strcspn_cases = tcase_create("StrCSpn");
+  tcase_add_test(strcspn_cases, strcspn_basic);
+  tcase_add_test(strcspn_cases, strcspn_zero_res);
+
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strerror_cases);
   suite_add_tcase(s, strcat_cases);
@@ -188,6 +204,8 @@ Suite* string_suite(void) {
   suite_add_tcase(s, memcpy_cases);
   suite_add_tcase(s, memset_cases);
   suite_add_tcase(s, strrchr_cases);
+  suite_add_tcase(s, strspn_cases);
+  suite_add_tcase(s, strcspn_cases);
 
   return s;
 }

@@ -177,7 +177,7 @@ int s21_strncmp(const char* str1, const char* str2, size_t n);
 
 // s21_calc.c:
 size_t s21_strlen(const char* str);
-// size_t strspn(const char *str1, const char *str2);
-// size_t strcspn(const char *str1, const char *str2);
+size_t s21_strspn(const char* str1, const char* str2);
+size_t s21_strcspn(const char* str1, const char* str2);
 
 #endif  // C2_S21_STRINGPLUS_0_S21_STRING_H

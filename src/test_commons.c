@@ -25,3 +25,12 @@ void strlen_test_common(char* str) {
   size_t std_res = strlen(str);
   ck_assert_uint_eq(my_res, std_res);
 }
+
+void strspn_test_common(char* haystack, char* entries, int should_be_in) {
+  if (should_be_in) {
+    ck_assert_uint_eq(strspn(haystack, entries), s21_strspn(haystack, entries));
+  } else {
+    ck_assert_uint_eq(strcspn(haystack, entries),
+                      s21_strcspn(haystack, entries));
+  }
+}
