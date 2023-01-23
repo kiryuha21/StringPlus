@@ -19,3 +19,9 @@ void strtok_test_common(char s21_haystack[], char str_haystack[],
   ck_assert_str_eq(s21_haystack, str_haystack);
   ck_assert_ptr_eq(my_res, std_res);
 }
+
+void strlen_test_common(char* str) {
+  size_t my_res = s21_strlen(str);
+  size_t std_res = strlen(str);
+  ck_assert_uint_eq(my_res, std_res);
+}

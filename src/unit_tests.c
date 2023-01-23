@@ -5,12 +5,11 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-START_TEST(strlen_basic) {
-  char* str = "normal string";
-  size_t my_res = s21_strlen(str);
-  size_t std_res = strlen(str);
-  ck_assert_uint_eq(my_res, std_res);
-}
+START_TEST(strlen_basic) { strlen_test_common("normal string"); }
+
+START_TEST(strlen_empty) { strlen_test_common(""); }
+
+START_TEST(strlen_with_null_terminator) { strlen_test_common("aaa\0bbb"); }
 
 START_TEST(strrchr_basic) {
   char* str = "normal string";
@@ -47,17 +46,18 @@ START_TEST(memcpy_basic) {
   for (int i = 0; i < 256; ++i) {
     sprintf(value + i, "%c", i);
   }
-//  printf("VALUE:\n");
-//  for (int i = 0; i < 256; ++i) {
-//    printf("%c  //  %d\n", value[i], value[i]);
-//  }
+  //  printf("VALUE:\n");
+  //  for (int i = 0; i < 256; ++i) {
+  //    printf("%c  //  %d\n", value[i], value[i]);
+  //  }
 
   char* std_res = memcpy(str1, value, 256);
   char* my_res = s21_memcpy(str2, value, 256);
 
-//  for (int i = 0; i < 256; ++i) {
-//    printf("%c  //  %d  \\\\ %c  //  %d\n", str1[i], str1[i], str2[i], str2[i]);
-//  }
+  //  for (int i = 0; i < 256; ++i) {
+  //    printf("%c  //  %d  \\\\ %c  //  %d\n", str1[i], str1[i], str2[i],
+  //    str2[i]);
+  //  }
 
   ck_assert_mem_eq(std_res, my_res, 256);
 }
@@ -135,6 +135,8 @@ Suite* string_suite(void) {
 
   TCase* strlen_cases = tcase_create("StrLen");
   tcase_add_test(strlen_cases, strlen_basic);
+  tcase_add_test(strlen_cases, strlen_empty);
+  tcase_add_test(strlen_cases, strlen_with_null_terminator);
 
   TCase* strcat_cases = tcase_create("StrCat");
   tcase_add_test(strcat_cases, strcat_basic);

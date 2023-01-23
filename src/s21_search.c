@@ -52,17 +52,17 @@ char* s21_strrchr(const char* str, int c) {
 }
 
 char* s21_strchr(const char* src, int sym) {
-    char* res = NULL;
-    int stop = 0;
-    while (*src != '\0' && !stop) {
-        if (*src == sym) {
-            res = (char*)src;
-            stop = 1;
-        } else {
-            ++src;
-        }
+  char* res = NULL;
+  int stop = 0;
+  while (*src != '\0' && !stop) {
+    if (*src == sym) {
+      res = (char*)src;
+      stop = 1;
+    } else {
+      ++src;
     }
-    return res;
+  }
+  return res;
 }
 
 int compare(const char* haystack, const char* needle) {
