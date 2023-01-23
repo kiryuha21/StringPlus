@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "s21_string.h"
 
 // char *strtok(char *str, const char *delim)
@@ -53,4 +55,23 @@ char* s21_strtok(char* restrict str, const char* restrict sep) {
     res = NULL;
   }
   return res;
+}
+
+char* s21_strerror(int errnum) {
+  char* description = NULL;
+  char default_description[20] = "Unknown error ";
+
+  int found = 0;
+  for (int i = 0; i < sys_nerr && !found; ++i) {
+    if (sys_errlist[i].key == errnum) {
+      found = 1;
+      description = sys_errlist[i].value;
+    }
+  }
+
+  if (!found) {
+    sprintf(default_description + 14, "%d", errnum);
+  }
+
+  return found ? description : default_description;
 }

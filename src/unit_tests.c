@@ -11,6 +11,12 @@ START_TEST(strlen_empty) { strlen_test_common(""); }
 
 START_TEST(strlen_with_null_terminator) { strlen_test_common("aaa\0bbb"); }
 
+START_TEST(strerror_basic) {
+  for (int i = 0; i < sys_nerr; ++i) {
+    ck_assert_str_eq(strerror(i), s21_strerror(i));
+  }
+}
+
 START_TEST(strrchr_basic) {
   char* str = "normal string";
   char* my_res = s21_strrchr(str, 'n');
@@ -138,6 +144,9 @@ Suite* string_suite(void) {
   tcase_add_test(strlen_cases, strlen_empty);
   tcase_add_test(strlen_cases, strlen_with_null_terminator);
 
+  TCase* strerror_cases = tcase_create("StrError");
+  tcase_add_test(strerror_cases, strerror_basic);
+
   TCase* strcat_cases = tcase_create("StrCat");
   tcase_add_test(strcat_cases, strcat_basic);
 
@@ -169,6 +178,7 @@ Suite* string_suite(void) {
   tcase_add_test(strrchr_cases, strrchr_basic);
 
   suite_add_tcase(s, strlen_cases);
+  suite_add_tcase(s, strerror_cases);
   suite_add_tcase(s, strcat_cases);
   suite_add_tcase(s, strncat_cases);
   suite_add_tcase(s, strcmp_cases);
