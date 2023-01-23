@@ -113,6 +113,23 @@ START_TEST(memset_basic) {
   ck_assert_str_eq(std_res, my_res);
 }
 
+START_TEST(to_upper_basic) {
+  change_case_test_common("aAa 111 BbB", "AAA 111 BBB", 1);
+}
+
+START_TEST(to_lower_basic) {
+  change_case_test_common("aAa 111 BbB", "aaa 111 bbb", 1);
+}
+
+START_TEST(insert_basic) {
+  insert_test_common("Hello,  ", "World!", 7, "Hello, World!");
+}
+
+START_TEST(trim_basic) {
+  trim_test_common("\n\tHello\nto\teveryone\n\t", "\n\t",
+                   "Hello\nto\teveryone");
+}
+
 START_TEST(strcmp_basic) {
   char* first = "test";
   char* second = "test";
@@ -179,6 +196,7 @@ START_TEST(strspn_basic) { strspn_test_common("000111222", "01", 1); }
 
 START_TEST(strspn_zero_res) { strspn_test_common("000111222", "12", 1); }
 
+// TODO: Add more tests lol
 Suite* string_suite(void) {
   Suite* s = suite_create("String");
 
@@ -201,6 +219,18 @@ Suite* string_suite(void) {
 
   TCase* strpbrk_cases = tcase_create("StrPBrk");
   tcase_add_test(strpbrk_cases, strpbrk_basic);
+
+  TCase* to_lower_cases = tcase_create("ToLower");
+  tcase_add_test(to_lower_cases, to_lower_basic);
+
+  TCase* to_upper_cases = tcase_create("ToUpper");
+  tcase_add_test(to_upper_cases, to_upper_basic);
+
+  TCase* insert_cases = tcase_create("Insert");
+  tcase_add_test(insert_cases, insert_basic);
+
+  TCase* trim_cases = tcase_create("Trim");
+  tcase_add_test(trim_cases, trim_basic);
 
   TCase* strcat_cases = tcase_create("StrCat");
   tcase_add_test(strcat_cases, strcat_basic);
