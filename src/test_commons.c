@@ -3,8 +3,6 @@
 #include <check.h>
 #include <string.h>
 
-#include "s21_string.h"
-
 void strtok_test_common(char s21_haystack[], char str_haystack[],
                         char delim[]) {
   char* my_res = s21_strtok(s21_haystack, delim);
@@ -24,6 +22,10 @@ void strlen_test_common(char* str) {
   size_t my_res = s21_strlen(str);
   size_t std_res = strlen(str);
   ck_assert_uint_eq(my_res, std_res);
+}
+
+void memcmp_test_common(char* first, char* second, size_t len) {
+  ck_assert_uint_eq(memcmp(first, second, len), s21_memcmp(first, second, len));
 }
 
 void strspn_test_common(char* haystack, char* entries, int should_be_in) {

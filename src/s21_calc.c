@@ -17,26 +17,21 @@ size_t common_strspn(const char *haystack, const char *entries,
                      int should_be_in) {
   size_t result = 0;
 
-  size_t entries_len = s21_strlen(entries);
   size_t haystack_len = s21_strlen(haystack);
 
   int stop = 0;
   for (size_t i = 0; i < haystack_len && !stop; ++i) {
-    char sym = haystack[i];
-    for (size_t j = 0; j < entries_len && !stop; ++j) {
-      if (!should_be_in) {
-        if (sym == entries[j]) {
-          stop = 1;
-        } else if (j == entries_len - 1) {
-          ++result;
-        }
+    if (s21_strchr(entries, haystack[i]) != NULL) {
+      if (should_be_in) {
+        ++result;
       } else {
-        if (sym == entries[j]) {
-          j = entries_len;
-          ++result;
-        } else if (j == entries_len - 1) {
-          stop = 1;
-        }
+        stop = 1;
+      }
+    } else {
+      if (should_be_in) {
+        stop = 1;
+      } else {
+        ++result;
       }
     }
   }

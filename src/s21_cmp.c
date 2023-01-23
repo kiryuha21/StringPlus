@@ -8,14 +8,14 @@ int s21_memcmp(const void* str1, const void* str2, size_t n) {
   unsigned char* temp1 = (unsigned char*)str1;
   unsigned char* temp2 = (unsigned char*)str2;
 
-  for (size_t i = 0; *temp1 == *temp2 && i < n; ++i, ++temp1, ++temp2) {
+  for (size_t i = 0; *temp1 == *temp2 && i < n - 1; ++i, ++temp1, ++temp2) {
   }
 
   return *temp1 - *temp2;
 }
 
 int s21_strncmp(const char* str1, const char* str2, size_t n) {
-  for (size_t i = 0; *str1 != '\0' && *str1 == *str2 && i < n; ++i) {
+  for (size_t i = 0; *str1 != '\0' && *str1 == *str2 && i < n - 1; ++i) {
     ++str1;
     ++str2;
   }

@@ -11,6 +11,20 @@ START_TEST(strlen_empty) { strlen_test_common(""); }
 
 START_TEST(strlen_with_null_terminator) { strlen_test_common("aaa\0bbb"); }
 
+START_TEST(memcmp_equal) { memcmp_test_common("aaa\0bbb\n", "aaa\0bbb\n", 7); }
+
+START_TEST(memcmp_unequal) {
+  memcmp_test_common("aaa\0ccc\n", "aaa\0bbb\n", 7);
+}
+
+START_TEST(memcmp_size_limit) {
+  memcmp_test_common("aaa\0bbb\n", "aaa\0ccc\n", 4);
+}
+
+START_TEST(memcmp_overflow_limit) {
+  memcmp_test_common("aaa\0bbb\n", "aaa\0bbb\n", 20);
+}
+
 START_TEST(strerror_basic) {
   for (int i = 0; i < sys_nerr + 1; ++i) {
     ck_assert_str_eq(strerror(i), s21_strerror(i));
@@ -44,6 +58,36 @@ START_TEST(strcat_basic) {
   ck_assert_str_eq(std_res, my_res);
 }
 
+START_TEST(strcpy_basic) {
+  char str1[30] = "Hello, ";
+  char str2[30] = "Hello, ";
+  char* value = "Good Evening\0, Everyone";
+
+  char* std_res = strcpy(str1, value);
+  char* my_res = s21_strcpy(str2, value);
+
+  ck_assert_str_eq(std_res, my_res);
+}
+
+START_TEST(memchr_basic) {
+  char* haystack = "aaa\0bcd\n";
+
+  char* std_res = memchr(haystack, 'c', 8);
+  char* my_res = s21_memchr(haystack, 'c', 8);
+
+  ck_assert_mem_eq(std_res, my_res, 3);
+}
+
+START_TEST(strpbrk_basic) {
+  char* haystack = "aaabbbcde";
+  char* entries = "zxc";
+
+  char* std_res = strpbrk(haystack, entries);
+  char* my_res = s21_strpbrk(haystack, entries);
+
+  ck_assert_str_eq(std_res, my_res);
+}
+
 START_TEST(memcpy_basic) {
   char str1[256];
   char str2[256];
@@ -52,18 +96,9 @@ START_TEST(memcpy_basic) {
   for (int i = 0; i < 256; ++i) {
     sprintf(value + i, "%c", i);
   }
-  //  printf("VALUE:\n");
-  //  for (int i = 0; i < 256; ++i) {
-  //    printf("%c  //  %d\n", value[i], value[i]);
-  //  }
 
   char* std_res = memcpy(str1, value, 256);
   char* my_res = s21_memcpy(str2, value, 256);
-
-  //  for (int i = 0; i < 256; ++i) {
-  //    printf("%c  //  %d  \\\\ %c  //  %d\n", str1[i], str1[i], str2[i],
-  //    str2[i]);
-  //  }
 
   ck_assert_mem_eq(std_res, my_res, 256);
 }
@@ -152,14 +187,29 @@ Suite* string_suite(void) {
   tcase_add_test(strlen_cases, strlen_empty);
   tcase_add_test(strlen_cases, strlen_with_null_terminator);
 
+  TCase* memcmp_cases = tcase_create("MemCmp");
+  tcase_add_test(memcmp_cases, memcmp_equal);
+  tcase_add_test(memcmp_cases, memcmp_unequal);
+  tcase_add_test(memcmp_cases, memcmp_size_limit);
+  tcase_add_test(memcmp_cases, memcmp_overflow_limit);
+
   TCase* strerror_cases = tcase_create("StrError");
   tcase_add_test(strerror_cases, strerror_basic);
+
+  TCase* memchr_cases = tcase_create("MemChr");
+  tcase_add_test(memchr_cases, memchr_basic);
+
+  TCase* strpbrk_cases = tcase_create("StrPBrk");
+  tcase_add_test(strpbrk_cases, strpbrk_basic);
 
   TCase* strcat_cases = tcase_create("StrCat");
   tcase_add_test(strcat_cases, strcat_basic);
 
   TCase* strncat_cases = tcase_create("StrNCat");
   tcase_add_test(strncat_cases, strncat_basic);
+
+  TCase* strcpy_cases = tcase_create("StrCpy");
+  tcase_add_test(strcpy_cases, strcpy_basic);
 
   TCase* strcmp_cases = tcase_create("StrCmp");
   tcase_add_test(strcmp_cases, strcmp_basic);
@@ -206,6 +256,10 @@ Suite* string_suite(void) {
   suite_add_tcase(s, strrchr_cases);
   suite_add_tcase(s, strspn_cases);
   suite_add_tcase(s, strcspn_cases);
+  suite_add_tcase(s, memcmp_cases);
+  suite_add_tcase(s, memchr_cases);
+  suite_add_tcase(s, strpbrk_cases);
+  suite_add_tcase(s, strcpy_cases);
 
   return s;
 }
