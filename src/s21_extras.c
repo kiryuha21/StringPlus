@@ -29,7 +29,7 @@ void *s21_insert(const char *src, const char *str, size_t start_index) {
 
   char *result = (char *)calloc(sizeof(char), len + 1);
   if (result != NULL) {
-    s21_strncat(result, src, start_index - 1);
+    s21_strncat(result, src, start_index);
     s21_strcat(result, str);
     s21_strcat(result, src + start_index);
   }
@@ -50,7 +50,7 @@ void *s21_trim(const char *src, const char *trim_chars) {
     for (; s21_strchr(trim_chars, src[end]) != NULL; --end) {
     }
 
-    s21_strncpy(result, src + start, end - start);
+    s21_strncpy(result, src + start, end - start + 1);
   }
 
   return result;

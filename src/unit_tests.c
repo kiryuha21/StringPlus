@@ -118,11 +118,11 @@ START_TEST(to_upper_basic) {
 }
 
 START_TEST(to_lower_basic) {
-  change_case_test_common("aAa 111 BbB", "aaa 111 bbb", 1);
+  change_case_test_common("aAa 111 BbB", "aaa 111 bbb", 0);
 }
 
 START_TEST(insert_basic) {
-  insert_test_common("Hello,  ", "World!", 7, "Hello, World!");
+  insert_test_common("Hello, World!", "Amazing ", 7, "Hello, Amazing World!");
 }
 
 START_TEST(trim_basic) {
@@ -290,6 +290,10 @@ Suite* string_suite(void) {
   suite_add_tcase(s, memchr_cases);
   suite_add_tcase(s, strpbrk_cases);
   suite_add_tcase(s, strcpy_cases);
+  suite_add_tcase(s, to_lower_cases);
+  suite_add_tcase(s, to_upper_cases);
+  suite_add_tcase(s, insert_cases);
+  suite_add_tcase(s, trim_cases);
 
   return s;
 }
