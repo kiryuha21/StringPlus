@@ -29,7 +29,7 @@ char* s21_strncpy(char* dest, const char* src, size_t n);
 
 // s21_cmp.c:
 int s21_memcmp(const void* str1, const void* str2, size_t n);
-int s21_strcmp(const char* first, const char* second);
+int s21_strcmp(const char* str1, const char* str2);
 int s21_strncmp(const char* str1, const char* str2, size_t n);
 
 // s21_calc.c:

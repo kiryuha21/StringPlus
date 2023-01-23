@@ -1,4 +1,5 @@
 #include <check.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "s21_string.h"
@@ -38,15 +39,27 @@ START_TEST(strcat_basic) {
   ck_assert_str_eq(std_res, my_res);
 }
 
-// TODO: should be tested with chars 0-255
 START_TEST(memcpy_basic) {
-  char str1[15] = "Hello, ";
-  char str2[15] = "Hello, ";
+  char str1[256];
+  char str2[256];
+  char value[256];
 
-  char* std_res = memcpy(str1, "World", 4);
-  char* my_res = s21_memcpy(str2, "World", 4);
+  for (int i = 0; i < 256; ++i) {
+    sprintf(value + i, "%c", i);
+  }
+//  printf("VALUE:\n");
+//  for (int i = 0; i < 256; ++i) {
+//    printf("%c  //  %d\n", value[i], value[i]);
+//  }
 
-  ck_assert_str_eq(std_res, my_res);
+  char* std_res = memcpy(str1, value, 256);
+  char* my_res = s21_memcpy(str2, value, 256);
+
+//  for (int i = 0; i < 256; ++i) {
+//    printf("%c  //  %d  \\\\ %c  //  %d\n", str1[i], str1[i], str2[i], str2[i]);
+//  }
+
+  ck_assert_mem_eq(std_res, my_res, 256);
 }
 
 START_TEST(memset_basic) {

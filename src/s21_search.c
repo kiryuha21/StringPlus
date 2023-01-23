@@ -10,7 +10,7 @@ void* s21_memchr(const void* str, int c, size_t n) {
   void* res = NULL;
 
   int stop = 0;
-  const char* temp_str = (char*)str;
+  const unsigned char* temp_str = (unsigned char*)str;
   for (size_t i = 0; i < n && !stop; ++i) {
     if (temp_str[i] == c) {
       res = (void*)(&temp_str[i]);
@@ -52,7 +52,17 @@ char* s21_strrchr(const char* str, int c) {
 }
 
 char* s21_strchr(const char* src, int sym) {
-  return (char*)s21_memchr((void*)src, sym, s21_strlen(src));
+    char* res = NULL;
+    int stop = 0;
+    while (*src != '\0' && !stop) {
+        if (*src == sym) {
+            res = (char*)src;
+            stop = 1;
+        } else {
+            ++src;
+        }
+    }
+    return res;
 }
 
 int compare(const char* haystack, const char* needle) {

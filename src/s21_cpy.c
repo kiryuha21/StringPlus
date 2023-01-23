@@ -13,8 +13,8 @@ void* s21_memcpy(void* restrict dest, const void* restrict src, size_t n) {
 void* s21_memmove(void* dest, const void* src, size_t n) {
   void* start_ptr = dest;
 
-  char* temp_src = (char*)src;
-  char* temp_dest = (char*)dest;
+  unsigned char* temp_src = (unsigned char*)src;
+  unsigned char* temp_dest = (unsigned char*)dest;
 
   for (size_t i = 0; i < n; ++i, ++temp_dest, ++temp_src) {
     *(temp_dest) = *(temp_src);
@@ -25,7 +25,7 @@ void* s21_memmove(void* dest, const void* src, size_t n) {
 
 void* s21_memset(void* str, int c, size_t n) {
   for (size_t i = 0; i < n; ++i) {
-    ((char*)str)[i] = (char)c;
+    ((unsigned char*)str)[i] = c;
   }
   return str;
 }
