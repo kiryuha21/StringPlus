@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "s21_string.h"
 
@@ -178,16 +179,40 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 }
 
-char* handle_int(int var, int* result) {
-  *result += var;
-  return NULL;
+int get_digits_num(int num) {
+    if (num == 0) {
+        return 1;
+    }
+
+    int res = 0;
+    if (num < 0) {
+        ++res;
+    }
+
+    res = (int)floor(log10(abs(num))) + 1;
+
+    return res;
 }
 
-char* handle_va_arg(WriterFormat* writer, va_list vars, int* result) {
-  if (writer->specification == 'd') {
-    return handle_int(va_arg(vars, int), result);
+int handle_int(char* str, int var) {
+  return 1;
+}
+
+int max(int first, int second, int third) {
+    if (first > second) {
+        return first > third ? first : third;
+    }
+    return second > third ? second : third;
+}
+
+int handle_va_arg(char* formatted_arg, WriterFormat* writer, va_list vars) {
+  if (s21_strchr("id", writer->specification)) {
+      int num = va_arg(vars, int);
+      int len = max(writer->precision, writer->width, get_digits_num(num));
+      formatted_arg = (char*) calloc(sizeof(char), len + 1);
+      return handle_int(formatted_arg, num);
   }
-  return NULL;
+  return 0;
 }
 
 // int s21_sscanf(const char *str, const char *format, ...) {
@@ -206,8 +231,13 @@ int s21_sprintf(char* str, const char* format, ...) {
     WriterFormat writer;
     init_writer(&writer);
     parse_into_writer(&writer, format + 1);
-    char* formated_str = handle_va_arg(&writer, vars, &result);
-    s21_strcat(str, formated_str);
+
+    char* formatted_arg = NULL;
+    result += handle_va_arg(formatted_arg, &writer, vars);
+
+    s21_strcat(str, formatted_arg);
+    free(formatted_arg);
+
     format += writer.parsed_length + 1;
   }
 
