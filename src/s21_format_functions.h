@@ -17,8 +17,8 @@ void clear(StringVector* vec);
 
 typedef struct WriterFormat {
   StringVector flags;
+  StringVector length;
   char specification;
-  char length;
   int width;      // could be ASTERISK
   int precision;  // could be ASTERISK
   int parsed_length;

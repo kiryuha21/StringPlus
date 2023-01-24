@@ -39,7 +39,7 @@ void clear(StringVector* vec) {
 
 void init_writer(WriterFormat* writer) {
   init_vector(&writer->flags);
-  writer->length = UNKNOWN;
+  init_vector(&writer->length);
   writer->precision = UNKNOWN;
   writer->width = UNKNOWN;
   writer->specification = UNKNOWN;
@@ -61,25 +61,29 @@ int validate_writer_length(WriterFormat* writer) {
   if (writer->specification == UNKNOWN) {
     return FAIL;
   }
-  if (writer->length == UNKNOWN) {
+  if (writer->length.size == 0) {
     return OK;
   }
 
-  if (s21_strchr("hlL", writer->length) == NULL) {
-    return FAIL;
+  for (int i = 0; i < writer->length.size; ++i) {
+    if (s21_strchr("HlL", *writer->length.strings[i]) == NULL) {
+      return FAIL;
+    }
   }
 
-  if (writer->length == 'h' &&
-      s21_strchr("idouxX", writer->specification) == NULL) {
-    return FAIL;
-  }
-  if (writer->length == 'l' &&
-      s21_strchr("idouxX", writer->specification) == NULL) {
-    return FAIL;
-  }
-  if (writer->length == 'L' &&
-      s21_strchr("eEfgG", writer->specification) == NULL) {
-    return FAIL;
+  for (int i = 0; i < writer->length.size; ++i) {
+    if (*writer->length.strings[i] == 'h' &&
+        s21_strchr("idouxX", writer->specification) == NULL) {
+      return FAIL;
+    }
+    if (*writer->length.strings[i] == 'l' &&
+        s21_strchr("idouxX", writer->specification) == NULL) {
+      return FAIL;
+    }
+    if (*writer->length.strings[i] == 'L' &&
+        s21_strchr("eEfgG", writer->specification) == NULL) {
+      return FAIL;
+    }
   }
 
   return OK;
@@ -123,8 +127,13 @@ void parse_into_writer(WriterFormat* writer, const char* src) {
   }
 
   // length
-  if (s21_strchr(lengths, src[writer->parsed_length]) != NULL) {
-    writer->length = src[writer->parsed_length];
+  while (s21_strchr(lengths, src[writer->parsed_length]) != NULL) {
+    char buff[2];
+    buff[0] = src[writer->parsed_length];
+    buff[1] = '\0';
+
+    push_back(&writer->length, buff);
+
     ++writer->parsed_length;
   }
 
