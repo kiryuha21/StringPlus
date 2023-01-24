@@ -39,6 +39,18 @@ void init_writer(WriterFormat* writer) {
   writer->specification = UNKNOWN;
 }
 
+int str_to_int(const char* str, int* index) {
+  int res = 0;
+  if (!isdigit(*str)) {
+    return -1;
+  }
+  while (*str && isdigit(*str)) {
+    res = res * 10 + *str - '0';
+    ++(*index);
+  }
+  return res;
+}
+
 void parse_into_writer(WriterFormat* writer, const char* src) {
   int index = 0;
 
