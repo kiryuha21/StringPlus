@@ -310,8 +310,8 @@ int main(void) {
   srunner_free(sr);
 
   // TODO: remove
-  char* a = (char*) calloc(sizeof(char), 100);
-    s21_sprintf(a, "hello %golvno %ld");
+  char* a = (char*)calloc(sizeof(char), 100);
+  s21_sprintf(a, "hello %10.5g %ld");
 
   return 0;
 }

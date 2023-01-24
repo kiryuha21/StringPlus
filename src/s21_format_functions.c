@@ -37,6 +37,7 @@ void init_writer(WriterFormat* writer) {
   writer->precision = UNKNOWN;
   writer->width = UNKNOWN;
   writer->specification = UNKNOWN;
+  writer->parsed_length = 0;
 }
 
 int str_to_int(const char* str, int* index) {
@@ -44,86 +45,87 @@ int str_to_int(const char* str, int* index) {
   if (!isdigit(*str)) {
     return -1;
   }
-  while (*str && isdigit(*str)) {
+  for (; *str && isdigit(*str); ++str, ++(*index)) {
     res = res * 10 + *str - '0';
-    ++(*index);
   }
   return res;
 }
 
 int validate_writer_length(WriterFormat* writer) {
-    if (writer->specification == UNKNOWN) {
-        return FAIL;
-    }
-    if (writer->length == UNKNOWN) {
-        return OK;
-    }
-
-    if (s21_strchr("hlL", writer->length) == NULL) {
-        return FAIL;
-    }
-
-    if (writer->length == 'h' && s21_strchr("idouxX", writer->specification) == NULL) {
-        return FAIL;
-    }
-    if (writer->length == 'l' && s21_strchr("idouxX", writer->specification) == NULL) {
-        return FAIL;
-    }
-    if (writer->length == 'L' && s21_strchr("eEfgG", writer->specification) == NULL) {
-        return FAIL;
-    }
-
+  if (writer->specification == UNKNOWN) {
+    return FAIL;
+  }
+  if (writer->length == UNKNOWN) {
     return OK;
+  }
+
+  if (s21_strchr("hlL", writer->length) == NULL) {
+    return FAIL;
+  }
+
+  if (writer->length == 'h' &&
+      s21_strchr("idouxX", writer->specification) == NULL) {
+    return FAIL;
+  }
+  if (writer->length == 'l' &&
+      s21_strchr("idouxX", writer->specification) == NULL) {
+    return FAIL;
+  }
+  if (writer->length == 'L' &&
+      s21_strchr("eEfgG", writer->specification) == NULL) {
+    return FAIL;
+  }
+
+  return OK;
 }
 
 void parse_into_writer(WriterFormat* writer, const char* src) {
-  int index = 0;
-
   // flags
-  while (s21_strchr(writer_flags, src[index]) != NULL) {
+  while (s21_strchr(writer_flags, src[writer->parsed_length]) != NULL) {
     char buff[2];
-    buff[0] = src[index];
+    buff[0] = src[writer->parsed_length];
     buff[1] = '\0';
 
     push_back(&writer->flags, buff);
 
-    ++index;
+    ++writer->parsed_length;
   }
 
   // width
-  if (src[index] == '*') {
+  if (src[writer->parsed_length] == '*') {
     writer->width = ASTERISK;
-    ++index;
+    ++writer->parsed_length;
   } else {
-    int width = str_to_int(&src[index], &index);
+    int width = str_to_int(&src[writer->parsed_length], &writer->parsed_length);
     if (width != -1) {
       writer->width = width;
     }
   }
 
   // precision
-  if (src[index] == '.') {
-    ++index;
-    if (src[index] == '*') {
+  if (src[writer->parsed_length] == '.') {
+    ++writer->parsed_length;
+    if (src[writer->parsed_length] == '*') {
       writer->precision = ASTERISK;
     } else {
-        int precision = str_to_int(&src[index], &index);
-        if (precision != -1) {
-            writer->precision = precision;
-        }
+      int precision =
+          str_to_int(&src[writer->parsed_length], &writer->parsed_length);
+      if (precision != -1) {
+        writer->precision = precision;
+      }
     }
   }
 
   // length
-  if (s21_strchr(lengths, src[index]) != NULL) {
-    writer->length = src[index];
-    ++index;
+  if (s21_strchr(lengths, src[writer->parsed_length]) != NULL) {
+    writer->length = src[writer->parsed_length];
+    ++writer->parsed_length;
   }
 
   // specification
-  if (s21_strchr(specifications, src[index]) != NULL) {
-    writer->specification = src[index];
-    ++index;
+  if (s21_strchr(specifications, src[writer->parsed_length]) != NULL) {
+    writer->specification = src[writer->parsed_length];
+    ++writer->parsed_length;
   }
 }
 
@@ -132,11 +134,12 @@ void init_reader(ReaderFormat* reader) {
   reader->width = UNKNOWN;
   reader->specification = UNKNOWN;
   reader->skip_assignment = UNKNOWN;
+  reader->parsed_length = 0;
 }
 
-void parse_into_reader(ReaderFormat* reader, const char* src) {
-  // TODO: should be implemented with the same logic as parse_into_writer()
-}
+// void parse_into_reader(ReaderFormat* reader, const char* src) {
+//   // TODO: should be implemented with the same logic as parse_into_writer()
+// }
 
 // TODO: vargs or smth like that should be used in these functions
 // TODO: it would be nice to know it
@@ -144,18 +147,19 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
 //
 // }
 
-int s21_sprintf(char *str, const char *format, ...) {
-    int result = 0;
+int s21_sprintf(char* str, const char* format, ...) {
+  int result = 0;
 
-    for (;*format != '\0';) {
-        for (; *format != '%'; ++str, ++format) {
-            *str = *format;
-        }
-        WriterFormat writer;
-        init_writer(&writer);
-        parse_into_writer(&writer, format + 1);
-        // ...
+  while (*format != '\0') {
+    for (; *format != '%'; ++str, ++format) {
+      *str = *format;
     }
+    WriterFormat writer;
+    init_writer(&writer);
+    parse_into_writer(&writer, format + 1);
+    // ...
+    format += writer.parsed_length + 1;
+  }
 
-    return result;
+  return result;
 }

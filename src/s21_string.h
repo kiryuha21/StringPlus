@@ -213,6 +213,7 @@ typedef struct WriterFormat {
   char length;
   int width;      // could be ASTERISK
   int precision;  // could be ASTERISK
+  int parsed_length;
 } WriterFormat;
 
 void init_writer(WriterFormat* writer);
@@ -222,6 +223,7 @@ void parse_into_writer(WriterFormat* writer,
 typedef struct ReaderFormat {
   int skip_assignment;  // true if asterisk before specification
   int width;
+  int parsed_length;
   char length;
   char specification;
 } ReaderFormat;
