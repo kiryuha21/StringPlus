@@ -51,6 +51,10 @@ int str_to_int(const char* str, int* index) {
   return res;
 }
 
+void validate_writer_length(WriterFormat* writer) {
+
+}
+
 void parse_into_writer(WriterFormat* writer, const char* src) {
   int index = 0;
 
@@ -70,13 +74,8 @@ void parse_into_writer(WriterFormat* writer, const char* src) {
     writer->width = ASTERISK;
     ++index;
   } else {
-    int width = 0;
-    while (isdigit(src[index])) {
-      // TODO: read digits and then convert to int and assign to width
-      ++index;
-    }
-    // assignment to width here
-    if (width != 0) {
+    int width = str_to_int(&src[index], &index);
+    if (width != -1) {
       writer->width = width;
     }
   }
@@ -87,8 +86,10 @@ void parse_into_writer(WriterFormat* writer, const char* src) {
     if (src[index] == '*') {
       writer->precision = ASTERISK;
     } else {
-      // TODO: another while with reading chars, then converting to int and
-      // assigning to precision
+        int precision = str_to_int(&src[index], &index);
+        if (precision != -1) {
+            writer->precision = precision;
+        }
     }
   }
 
