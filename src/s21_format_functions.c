@@ -51,8 +51,29 @@ int str_to_int(const char* str, int* index) {
   return res;
 }
 
-void validate_writer_length(WriterFormat* writer) {
+int validate_writer_length(WriterFormat* writer) {
+    if (writer->specification == UNKNOWN) {
+        return FAIL;
+    }
+    if (writer->length == UNKNOWN) {
+        return OK;
+    }
 
+    if (s21_strchr("hlL", writer->length) == NULL) {
+        return FAIL;
+    }
+
+    if (writer->length == 'h' && s21_strchr("idouxX", writer->specification) == NULL) {
+        return FAIL;
+    }
+    if (writer->length == 'l' && s21_strchr("idouxX", writer->specification) == NULL) {
+        return FAIL;
+    }
+    if (writer->length == 'L' && s21_strchr("eEfgG", writer->specification) == NULL) {
+        return FAIL;
+    }
+
+    return OK;
 }
 
 void parse_into_writer(WriterFormat* writer, const char* src) {

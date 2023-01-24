@@ -7,6 +7,8 @@
 
 #define ASTERISK (-20)
 #define UNKNOWN (-10)
+#define FAIL (-1)
+#define OK 0
 
 typedef unsigned long size_t;
 
