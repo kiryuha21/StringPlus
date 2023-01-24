@@ -1,6 +1,7 @@
 #include "s21_format_functions.h"
 
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdlib.h>
 
 #include "s21_string.h"
@@ -21,9 +22,9 @@ void init_flags(Flags* flags) {
 }
 
 void init_lengths(Lengths* lens) {
-    lens->L = 0;
-    lens->l = 0;
-    lens->h = 0;
+  lens->L = 0;
+  lens->l = 0;
+  lens->h = 0;
 }
 
 void init_writer(WriterFormat* writer) {
@@ -177,14 +178,26 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 }
 
-// TODO: vargs or smth like that should be used in these functions
-// TODO: it would be nice to know it
+char* handle_int(int var, int* result) {
+  *result += var;
+  return NULL;
+}
+
+char* handle_va_arg(WriterFormat* writer, va_list vars, int* result) {
+  if (writer->specification == 'd') {
+    return handle_int(va_arg(vars, int), result);
+  }
+  return NULL;
+}
+
 // int s21_sscanf(const char *str, const char *format, ...) {
 //
 // }
 
 int s21_sprintf(char* str, const char* format, ...) {
   int result = 0;
+  va_list vars;
+  va_start(vars, format);
 
   while (*format != '\0') {
     for (; *format != '%'; ++str, ++format) {
@@ -193,9 +206,11 @@ int s21_sprintf(char* str, const char* format, ...) {
     WriterFormat writer;
     init_writer(&writer);
     parse_into_writer(&writer, format + 1);
-    // ...
+    char* formated_str = handle_va_arg(&writer, vars, &result);
+    s21_strcat(str, formated_str);
     format += writer.parsed_length + 1;
   }
 
+  va_end(vars);
   return result;
 }
