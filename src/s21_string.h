@@ -226,6 +226,8 @@ typedef struct ReaderFormat {
 } ReaderFormat;
 
 void init_reader(ReaderFormat* reader);
+void parse_into_reader(ReaderFormat * reader,
+                       const char* src);  // src = pointer to '%'
 
 // s21_format_functions.c:
 int s21_sscanf(const char* str, const char* format, ...);
