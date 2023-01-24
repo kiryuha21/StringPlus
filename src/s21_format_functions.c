@@ -12,34 +12,23 @@ const char* specifications = "cdieEfgGosuxXpn%";
 const char* writer_flags = "-+ #0";
 const char* lengths = "hlL";
 
-void allocate_and_copy(char** dst, char** src) {
-  *dst = (char*)calloc(sizeof(char), s21_strlen(*src) + 1);
-  s21_strcpy(*dst, *src);
+void init_flags(Flags* flags) {
+  flags->lattice_flag = 0;
+  flags->minus_flag = 0;
+  flags->plus_flag = 0;
+  flags->space_flag = 0;
+  flags->zero_flag = 0;
 }
 
-void init_vector(StringVector* vec) {
-  vec->size = 0;
-  vec->strings = NULL;
-}
-
-void push_back(StringVector* vec, char* string) {
-  vec->size += 1;
-  vec->strings = realloc(vec->strings, sizeof(char*) * (vec->size));
-  allocate_and_copy(&vec->strings[vec->size - 1], &string);
-}
-
-void clear(StringVector* vec) {
-  if (vec->strings != NULL) {
-    for (int i = 0; i < vec->size; ++i) {
-      free(vec->strings[i]);
-    }
-    free(vec->strings);
-  }
+void init_lenghts(Lengths* lengths) {
+  lengths->L = 0;
+  lengths->l = 0;
+  lengths->h = 0;
 }
 
 void init_writer(WriterFormat* writer) {
-  init_vector(&writer->flags);
-  init_vector(&writer->length);
+  init_flags(&writer->flags);
+  init_lenghts(&writer->length);
   writer->precision = UNKNOWN;
   writer->width = UNKNOWN;
   writer->specification = UNKNOWN;
@@ -61,42 +50,46 @@ int validate_writer_length(WriterFormat* writer) {
   if (writer->specification == UNKNOWN) {
     return FAIL;
   }
-  if (writer->length.size == 0) {
-    return OK;
+
+  if (writer->length.h != 0 &&
+      s21_strchr("idouxX", writer->specification) == NULL) {
+    return FAIL;
+  }
+  if (writer->length.l != 0 &&
+      s21_strchr("idouxX", writer->specification) == NULL) {
+    return FAIL;
+  }
+  if (writer->length.L != 0 &&
+      s21_strchr("eEfgG", writer->specification) == NULL) {
+    return FAIL;
   }
 
-  for (int i = 0; i < writer->length.size; ++i) {
-    if (s21_strchr("HlL", *writer->length.strings[i]) == NULL) {
-      return FAIL;
-    }
-  }
+  return OK;
+}
 
-  for (int i = 0; i < writer->length.size; ++i) {
-    if (*writer->length.strings[i] == 'h' &&
-        s21_strchr("idouxX", writer->specification) == NULL) {
-      return FAIL;
-    }
-    if (*writer->length.strings[i] == 'l' &&
-        s21_strchr("idouxX", writer->specification) == NULL) {
-      return FAIL;
-    }
-    if (*writer->length.strings[i] == 'L' &&
-        s21_strchr("eEfgG", writer->specification) == NULL) {
-      return FAIL;
-    }
+int validate_writer_flags(WriterFormat* writer) {
+  Flags flags = writer->flags;
+  if (flags.lattice_flag > 1 || flags.minus_flag > 1 || flags.plus_flag > 1 ||
+      flags.zero_flag > 1 || flags.space_flag > 1) {
+    return FAIL;
   }
-
   return OK;
 }
 
 void parse_into_writer(WriterFormat* writer, const char* src) {
   // flags
   while (s21_strchr(writer_flags, src[writer->parsed_length]) != NULL) {
-    char buff[2];
-    buff[0] = src[writer->parsed_length];
-    buff[1] = '\0';
-
-    push_back(&writer->flags, buff);
+    if (src[writer->parsed_length] == '-') {
+      ++writer->flags.minus_flag;
+    } else if (src[writer->parsed_length] == '+') {
+      ++writer->flags.plus_flag;
+    } else if (src[writer->parsed_length] == ' ') {
+      ++writer->flags.space_flag;
+    } else if (src[writer->parsed_length] == '#') {
+      ++writer->flags.lattice_flag;
+    } else if (src[writer->parsed_length] == '0') {
+      ++writer->flags.zero_flag;
+    }
 
     ++writer->parsed_length;
   }
@@ -128,11 +121,13 @@ void parse_into_writer(WriterFormat* writer, const char* src) {
 
   // length
   while (s21_strchr(lengths, src[writer->parsed_length]) != NULL) {
-    char buff[2];
-    buff[0] = src[writer->parsed_length];
-    buff[1] = '\0';
-
-    push_back(&writer->length, buff);
+    if (src[writer->parsed_length] == 'L') {
+      ++writer->length.L;
+    } else if (src[writer->parsed_length] == 'l') {
+      ++writer->length.l;
+    } else if (src[writer->parsed_length] == 'h') {
+      ++writer->length.h;
+    }
 
     ++writer->parsed_length;
   }

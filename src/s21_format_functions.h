@@ -6,18 +6,23 @@
 #define FAIL (-1)
 #define OK 0
 
-typedef struct StringVector {
-  int size;
-  char** strings;
-} StringVector;
+typedef struct Flags {
+  int minus_flag;
+  int plus_flag;
+  int space_flag;
+  int zero_flag;
+  int lattice_flag;
+} Flags;
 
-void init_vector(StringVector* vec);
-void push_back(StringVector* vec, char* string);
-void clear(StringVector* vec);
+typedef struct Lengths {
+  int l;
+  int L;
+  int h;
+} Lengths;
 
 typedef struct WriterFormat {
-  StringVector flags;
-  StringVector length;
+  Flags flags;
+  Lengths length;
   char specification;
   int width;      // could be ASTERISK
   int precision;  // could be ASTERISK
