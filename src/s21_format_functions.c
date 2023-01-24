@@ -1,9 +1,9 @@
 #include "s21_format_functions.h"
 
 #include <ctype.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "s21_string.h"
 
@@ -180,41 +180,60 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
 }
 
 int get_digits_num(int num) {
-    if (num == 0) {
-        return 1;
-    }
-
-    int res = 0;
-    if (num < 0) {
-        ++res;
-    }
-
-    res = (int)floor(log10(abs(num))) + 1;
-
-    return res;
-}
-
-int handle_int(char* str, int var) {
-  int len = get_digits_num(var);
-  for (int i = len - 1; i >= 0; --i) {
-      str[i] = var % 10 + '0';
-      var /= 10;
+  if (num == 0) {
+    return 1;
   }
+
+  int res = 0;
+  if (num < 0) {
+    ++res;
+  }
+
+  res = (int)floor(log10(abs(num))) + 1;
+
+  return res;
 }
 
 int max(int first, int second, int third) {
-    if (first > second) {
-        return first > third ? first : third;
-    }
-    return second > third ? second : third;
+  if (first > second) {
+    return first > third ? first : third;
+  }
+  return second > third ? second : third;
+}
+
+void handle_int(char** str, int var, WriterFormat* writer) {
+  int len = max(writer->precision, writer->width, get_digits_num(var));
+  *str = (char*)calloc(sizeof(char), len + 1 + 2);  // 2 for flags
+  if (str == NULL) {
+    return;
+  }
+  len = get_digits_num(var);
+  int offset = writer->width != UNKNOWN ? writer->width : 0;
+  if (offset == 0 &&
+      (writer->flags.space_flag || writer->flags.plus_flag || var < 0)) {
+    offset = 1;
+  }
+  int cp_var = abs(var);
+  for (int i = len - 1 + offset; i >= offset; --i) {
+    (*str)[i] = cp_var % 10 + '0';
+    cp_var /= 10;
+  }
+  if (writer->flags.space_flag) {
+    (*str)[0] = ' ';
+  }
+  if (writer->flags.plus_flag && var >= 0) {
+    (*str)[0] = '+';
+  }
+  if (var < 0) {
+    (*str)[0] = '-';
+  }
 }
 
 int handle_va_arg(char** formatted_arg, WriterFormat* writer, va_list vars) {
   if (s21_strchr("id", writer->specification)) {
-      int num = va_arg(vars, int);
-      int len = max(writer->precision, writer->width, get_digits_num(num));
-      *formatted_arg = (char*) calloc(sizeof(char), len + 1);
-      return handle_int(*formatted_arg, num);
+    int num = va_arg(vars, int);
+    *formatted_arg = NULL;
+    handle_int(formatted_arg, num, writer);
   }
   return 0;
 }

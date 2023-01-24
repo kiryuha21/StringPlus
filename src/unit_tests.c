@@ -312,7 +312,7 @@ int main(void) {
 
   // TODO: remove
   char* a = (char*)calloc(sizeof(char), 100);
-  s21_sprintf(a, "%d %d", 1, 4);
+  s21_sprintf(a, "% d %d", -1, 4);
   printf("%s", a);
 
   return 0;
