@@ -5,11 +5,6 @@
 #define NULL ((void*)0)
 #endif
 
-#define ASTERISK (-20)
-#define UNKNOWN (-10)
-#define FAIL (-1)
-#define OK 0
-
 typedef unsigned long size_t;
 
 typedef struct IntStringMap {
@@ -191,49 +186,5 @@ void* s21_to_upper(const char* str);
 void* s21_to_lower(const char* str);
 void* s21_insert(const char* src, const char* str, size_t start_index);
 void* s21_trim(const char* src, const char* trim_chars);
-
-static const char* specifications = "cdieEfgGosuxXpn%";
-
-static const char* lengths = "hlL";
-
-static const char* writer_flags = "-+ #0";
-
-typedef struct StringVector {
-  int size;
-  char** strings;
-} StringVector;
-
-void init_vector(StringVector* vec);
-void push_back(StringVector* vec, char* string);
-void clear(StringVector* vec);
-
-typedef struct WriterFormat {
-  StringVector flags;
-  char specification;
-  char length;
-  int width;      // could be ASTERISK
-  int precision;  // could be ASTERISK
-  int parsed_length;
-} WriterFormat;
-
-void init_writer(WriterFormat* writer);
-void parse_into_writer(WriterFormat* writer,
-                       const char* src);  // src = pointer to '%'
-
-typedef struct ReaderFormat {
-  int skip_assignment;  // true if asterisk before specification
-  int width;
-  int parsed_length;
-  char length;
-  char specification;
-} ReaderFormat;
-
-void init_reader(ReaderFormat* reader);
-void parse_into_reader(ReaderFormat* reader,
-                       const char* src);  // src = pointer to '%'
-
-// s21_format_functions.c:
-int s21_sscanf(const char* str, const char* format, ...);
-int s21_sprintf(char* str, const char* format, ...);
 
 #endif  // C2_S21_STRINGPLUS_0_S21_STRING_H

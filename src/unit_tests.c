@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "s21_format_functions.h"
 #include "s21_string.h"
 #include "test_commons.h"
 

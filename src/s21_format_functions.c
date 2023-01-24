@@ -1,3 +1,5 @@
+#include "s21_format_functions.h"
+
 #include <ctype.h>
 #include <stdlib.h>
 
@@ -5,6 +7,10 @@
 
 // int s21_sscanf(const char *str, const char *format, ...);
 // int s21_sprintf(char *str, const char *format, ...);
+
+const char* specifications = "cdieEfgGosuxXpn%";
+const char* writer_flags = "-+ #0";
+const char* lengths = "hlL";
 
 void allocate_and_copy(char** dst, char** src) {
   *dst = (char*)calloc(sizeof(char), s21_strlen(*src) + 1);
