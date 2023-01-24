@@ -195,7 +195,11 @@ int get_digits_num(int num) {
 }
 
 int handle_int(char* str, int var) {
-  return 1;
+  int len = get_digits_num(var);
+  for (int i = len - 1; i >= 0; --i) {
+      str[i] = var % 10 + '0';
+      var /= 10;
+  }
 }
 
 int max(int first, int second, int third) {
@@ -205,12 +209,12 @@ int max(int first, int second, int third) {
     return second > third ? second : third;
 }
 
-int handle_va_arg(char* formatted_arg, WriterFormat* writer, va_list vars) {
+int handle_va_arg(char** formatted_arg, WriterFormat* writer, va_list vars) {
   if (s21_strchr("id", writer->specification)) {
       int num = va_arg(vars, int);
       int len = max(writer->precision, writer->width, get_digits_num(num));
-      formatted_arg = (char*) calloc(sizeof(char), len + 1);
-      return handle_int(formatted_arg, num);
+      *formatted_arg = (char*) calloc(sizeof(char), len + 1);
+      return handle_int(*formatted_arg, num);
   }
   return 0;
 }
@@ -233,13 +237,17 @@ int s21_sprintf(char* str, const char* format, ...) {
     parse_into_writer(&writer, format + 1);
 
     char* formatted_arg = NULL;
-    result += handle_va_arg(formatted_arg, &writer, vars);
+    result += handle_va_arg(&formatted_arg, &writer, vars);
 
+    size_t size_before = s21_strlen(str);
     s21_strcat(str, formatted_arg);
+    str += s21_strlen(str) - size_before;
+
     free(formatted_arg);
 
     format += writer.parsed_length + 1;
   }
+  *(str + 1) = '\0';
 
   va_end(vars);
   return result;
