@@ -125,8 +125,6 @@ void parse_into_writer(WriterFormat* writer, const char* src) {
     writer->specification = src[index];
     ++index;
   }
-
-  // TODO: length should be validated after acknowledging the specification
 }
 
 void init_reader(ReaderFormat* reader) {
@@ -145,7 +143,18 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
 // int s21_sscanf(const char *str, const char *format, ...) {
 //
 // }
-//
-// int s21_sprintf(char *str, const char *format, ...) {
-//
-// }
+
+int s21_sprintf(char *str, const char *format, ...) {
+    int result = 0;
+
+    char* entry = s21_strchr(str, '%');
+    while (entry != NULL) {
+        WriterFormat writer;
+        init_writer(&writer);
+        parse_into_writer(&writer, entry + 1);
+        // ...
+        entry = s21_strchr(str + 1, '%');
+    }
+
+    return result;
+}
