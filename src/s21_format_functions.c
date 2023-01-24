@@ -147,13 +147,14 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
 int s21_sprintf(char *str, const char *format, ...) {
     int result = 0;
 
-    char* entry = s21_strchr(str, '%');
-    while (entry != NULL) {
+    for (;*format != '\0';) {
+        for (; *format != '%'; ++str, ++format) {
+            *str = *format;
+        }
         WriterFormat writer;
         init_writer(&writer);
-        parse_into_writer(&writer, entry + 1);
+        parse_into_writer(&writer, format + 1);
         // ...
-        entry = s21_strchr(str + 1, '%');
     }
 
     return result;
