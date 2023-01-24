@@ -102,8 +102,8 @@ void init_reader(ReaderFormat* reader) {
   reader->skip_assignment = UNKNOWN;
 }
 
-void parse_into_reader(ReaderFormat * reader, const char* src) {
-    // TODO: should be implemented with the same logic as parse_into_writer()
+void parse_into_reader(ReaderFormat* reader, const char* src) {
+  // TODO: should be implemented with the same logic as parse_into_writer()
 }
 
 // TODO: vargs or smth like that should be used in these functions

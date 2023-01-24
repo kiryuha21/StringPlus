@@ -5,7 +5,7 @@
 #define NULL ((void*)0)
 #endif
 
-#define ASTERISK 10
+#define ASTERISK (-20)
 #define UNKNOWN (-10)
 
 typedef unsigned long size_t;
@@ -226,7 +226,7 @@ typedef struct ReaderFormat {
 } ReaderFormat;
 
 void init_reader(ReaderFormat* reader);
-void parse_into_reader(ReaderFormat * reader,
+void parse_into_reader(ReaderFormat* reader,
                        const char* src);  // src = pointer to '%'
 
 // s21_format_functions.c:
