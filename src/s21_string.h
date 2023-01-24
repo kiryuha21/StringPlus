@@ -192,12 +192,11 @@ void* s21_to_lower(const char* str);
 void* s21_insert(const char* src, const char* str, size_t start_index);
 void* s21_trim(const char* src, const char* trim_chars);
 
-static const char specifications[] = {'c', 'd', 'i', 'e', 'E', 'f', 'g', 'G',
-                                      'o', 's', 'u', 'x', 'X', 'p', 'n', '%'};
+static const char* specifications = "cdieEfgGosuxXpn%";
 
-static const char lengths[] = {'h', 'l', 'L'};
+static const char* lengths = "hlL";
 
-static const char writer_flags[] = {'-', '+', ' ', '#', '0'};
+static const char* writer_flags = "-+ #0";
 
 typedef struct StringVector {
   int size;

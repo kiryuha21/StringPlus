@@ -298,6 +298,9 @@ Suite* string_suite(void) {
   return s;
 }
 
+// TODO: remove
+#include <stdlib.h>
+
 int main(void) {
   Suite* s = string_suite();
   SRunner* sr = srunner_create(s);
@@ -305,5 +308,10 @@ int main(void) {
   srunner_run_all(sr, CK_NORMAL);
 
   srunner_free(sr);
+
+  // TODO: remove
+  char* a = (char*) calloc(sizeof(char), 100);
+    s21_sprintf(a, "hello %golvno %ld");
+
   return 0;
 }
