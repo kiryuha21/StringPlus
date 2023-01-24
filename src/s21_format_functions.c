@@ -20,15 +20,15 @@ void init_flags(Flags* flags) {
   flags->zero_flag = 0;
 }
 
-void init_lenghts(Lengths* lengths) {
-  lengths->L = 0;
-  lengths->l = 0;
-  lengths->h = 0;
+void init_lengths(Lengths* lens) {
+    lens->L = 0;
+    lens->l = 0;
+    lens->h = 0;
 }
 
 void init_writer(WriterFormat* writer) {
   init_flags(&writer->flags);
-  init_lenghts(&writer->length);
+  init_lengths(&writer->length);
   writer->precision = UNKNOWN;
   writer->width = UNKNOWN;
   writer->specification = UNKNOWN;
