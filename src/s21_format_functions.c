@@ -289,7 +289,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     for (; decimal_part > 0 && i >= 0; --i, decimal_part /= 10) {
       (*formatted_string)[i] = (char)(decimal_part % 10 + '0');
     }
-  }
+  }  // else if other formats...
   return OK;
 }
 
@@ -302,6 +302,7 @@ void apply_width(char** formatted_string, int width) {
       s21_memset(spacer, ' ', diff);
       char* with_spacer = s21_insert(*formatted_string, spacer, 0);
       safe_replace(formatted_string, &with_spacer);
+      free(spacer);
     }
   }
 }
@@ -310,6 +311,9 @@ void build_format_string(char** formatted_string, WriterFormat* writer,
                          va_list vars) {
   build_base(formatted_string, writer, vars);
   apply_width(formatted_string, writer->width);
+  // apply_precision()
+  // apply_flags()
+  // ...
 }
 
 int s21_sprintf(char* str, const char* format, ...) {
