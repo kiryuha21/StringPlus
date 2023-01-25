@@ -6,6 +6,8 @@
 #define FAIL (-1)
 #define OK 0
 
+#define DEFAULT_PRECISION 6
+
 typedef struct Flags {
   int minus_flag;
   int plus_flag;

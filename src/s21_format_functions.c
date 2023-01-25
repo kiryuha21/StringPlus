@@ -202,7 +202,7 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 }
 
-int get_digits_num(int num) {
+int get_digits_amount(int num) {
   if (num == 0) {
     return 1;
   }
@@ -212,58 +212,105 @@ int get_digits_num(int num) {
     ++res;
   }
 
-  res = (int)floor(log10(abs(num))) + 1;
+  res += (int)floor(log10(abs(num))) + 1;
 
   return res;
-}
-
-int max(int first, int second, int third) {
-  if (first > second) {
-    return first > third ? first : third;
-  }
-  return second > third ? second : third;
-}
-
-void handle_int(char** str, int var, WriterFormat* writer) {
-  int len = max(writer->precision, writer->width, get_digits_num(var));
-  *str = (char*)calloc(sizeof(char), len + 1 + 2);  // 2 for flags
-  if (*str == NULL) {
-    return;
-  }
-  len = get_digits_num(var);
-  int offset = writer->width != UNKNOWN ? writer->width : 0;
-  if (offset == 0 &&
-      (writer->flags.space_flag || writer->flags.plus_flag || var < 0)) {
-    offset = 1;
-  }
-  int cp_var = abs(var);
-  for (int i = len - 1 + offset; i >= offset; --i) {
-    (*str)[i] = cp_var % 10 + '0';
-    cp_var /= 10;
-  }
-  if (writer->flags.space_flag) {
-    (*str)[0] = ' ';
-  }
-  if (writer->flags.plus_flag && var >= 0) {
-    (*str)[0] = '+';
-  }
-  if (var < 0) {
-    (*str)[0] = '-';
-  }
-}
-
-int handle_va_arg(char** formatted_arg, WriterFormat* writer, va_list vars) {
-  if (s21_strchr("id", writer->specification)) {
-    int num = va_arg(vars, int);
-    *formatted_arg = NULL;
-    handle_int(formatted_arg, num, writer);
-  }
-  return 0;
 }
 
 // int s21_sscanf(const char *str, const char *format, ...) {
 //
 // }
+
+void safe_replace(char** dst, char** replacer) {
+  if (*dst != NULL) {
+    free(*dst);
+  }
+  *dst = *replacer;
+}
+
+// const char* specifications = "cdieEfgGosuxXpn%";
+// const char* writer_flags = "-+ #0";
+// const char* lengths = "hlL";
+int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
+  if (writer->specification == 'd' || writer->specification == 'i') {
+    int num = va_arg(vars, int);
+    int len = get_digits_amount(num);
+
+    *formatted_string = (char*)calloc(sizeof(char), len + 1);
+    if (*formatted_string == NULL) {
+      return FAIL;
+    }
+
+    if (num < 0) {
+      (*formatted_string)[0] = '-';
+    }
+
+    num = abs(num);
+    for (int i = len - 1; i >= 0 && num > 0; --i, num /= 10) {
+      (*formatted_string)[i] = (char)(num % 10 + '0');
+    }
+  } else if (writer->specification == 'c') {
+    int num = va_arg(vars, int);
+    *formatted_string = (char*)calloc(sizeof(char), 2);
+    if (*formatted_string == NULL) {
+      return FAIL;
+    }
+    (*formatted_string)[0] = (char)num;
+  } else if (writer->specification == 'f') {
+    double num = va_arg(vars, double);
+    int precision =
+        writer->precision == UNKNOWN ? DEFAULT_PRECISION : writer->precision;
+    int len = get_digits_amount((int)num) + 1 + precision;
+
+    double d;
+    double f = modf(num, &d);
+    int decimal_part = abs((int)d);
+    int float_part = abs((int)(pow(10, precision) * f));
+
+    *formatted_string = (char*)calloc(sizeof(char), len + 1);
+    if (*formatted_string == NULL) {
+      return FAIL;
+    }
+
+    if (num < 0) {
+      (*formatted_string)[0] = '-';
+    }
+
+    int i;
+    for (i = len - 1; precision > 0; --i, --precision, float_part /= 10) {
+      if (float_part > 0) {
+        (*formatted_string)[i] = (char)(float_part % 10 + '0');
+      } else {
+        (*formatted_string)[i] = '0';
+      }
+    }
+    (*formatted_string)[i] = '.';
+    --i;
+    for (; decimal_part > 0 && i >= 0; --i, decimal_part /= 10) {
+      (*formatted_string)[i] = (char)(decimal_part % 10 + '0');
+    }
+  }
+  return OK;
+}
+
+void apply_width(char** formatted_string, int width) {
+  if (width != UNKNOWN) {
+    int len = (int)s21_strlen(*formatted_string);
+    if (width > len) {
+      size_t diff = width - len;
+      char* spacer = (char*)calloc(sizeof(char), diff + 1);
+      s21_memset(spacer, ' ', diff);
+      char* with_spacer = s21_insert(*formatted_string, spacer, 0);
+      safe_replace(formatted_string, &with_spacer);
+    }
+  }
+}
+
+void build_format_string(char** formatted_string, WriterFormat* writer,
+                         va_list vars) {
+  build_base(formatted_string, writer, vars);
+  apply_width(formatted_string, writer->width);
+}
 
 int s21_sprintf(char* str, const char* format, ...) {
   int result = 0;
@@ -281,7 +328,7 @@ int s21_sprintf(char* str, const char* format, ...) {
     if (validate_writer(&writer) == OK) {
       ++result;
       char* formatted_arg = NULL;
-      result += handle_va_arg(&formatted_arg, &writer, vars);
+      build_format_string(&formatted_arg, &writer, vars);
 
       size_t size_before = s21_strlen(str);
       s21_strcat(str, formatted_arg);
