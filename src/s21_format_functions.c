@@ -298,8 +298,10 @@ void apply_width(char** formatted_string, int width) {
     int len = (int)s21_strlen(*formatted_string);
     if (width > len) {
       size_t diff = width - len;
+
       char* spacer = (char*)calloc(sizeof(char), diff + 1);
       s21_memset(spacer, ' ', diff);
+
       char* with_spacer = s21_insert(*formatted_string, spacer, 0);
       safe_replace(formatted_string, &with_spacer);
       free(spacer);
