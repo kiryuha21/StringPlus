@@ -347,14 +347,19 @@ void apply_flags(char** formatted_string, WriterFormat* writer) {
       }
     }
     if (writer->flags.plus_flag || writer->flags.space_flag) {
-      char* with_sign = (char*)s21_insert(
-          *formatted_string, (writer->flags.plus_flag ? ((writer->flags.plus_flag == 1) ? "+" : "-") : " "), 0);
-      safe_replace(formatted_string, &with_sign);
+      char* with_sign_or_space =
+          (char*)s21_insert(*formatted_string,
+                            (writer->flags.plus_flag
+                                 ? ((writer->flags.plus_flag == 1) ? "+" : "-")
+                                 : " "),
+                            0);
+      safe_replace(formatted_string, &with_sign_or_space);
     }
   }
 }
 
-void build_format_string(char** formatted_string, WriterFormat* writer, va_list vars) {
+void build_format_string(char** formatted_string, WriterFormat* writer,
+                         va_list vars) {
   build_base(formatted_string, writer, vars);
   apply_precision(formatted_string, writer);
   apply_flags(formatted_string, writer);
