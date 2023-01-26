@@ -296,17 +296,17 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
   return OK;
 }
 
-void apply_width(char** formatted_string, int width, int minus_flag) {
-  if (width != UNKNOWN) {
+void apply_width(char** formatted_string, WriterFormat* writer) {
+  if (writer->width != UNKNOWN) {
     int len = (int)s21_strlen(*formatted_string);
-    if (width > len) {
-      size_t diff = width - len;
+    if (writer->width > len) {
+      size_t diff = writer->width - len;
 
       char* spacer = (char*)calloc(sizeof(char), diff + 1);
-      s21_memset(spacer, ' ', diff);
+      s21_memset(spacer, writer->flags.zero_flag ? '0' : ' ', diff);
 
       char* with_spacer;
-      if (minus_flag) {
+      if (writer->flags.minus_flag) {
         with_spacer = s21_insert(spacer, *formatted_string, 0);
       } else {
         with_spacer = s21_insert(*formatted_string, spacer, 0);
@@ -346,21 +346,19 @@ void apply_flags(char** formatted_string, WriterFormat* writer) {
         *str = '0';
       }
     }
-    if (writer->flags.plus_flag) {
+    if (writer->flags.plus_flag || writer->flags.space_flag) {
       char* with_sign = (char*)s21_insert(
-          *formatted_string, writer->flags.plus_flag == 1 ? "+" : "-", 0);
+          *formatted_string, (writer->flags.plus_flag ? ((writer->flags.plus_flag == 1) ? "+" : "-") : " "), 0);
       safe_replace(formatted_string, &with_sign);
     }
   }
 }
 
-void build_format_string(char** formatted_string, WriterFormat* writer,
-                         va_list vars) {
+void build_format_string(char** formatted_string, WriterFormat* writer, va_list vars) {
   build_base(formatted_string, writer, vars);
   apply_precision(formatted_string, writer);
   apply_flags(formatted_string, writer);
-  apply_width(formatted_string, writer->width, writer->flags.minus_flag);
-  // ...
+  apply_width(formatted_string, writer);
 }
 
 int s21_sprintf(char* str, const char* format, ...) {

@@ -312,9 +312,9 @@ int main(void) {
 
   // TODO: remove
   char* a = (char*)calloc(sizeof(char), 100);
-  s21_sprintf(a, "%+-5.10d", -1000);
+  s21_sprintf(a, "%-5.10d", -1000);
   printf("%s\n", a);
-  s21_sprintf(a, "%+-10.5d", -1000);
+  s21_sprintf(a, "%05d",1000);
   printf("%s\n", a);
 
   return 0;
