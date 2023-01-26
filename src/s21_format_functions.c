@@ -68,6 +68,10 @@ int validate_writer_flags(WriterFormat* writer) {
     return FAIL;
   }
 
+  if (flags.zero_flag && writer->precision != UNKNOWN) {
+    return FAIL;
+  }
+
   return OK;
 }
 
@@ -207,14 +211,7 @@ int get_digits_amount(int num) {
     return 1;
   }
 
-  int res = 0;
-  if (num < 0) {
-    ++res;
-  }
-
-  res += (int)floor(log10(abs(num))) + 1;
-
-  return res;
+  return (int)floor(log10(abs(num))) + 1;
 }
 
 // int s21_sscanf(const char *str, const char *format, ...) {
@@ -236,17 +233,23 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     int num = va_arg(vars, int);
     int len = get_digits_amount(num);
 
-    *formatted_string = (char*)calloc(sizeof(char), len + 1);
+    *formatted_string = (char*)calloc(sizeof(char), len + 2);
     if (*formatted_string == NULL) {
       return FAIL;
     }
 
     if (num < 0) {
-      (*formatted_string)[0] = '-';
+      writer->flags.plus_flag = -1;
+    }
+
+    int offset = 0;
+    if (writer->flags.plus_flag) {
+      (*formatted_string)[0] = ' ';
+      offset = 1;
     }
 
     num = abs(num);
-    for (int i = len - 1; i >= 0 && num > 0; --i, num /= 10) {
+    for (int i = len - 1 + offset; i >= 0 + offset && num > 0; --i, num /= 10) {
       (*formatted_string)[i] = (char)(num % 10 + '0');
     }
   } else if (writer->specification == 'c') {
@@ -270,10 +273,6 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     *formatted_string = (char*)calloc(sizeof(char), len + 1);
     if (*formatted_string == NULL) {
       return FAIL;
-    }
-
-    if (num < 0) {
-      (*formatted_string)[0] = '-';
     }
 
     int i;
@@ -330,12 +329,27 @@ void apply_precision(char** formatted_string, WriterFormat* writer) {
   }
 }
 
+void apply_flags(char** formatted_string, WriterFormat* writer) {
+  if (writer->specification == 'i' || writer->specification == 'd') {
+    if (writer->flags.plus_flag) {
+      if (writer->flags.zero_flag) {
+        (*formatted_string)[0] = writer->flags.plus_flag == 1 ? '+' : '-';
+      } else {
+        char* str = *formatted_string;
+        for (; *(str + 1) == ' ' && *(str + 1); ++str) {
+        }
+        *str = writer->flags.plus_flag == 1 ? '+' : '-';
+      }
+    }
+  }
+}
+
 void build_format_string(char** formatted_string, WriterFormat* writer,
                          va_list vars) {
   build_base(formatted_string, writer, vars);
   apply_width(formatted_string, writer->width);
   apply_precision(formatted_string, writer);
-  // apply_flags()
+  apply_flags(formatted_string, writer);
   // ...
 }
 
@@ -343,6 +357,7 @@ int s21_sprintf(char* str, const char* format, ...) {
   int result = 0;
   va_list vars;
   va_start(vars, format);
+  s21_memset(str, '\0', 100);
 
   while (*format != '\0') {
     for (; *format != '%'; ++str, ++format) {
