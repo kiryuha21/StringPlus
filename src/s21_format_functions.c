@@ -337,6 +337,16 @@ void apply_flags(char** formatted_string, WriterFormat* writer) {
               *str = '0';
           }
       }
+      if (writer->flags.minus_flag) {
+          char* formatted = *formatted_string, *replace = *formatted_string;
+          for (; *formatted == ' '; ++formatted) {}
+          for (; *formatted; ++formatted, ++replace) {
+              *replace = *formatted;
+          }
+          for (; *replace; ++replace) {
+              *replace = ' ';
+          }
+      }
     if (writer->flags.plus_flag) {
       if (writer->flags.zero_flag) {
         (*formatted_string)[0] = writer->flags.plus_flag == 1 ? '+' : '-';
