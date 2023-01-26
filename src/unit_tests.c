@@ -6,6 +6,11 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
+START_TEST(sprintf_basic) {
+  int a = 10;
+  sprintf_test_common("%10d", (void*)(&a), INT);
+}
+
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
 
 START_TEST(strlen_empty) { strlen_test_common(""); }
@@ -274,6 +279,9 @@ Suite* string_suite(void) {
   tcase_add_test(strcspn_cases, strcspn_basic);
   tcase_add_test(strcspn_cases, strcspn_zero_res);
 
+  TCase* sprintf_cases = tcase_create("SPrintF");
+  tcase_add_test(sprintf_cases, sprintf_basic);
+
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strerror_cases);
   suite_add_tcase(s, strcat_cases);
@@ -295,6 +303,7 @@ Suite* string_suite(void) {
   suite_add_tcase(s, to_upper_cases);
   suite_add_tcase(s, insert_cases);
   suite_add_tcase(s, trim_cases);
+  suite_add_tcase(s, sprintf_cases);
 
   return s;
 }
