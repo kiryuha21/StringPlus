@@ -1,7 +1,12 @@
 #ifndef C2_S21_STRINGPLUS_0_TEST_COMMONS_H
 #define C2_S21_STRINGPLUS_0_TEST_COMMONS_H
 
+#include "s21_format_functions.h"
 #include "s21_string.h"
+
+typedef enum { INT, DOUBLE, STRING, CHAR } Types;
+
+void sprintf_test_common(char* format, void* values, Types type);
 
 void strtok_test_common(char s21_haystack[], char str_haystack[], char delim[]);
 void strlen_test_common(char* str);

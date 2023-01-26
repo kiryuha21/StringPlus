@@ -1,8 +1,29 @@
 #include "test_commons.h"
 
 #include <check.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+void sprintf_test_common(char* format, void* values, Types type) {
+  char my_res[100], std_res[100];
+
+  if (type == INT) {
+    sprintf(std_res, format, *((int*)values));
+    s21_sprintf(my_res, format, *((int*)values));
+  } else if (type == STRING) {
+    sprintf(std_res, format, (char*)values);
+    s21_sprintf(my_res, format, (char*)values);
+  } else if (type == CHAR) {
+    sprintf(std_res, format, *((char*)values));
+    s21_sprintf(my_res, format, *((char*)values));
+  } else if (type == DOUBLE) {
+    sprintf(std_res, format, *((double*)values));
+    s21_sprintf(my_res, format, *((double*)values));
+  }
+
+  ck_assert_str_eq(my_res, std_res);
+}
 
 void strtok_test_common(char s21_haystack[], char str_haystack[],
                         char delim[]) {
