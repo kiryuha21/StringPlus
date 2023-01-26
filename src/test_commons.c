@@ -17,19 +17,19 @@ void sprintf_test_common(char* format, void* values, Types type) {
   } else if (type == STRING) {
     sprintf(std_res, format, (char*)values);
     s21_sprintf(my_res, format, (char*)values);
-      printf("val:\n%s\n", (char*)values);
+    printf("val:\n%s\n", (char*)values);
   } else if (type == CHAR) {
     sprintf(std_res, format, *((char*)values));
     s21_sprintf(my_res, format, *((char*)values));
-      printf("val:\n%c\n", *((char*)values));
+    printf("val:\n%c\n", *((char*)values));
   } else if (type == DOUBLE) {
     sprintf(std_res, format, *((double*)values));
     s21_sprintf(my_res, format, *((double*)values));
-      printf("val:\n%f\n", *((double*)values));
+    printf("val:\n%f\n", *((double*)values));
   }
 
   ck_assert_str_eq(my_res, std_res);
-  printf("result:\n%s\n---------\n", my_res);
+  printf("results(my - std):\n\"%s\"\n\"%s\"\n---------\n", my_res, std_res);
 }
 
 void strtok_test_common(char s21_haystack[], char str_haystack[],
