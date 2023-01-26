@@ -225,11 +225,20 @@ void safe_replace(char** dst, char** replacer) {
   *dst = *replacer;
 }
 
+double custom_round(double num, int precision) {
+  num = round(num * pow(10, precision));
+  for (int i = 0; i < precision; ++i) {
+    num /= 10;
+  }
+  return num;
+}
+
 // const char* specifications = "cdieEfgGosuxXpn%";
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
 int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
-  if (writer->specification == 'd' || writer->specification == 'i') {
+  if (writer->specification == 'd' || writer->specification == 'i' ||
+      (writer->specification == 'f' && writer->precision == 0)) {
     int num = va_arg(vars, int);
     int len = get_digits_amount(num);
 
@@ -257,6 +266,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     double num = va_arg(vars, double);
     int precision =
         writer->precision == UNKNOWN ? DEFAULT_PRECISION : writer->precision;
+    num = custom_round(num, precision);
     int len = get_digits_amount((int)num) + 1 + precision;
 
     double d;
@@ -325,26 +335,28 @@ void apply_precision(char** formatted_string, WriterFormat* writer) {
 
 void apply_flags(char** formatted_string, WriterFormat* writer) {
   if (writer->specification == 'i' || writer->specification == 'd') {
-      if (writer->flags.zero_flag) {
-          char* str = *formatted_string;
-          for (; *str == ' '; ++str) {
-              *str = '0';
-          }
+    if (writer->flags.zero_flag) {
+      char* str = *formatted_string;
+      for (; *str == ' '; ++str) {
+        *str = '0';
       }
-      if (writer->flags.minus_flag) {
-          char* formatted = *formatted_string, *replace = *formatted_string;
-          for (; *formatted == ' '; ++formatted) {}
-          for (; *formatted; ++formatted, ++replace) {
-              *replace = *formatted;
-          }
-          for (; *replace; ++replace) {
-              *replace = ' ';
-          }
+    }
+    if (writer->flags.minus_flag) {
+      char *formatted = *formatted_string, *replace = *formatted_string;
+      for (; *formatted == ' '; ++formatted) {
       }
+      for (; *formatted; ++formatted, ++replace) {
+        *replace = *formatted;
+      }
+      for (; *replace; ++replace) {
+        *replace = ' ';
+      }
+    }
     if (writer->flags.plus_flag) {
-        char *test = (char *) s21_insert(*formatted_string, writer->flags.plus_flag == 1 ? "+" : "-", 0);
-        free(*formatted_string);
-        *formatted_string = test;
+      char* test = (char*)s21_insert(
+          *formatted_string, writer->flags.plus_flag == 1 ? "+" : "-", 0);
+      free(*formatted_string);
+      *formatted_string = test;
     }
   }
 }
