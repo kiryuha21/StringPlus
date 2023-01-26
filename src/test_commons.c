@@ -8,21 +8,28 @@
 void sprintf_test_common(char* format, void* values, Types type) {
   char my_res[100], std_res[100];
 
+  // TODO: remove printfs
+  printf("---------\nformat:\n%s\n", format);
   if (type == INT) {
     sprintf(std_res, format, *((int*)values));
     s21_sprintf(my_res, format, *((int*)values));
+    printf("val:\n%d\n", *((int*)values));
   } else if (type == STRING) {
     sprintf(std_res, format, (char*)values);
     s21_sprintf(my_res, format, (char*)values);
+      printf("val:\n%s\n", (char*)values);
   } else if (type == CHAR) {
     sprintf(std_res, format, *((char*)values));
     s21_sprintf(my_res, format, *((char*)values));
+      printf("val:\n%c\n", *((char*)values));
   } else if (type == DOUBLE) {
     sprintf(std_res, format, *((double*)values));
     s21_sprintf(my_res, format, *((double*)values));
+      printf("val:\n%f\n", *((double*)values));
   }
 
   ck_assert_str_eq(my_res, std_res);
+  printf("result:\n%s\n---------\n", my_res);
 }
 
 void strtok_test_common(char s21_haystack[], char str_haystack[],

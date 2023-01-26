@@ -9,6 +9,10 @@
 START_TEST(sprintf_basic) {
   int a = 10;
   sprintf_test_common("%10d", (void*)(&a), INT);
+  a = -1000;
+  sprintf_test_common("%-5.10d", (void*)(&a), INT);
+  a = 1000;
+  sprintf_test_common("%05d", (void*)(&a), INT);
 }
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
@@ -318,13 +322,5 @@ int main(void) {
   srunner_run_all(sr, CK_NORMAL);
 
   srunner_free(sr);
-
-  // TODO: remove
-  char* a = (char*)calloc(sizeof(char), 100);
-  s21_sprintf(a, "%-5.10d", -1000);
-  printf("%s\n", a);
-  s21_sprintf(a, "%05d", 1000);
-  printf("%s\n", a);
-
   return 0;
 }
