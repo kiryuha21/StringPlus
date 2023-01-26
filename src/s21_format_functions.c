@@ -242,14 +242,8 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       writer->flags.plus_flag = -1;
     }
 
-    int offset = 0;
-    if (writer->flags.plus_flag) {
-      (*formatted_string)[0] = ' ';
-      offset = 1;
-    }
-
     num = abs(num);
-    for (int i = len - 1 + offset; i >= 0 + offset && num > 0; --i, num /= 10) {
+    for (int i = len - 1; i >= 0 && num > 0; --i, num /= 10) {
       (*formatted_string)[i] = (char)(num % 10 + '0');
     }
   } else if (writer->specification == 'c') {
@@ -348,14 +342,9 @@ void apply_flags(char** formatted_string, WriterFormat* writer) {
           }
       }
     if (writer->flags.plus_flag) {
-      if (writer->flags.zero_flag) {
-        (*formatted_string)[0] = writer->flags.plus_flag == 1 ? '+' : '-';
-      } else {
-        char* str = *formatted_string;
-        for (; *(str + 1) == ' '; ++str) {
-        }
-        *str = writer->flags.plus_flag == 1 ? '+' : '-';
-      }
+        char *test = (char *) s21_insert(*formatted_string, writer->flags.plus_flag == 1 ? "+" : "-", 0);
+        free(*formatted_string);
+        *formatted_string = test;
     }
   }
 }
@@ -363,9 +352,9 @@ void apply_flags(char** formatted_string, WriterFormat* writer) {
 void build_format_string(char** formatted_string, WriterFormat* writer,
                          va_list vars) {
   build_base(formatted_string, writer, vars);
-  apply_width(formatted_string, writer->width);
   apply_precision(formatted_string, writer);
   apply_flags(formatted_string, writer);
+  apply_width(formatted_string, writer->width);
   // ...
 }
 
