@@ -309,11 +309,32 @@ void apply_width(char** formatted_string, int width) {
   }
 }
 
+// TODO: handle negative values
+void apply_precision(char** formatted_string, WriterFormat* writer) {
+  if (writer->precision != UNKNOWN) {
+    if (writer->specification == 'i' || writer->specification == 'd') {
+      size_t len = s21_strlen(*formatted_string);
+      if (writer->precision >= (int)len) {
+        char* trimmed = s21_trim(*formatted_string, " ");
+        safe_replace(formatted_string, &trimmed);
+
+        int diff = writer->precision - (int)s21_strlen(*formatted_string);
+        char* null_spacer = (char*)calloc(sizeof(char), diff + 1);
+        s21_memset(null_spacer, '0', diff);
+
+        char* result = s21_insert(*formatted_string, null_spacer, 0);
+        safe_replace(formatted_string, &result);
+        free(null_spacer);
+      }
+    }
+  }
+}
+
 void build_format_string(char** formatted_string, WriterFormat* writer,
                          va_list vars) {
   build_base(formatted_string, writer, vars);
   apply_width(formatted_string, writer->width);
-  // apply_precision()
+  apply_precision(formatted_string, writer);
   // apply_flags()
   // ...
 }
@@ -333,6 +354,14 @@ int s21_sprintf(char* str, const char* format, ...) {
     format += writer.parsed_length + 1;
     if (validate_writer(&writer) == OK) {
       ++result;
+
+      if (writer.width == ASTERISK) {
+        writer.width = va_arg(vars, int);
+      }
+      if (writer.precision == ASTERISK) {
+        writer.precision = va_arg(vars, int);
+      }
+
       char* formatted_arg = NULL;
       build_format_string(&formatted_arg, &writer, vars);
 
