@@ -331,12 +331,18 @@ void apply_precision(char** formatted_string, WriterFormat* writer) {
 
 void apply_flags(char** formatted_string, WriterFormat* writer) {
   if (writer->specification == 'i' || writer->specification == 'd') {
+      if (writer->flags.zero_flag) {
+          char* str = *formatted_string;
+          for (; *str == ' '; ++str) {
+              *str = '0';
+          }
+      }
     if (writer->flags.plus_flag) {
       if (writer->flags.zero_flag) {
         (*formatted_string)[0] = writer->flags.plus_flag == 1 ? '+' : '-';
       } else {
         char* str = *formatted_string;
-        for (; *(str + 1) == ' ' && *(str + 1); ++str) {
+        for (; *(str + 1) == ' '; ++str) {
         }
         *str = writer->flags.plus_flag == 1 ? '+' : '-';
       }
