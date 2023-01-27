@@ -88,6 +88,10 @@ START_TEST(sprintf_random_int) {
         // TODO: negative nums
         int res = rand() % 10000;
         sprintf_test_common(format, (void*)(&res), INT);
+      } else if (specification == 'f') {
+        double res = rand() % 10000 +
+                     (double)(rand() % 10000000) / (double)(rand() % 10000000);
+        sprintf_test_common(format, (void*)(&res), DOUBLE);
       }
     }
 #ifdef DEBUG

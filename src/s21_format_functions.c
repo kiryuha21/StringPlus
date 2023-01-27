@@ -239,11 +239,7 @@ void safe_replace(char** dst, char** replacer) {
 }
 
 double custom_round(double num, int precision) {
-  num = round(num * pow(10, precision));
-  for (int i = 0; i < precision; ++i) {
-    num /= 10;
-  }
-  return num;
+  return round(num * pow(10, precision)) * pow(0.1, precision);
 }
 
 // const char* specifications = "cdieEfgGosuxXpn%";
@@ -301,26 +297,23 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     int len = get_digits_amount((int)num, 10) + 1 + precision;
 
     double d;
-    double f = modf(num, &d);
+    double float_part = modf(num, &d);
     int decimal_part = abs((int)d);
-    int float_part = abs((int)(pow(10, precision) * f));
 
     *formatted_string = (char*)calloc(sizeof(char), len + 4);
     if (*formatted_string == NULL) {
       return FAIL;
     }
 
-    int i;
-    for (i = len - 1; precision > 0; --i, --precision, float_part /= 10) {
-      if (float_part > 0) {
-        (*formatted_string)[i] = (char)(float_part % 10 + '0');
-      } else {
-        (*formatted_string)[i] = '0';
-      }
+    // TODO: (?) another floating part in original sprintf...
+    int decimal_len = get_digits_amount(decimal_part, 10);
+    for (int i = decimal_len + 1; precision > 0; ++i, --precision) {
+      float_part *= 10;
+      (*formatted_string)[i] = (char)((int)float_part % 10 + '0');
+      float_part -= (int)float_part;
     }
-    (*formatted_string)[i] = '.';
-    --i;
-    for (; decimal_part > 0 && i >= 0; --i, decimal_part /= 10) {
+    (*formatted_string)[decimal_len] = '.';
+    for (int i = decimal_len - 1; i >= 0; --i, decimal_part /= 10) {
       (*formatted_string)[i] = (char)(decimal_part % 10 + '0');
     }
   }
