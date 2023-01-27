@@ -8,8 +8,9 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdioeEfgGsuxXpn%";
-const char* writer_flags_test = "-+ #0";
+const char* specifications_test = "cdioxXeEfgGsupn%";
+// TODO : - flag
+const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
 
 START_TEST(sprintf_basic) {
@@ -28,6 +29,7 @@ START_TEST(sprintf_basic) {
   sprintf_test_common("%.33d", (void*)(&a), INT);
   a = -10;
   sprintf_test_common("%4.3d", (void*)(&a), INT);
+  sprintf_test_common("%-.3d", (void*)(&a), INT);
   char c = 'a';
   sprintf_test_common("%05c", (void*)(&c), CHAR);
   sprintf_test_common("%023c", (void*)(&c), CHAR);
@@ -43,7 +45,7 @@ START_TEST(sprintf_random_int) {
     int index = 1;
     // flags
     for (int max_flags = rand() % 6; index < max_flags; ++index) {
-      format[index] = writer_flags_test[rand() % 5];
+      format[index] = writer_flags_test[rand() % 4];
     }
     // width
     if (rand() % 2 == 0) {
@@ -57,8 +59,8 @@ START_TEST(sprintf_random_int) {
       format[index++] = '0' + rand() % 9;
     }
     // specification
-    // TODO: 4 -> 16
-    char specification = specifications_test[rand() % 4];
+    // TODO: 6 -> 16
+    char specification = specifications_test[rand() % 6];
     format[index++] = specification;
     WriterFormat writer;
     init_writer(&writer);
@@ -66,7 +68,9 @@ START_TEST(sprintf_random_int) {
 #ifdef DEBUG
     printf("%d | ", i);
 #endif
-    if (validate_writer(&writer) == OK) {
+    int validation = validate_writer(&writer);
+    if (validation == OK) {
+      printf("%s\n", format);
       if (specification == 'c') {
         char res = rand() % 100 + '0';
         sprintf_test_common(format, (void*)(&res), CHAR);
@@ -80,10 +84,14 @@ START_TEST(sprintf_random_int) {
         // TODO: negative nums
         int res = rand() % 10000;
         sprintf_test_common(format, (void*)(&res), INT);
+      } else if (specification == 'x' || specification == 'X') {
+        // TODO: negative nums
+        int res = rand() % 10000;
+        sprintf_test_common(format, (void*)(&res), INT);
       }
     }
 #ifdef DEBUG
-    else {
+    if (validation != OK) {
       printf(" format not allowed: %s\n", format);
     }
 #endif
@@ -398,8 +406,12 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  s21_sprintf(a, "%  # o", 9659);
-  printf("%s", a);
+  char b[100] = "%#- X";
+  int c = 7559;
+  s21_sprintf(a, b, c);
+  printf("my_res:\n\"%s\"\nreal_res:\n", a);
+  sprintf(a, b, c);
+  printf("\"%s\"\n", a);
 
   return 0;
 }
