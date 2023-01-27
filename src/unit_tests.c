@@ -401,11 +401,14 @@ int main(void) {
 
   srunner_free(sr);
   // TODO: remove (debug)
+  printf("\n\n--------------------------------\nCustom:\n");
   char a[100];
-  s21_sprintf(a, "% 047.50f", 980.773753);
+  s21_sprintf(a, " % 047.50f", 980.773753);
   printf("%s\n", a);
-  sprintf(a, "% 047.50f", 980.773753);
-  printf("%s\n", a);
+
+  char b[100];
+  sprintf(b, "% 047.50f", 980.773753);
+  printf("%s\n", b);
 
   return 0;
 }
