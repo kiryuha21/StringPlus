@@ -8,7 +8,7 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdieEfgGosuxXpn%";
+const char* specifications_test = "cdioeEfgGsuxXpn%";
 const char* writer_flags_test = "-+ #0";
 const char* lengths_test = "hlL";
 
@@ -57,9 +57,9 @@ START_TEST(sprintf_random_int) {
       format[index++] = '0' + rand() % 9;
     }
     // specification
-    // TODO: 3 -> 16
-    int specification_number = rand() % 3;
-    format[index++] = specifications_test[specification_number];
+    // TODO: 4 -> 16
+    char specification = specifications_test[rand() % 4];
+    format[index++] = specification;
     WriterFormat writer;
     init_writer(&writer);
     parse_into_writer(&writer, format);
@@ -67,7 +67,6 @@ START_TEST(sprintf_random_int) {
     printf("%d | ", i);
 #endif
     if (validate_writer(&writer) == OK) {
-      char specification = specifications_test[specification_number];
       if (specification == 'c') {
         char res = rand() % 100 + '0';
         sprintf_test_common(format, (void*)(&res), CHAR);
@@ -77,11 +76,15 @@ START_TEST(sprintf_random_int) {
       } else if (specification == 'i') {
         int res = rand() % 10000 - 5000;
         sprintf_test_common(format, (void*)(&res), INT);
+      } else if (specification == 'o') {
+        // TODO: negative nums
+        int res = rand() % 10000;
+        sprintf_test_common(format, (void*)(&res), INT);
       }
     }
 #ifdef DEBUG
     else {
-      printf("format not allowed: %s\n", format);
+      printf(" format not allowed: %s\n", format);
     }
 #endif
   }
@@ -395,7 +398,7 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  s21_sprintf(a, "%#080.55i", 1000);
+  s21_sprintf(a, "%  # o", 9659);
   printf("%s", a);
 
   return 0;

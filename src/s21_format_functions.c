@@ -59,7 +59,7 @@ int validate_writer_flags(WriterFormat* writer) {
   }
 
   if ((writer->flags.zero_flag || writer->flags.space_flag) &&
-      s21_strchr("cosp%", writer->specification)) {
+      s21_strchr("csp%", writer->specification)) {
     writer->flags.zero_flag = 0;
   }
 
@@ -242,7 +242,8 @@ double custom_round(double num, int precision) {
 // const char* lengths = "hlL";
 int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
   if (writer->specification == 'd' || writer->specification == 'i' ||
-      (writer->specification == 'f' && writer->precision == 0)) {
+      (writer->specification == 'f' && writer->precision == 0) ||
+      writer->specification == 'o') {
     int num = va_arg(vars, int);
 
     if (num < 0) {
@@ -259,7 +260,11 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       return OK;
     }
 
-    convert_int_to_string(num, 10, formatted_string);
+    int number_system = 10;
+    if (writer->specification == 'o') {
+      number_system = 8;
+    }
+    convert_int_to_string(num, number_system, formatted_string);
     if (*formatted_string == NULL) {
       return FAIL;
     }
@@ -300,7 +305,11 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     for (; decimal_part > 0 && i >= 0; --i, decimal_part /= 10) {
       (*formatted_string)[i] = (char)(decimal_part % 10 + '0');
     }
-  }  // else if other formats...
+  }
+  if (writer->flags.lattice_flag && writer->specification == 'o') {
+    char* with_zero = s21_insert(*formatted_string, "0", 0);
+    safe_replace(formatted_string, &with_zero);
+  }
   return OK;
 }
 
@@ -333,7 +342,7 @@ size_t apply_width(char** formatted_string, WriterFormat* writer) {
 
 void apply_precision(char** formatted_string, WriterFormat* writer) {
   if (writer->precision != UNKNOWN) {
-    if (writer->specification == 'i' || writer->specification == 'd') {
+    if (s21_strchr("ido", writer->specification)) {
       size_t len = s21_strlen(*formatted_string);
       if (writer->precision >= (int)len) {
         char* trimmed = s21_trim(*formatted_string, " ");
@@ -353,7 +362,7 @@ void apply_precision(char** formatted_string, WriterFormat* writer) {
 
 void apply_flags(char** formatted_string, WriterFormat* writer,
                  size_t left_space) {
-  if (writer->specification == 'i' || writer->specification == 'd') {
+  if (s21_strchr("id", writer->specification)) {
     if (writer->flags.zero_flag) {
       char* str = *formatted_string;
       for (; *str == ' '; ++str) {
@@ -384,6 +393,13 @@ void apply_flags(char** formatted_string, WriterFormat* writer,
             (*formatted_string)[s21_strlen(*formatted_string) - 1] == ' ') {
           (*formatted_string)[s21_strlen(*formatted_string) - 1] = '\0';
         }
+      }
+    }
+  } else if (writer->specification == 'o') {
+    if (writer->flags.zero_flag) {
+      char* str = *formatted_string;
+      for (; *str == ' '; ++str) {
+        *str = '0';
       }
     }
   }
