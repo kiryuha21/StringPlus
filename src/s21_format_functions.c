@@ -230,11 +230,7 @@ void safe_replace(char** dst, char** replacer) {
 }
 
 double custom_round(double num, int precision) {
-  num = round(num * pow(10, precision));
-  for (int i = 0; i < precision; ++i) {
-    num /= 10;
-  }
-  return num;
+  return round(num * pow(10, precision)) * pow(0.1, precision);
 }
 
 // const char* specifications = "cdieEfgGosuxXpn%";
@@ -285,7 +281,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     double d;
     double f = modf(num, &d);
     int decimal_part = abs((int)d);
-    int float_part = abs((int)(pow(10, precision) * f));
+    int float_part = abs((int)(pow(10, precision) * f));  // TODO: bad cast here, don't know how to fix(long long types don't help)
 
     *formatted_string = (char*)calloc(sizeof(char), len + 4);
     if (*formatted_string == NULL) {

@@ -8,7 +8,7 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdioeEfgGsuxXpn%";
+const char* specifications_test = "cdiofeEgGsuxXpn%";
 const char* writer_flags_test = "-+ #0";
 const char* lengths_test = "hlL";
 
@@ -57,8 +57,8 @@ START_TEST(sprintf_random_int) {
       format[index++] = '0' + rand() % 9;
     }
     // specification
-    // TODO: 4 -> 16
-    char specification = specifications_test[rand() % 4];
+    // TODO: 5 -> 16
+    char specification = specifications_test[rand() % 5];
     format[index++] = specification;
     WriterFormat writer;
     init_writer(&writer);
@@ -80,6 +80,10 @@ START_TEST(sprintf_random_int) {
         // TODO: negative nums
         int res = rand() % 10000;
         sprintf_test_common(format, (void*)(&res), INT);
+      } else if (specification == 'f') {
+        double res = rand() % 10000 +
+                     (double)(rand() % 10000000) / (double)(rand() % 10000000);
+        sprintf_test_common(format, (void*)(&res), DOUBLE);
       }
     }
 #ifdef DEBUG
@@ -397,9 +401,11 @@ int main(void) {
 
   srunner_free(sr);
   // TODO: remove (debug)
-  char a[100] = {0};
-  s21_sprintf(a, "%  # o", 9659);
-  printf("%s", a);
+  char a[100];
+  s21_sprintf(a, "% 047.50f", 980.773753);
+  printf("%s\n", a);
+  sprintf(a, "% 047.50f", 980.773753);
+  printf("%s\n", a);
 
   return 0;
 }
