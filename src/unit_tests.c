@@ -410,8 +410,8 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  char b[100] = "%#- X";
-  int c = 7559;
+  char b[100] = "%--+#X";
+  int c = 2636;
   s21_sprintf(a, b, c);
   printf("my_res:\n\"%s\"\nreal_res:\n", a);
   sprintf(a, b, c);
