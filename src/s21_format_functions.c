@@ -49,25 +49,16 @@ int str_to_int(const char* str, int* index) {
 }
 
 int validate_writer_flags(WriterFormat* writer) {
-  Flags flags = writer->flags;
-
-  if (flags.plus_flag > 1) {
+  if (writer->flags.plus_flag > 1) {
     writer->flags.plus_flag = 1;
   }
 
-  if (flags.plus_flag && s21_strchr("cosp%", writer->specification)) {
-    return FAIL;
+  if (writer->precision != UNKNOWN && writer->flags.zero_flag) {
+    writer->flags.zero_flag = 0;
   }
 
-  if (flags.space_flag && s21_strchr("cosp%", writer->specification)) {
-    return FAIL;
-  }
-
-  if (flags.lattice_flag && s21_strchr("oeExXfgG", writer->specification)) {
-    return FAIL;
-  }
-
-  if (writer->precision != UNKNOWN && flags.zero_flag) {
+  if ((writer->flags.zero_flag || writer->flags.space_flag) &&
+      s21_strchr("cosp%", writer->specification)) {
     writer->flags.zero_flag = 0;
   }
 

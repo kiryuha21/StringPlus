@@ -8,8 +8,9 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
+const char* specifications_test = "cdieEfgGosuxXpn%";
 const char* writer_flags_test = "-+ #0";
-// const char* lengths_test = "hlL";
+const char* lengths_test = "hlL";
 
 START_TEST(sprintf_basic) {
   int a = 10;
@@ -29,28 +30,36 @@ START_TEST(sprintf_basic) {
   sprintf_test_common("%4.3d", (void*)(&a), INT);
   char c = 'a';
   sprintf_test_common("%05c", (void*)(&c), CHAR);
+  sprintf_test_common("%023c", (void*)(&c), CHAR);
+  sprintf_test_common("% 0- c", (void*)(&c), CHAR);
+  sprintf_test_common("%+ 0#.73c", (void*)(&c), CHAR);
 }
 
 START_TEST(sprintf_random_int) {
   srand(time(NULL));
   for (int i = 0; i < 100000; ++i) {
-    int a = rand() % 10000 - 5000;
     char format[15] = {0};
     format[0] = '%';
     int index = 1;
+    // flags
     for (int max_flags = rand() % 6; index < max_flags; ++index) {
       format[index] = writer_flags_test[rand() % 5];
     }
+    // width
     if (rand() % 2 == 0) {
       format[index++] = '1' + rand() % 8;
       format[index++] = '0' + rand() % 9;
     }
+    // precision
     if (rand() % 2 == 0) {
       format[index++] = '.';
       format[index++] = '1' + rand() % 8;
       format[index++] = '0' + rand() % 9;
     }
-    format[index++] = 'd';
+    // specification
+    // TODO: 3 -> 16
+    int specification_number = rand() % 3;
+    format[index++] = specifications_test[specification_number];
     WriterFormat writer;
     init_writer(&writer);
     parse_into_writer(&writer, format);
@@ -58,7 +67,17 @@ START_TEST(sprintf_random_int) {
     printf("%d | ", i);
 #endif
     if (validate_writer(&writer) == OK) {
-      sprintf_test_common(format, (void*)(&a), INT);
+      char specification = specifications_test[specification_number];
+      if (specification == 'c') {
+        char res = rand() % 100 + '0';
+        sprintf_test_common(format, (void*)(&res), CHAR);
+      } else if (specification == 'd') {
+        int res = rand() % 10000 - 5000;
+        sprintf_test_common(format, (void*)(&res), INT);
+      } else if (specification == 'i') {
+        int res = rand() % 10000 - 5000;
+        sprintf_test_common(format, (void*)(&res), INT);
+      }
     }
 #ifdef DEBUG
     else {
@@ -376,8 +395,8 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  s21_sprintf(a, "%++60.71d", 3220);
-  // printf("%s", a);
+  s21_sprintf(a, "%+ 0#.73c", '@');
+  printf("%s", a);
 
   return 0;
 }
