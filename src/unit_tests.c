@@ -395,7 +395,7 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  s21_sprintf(a, "%+ 0#.73c", '@');
+  s21_sprintf(a, "%#080.55i", 1000);
   printf("%s", a);
 
   return 0;

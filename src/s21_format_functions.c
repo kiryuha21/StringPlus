@@ -13,6 +13,7 @@
 const char* specifications = "cdieEfgGosuxXpn%";
 const char* writer_flags = "-+ #0";
 const char* lengths = "hlL";
+const char* decimal_places = "0123456789ABCDEF";
 
 void init_flags(Flags* flags) {
   flags->lattice_flag = 0;
@@ -197,12 +198,24 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 }
 
-int get_digits_amount(int num) {
+int get_digits_amount(int num, int number_system) {
   if (num == 0) {
     return 1;
   }
 
-  return (int)floor(log10(abs(num))) + 1;
+  return (int)floor(log2((abs(num))) / log2(number_system)) + 1;
+}
+
+void convert_int_to_string(int num, int number_system, char** str) {
+  int len = get_digits_amount(num, number_system);
+
+  *str = (char*)calloc(sizeof(char), len + 4);
+
+  if (*str != NULL) {
+    for (int i = len - 1; i >= 0 && num > 0; --i, num /= number_system) {
+      (*str)[i] = (char)(decimal_places[num % number_system]);
+    }
+  }
 }
 
 // int s21_sscanf(const char *str, const char *format, ...) {
@@ -231,23 +244,24 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
   if (writer->specification == 'd' || writer->specification == 'i' ||
       (writer->specification == 'f' && writer->precision == 0)) {
     int num = va_arg(vars, int);
-    int len = get_digits_amount(num);
-
-    *formatted_string = (char*)calloc(sizeof(char), len + 4);
-    if (*formatted_string == NULL) {
-      return FAIL;
-    }
 
     if (num < 0) {
       writer->flags.plus_flag = -1;
+      num = abs(num);
     }
 
     if (num == 0) {
+      *formatted_string = (char*)calloc(5, sizeof(char));
+      if (*formatted_string == NULL) {
+        return FAIL;
+      }
       (*formatted_string)[0] = '0';
+      return OK;
     }
-    num = abs(num);
-    for (int i = len - 1; i >= 0 && num > 0; --i, num /= 10) {
-      (*formatted_string)[i] = (char)(num % 10 + '0');
+
+    convert_int_to_string(num, 10, formatted_string);
+    if (*formatted_string == NULL) {
+      return FAIL;
     }
   } else if (writer->specification == 'c') {
     int num = va_arg(vars, int);
@@ -261,7 +275,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     int precision =
         writer->precision == UNKNOWN ? DEFAULT_PRECISION : writer->precision;
     num = custom_round(num, precision);
-    int len = get_digits_amount((int)num) + 1 + precision;
+    int len = get_digits_amount((int)num, 10) + 1 + precision;
 
     double d;
     double f = modf(num, &d);
