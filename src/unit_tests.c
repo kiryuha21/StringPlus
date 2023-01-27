@@ -8,7 +8,7 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdioxXeEfgGsupn%";
+const char* specifications_test = "cdioxXfefgGsupn%";
 // TODO : - flag
 const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
@@ -39,7 +39,9 @@ START_TEST(sprintf_basic) {
 
 START_TEST(sprintf_random_int) {
   srand(time(NULL));
+  // TODO: 7 -> 16
   for (int i = 0; i < 100000; ++i) {
+    char specification = specifications_test[rand() % 7];
     char format[15] = {0};
     format[0] = '%';
     int index = 1;
@@ -55,12 +57,12 @@ START_TEST(sprintf_random_int) {
     // precision
     if (rand() % 2 == 0) {
       format[index++] = '.';
-      format[index++] = '1' + rand() % 8;
+      if (specification != 'f') {
+        format[index++] = '1' + rand() % 8;
+      }
       format[index++] = '0' + rand() % 9;
     }
     // specification
-    // TODO: 6 -> 16
-    char specification = specifications_test[rand() % 6];
     format[index++] = specification;
     WriterFormat writer;
     init_writer(&writer);
@@ -410,8 +412,8 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  char b[100] = "%--+#X";
-  int c = 2636;
+  char b[100] = "%#24.0f";
+  double c = 2931.530354;
   s21_sprintf(a, b, c);
   printf("my_res:\n\"%s\"\nreal_res:\n", a);
   sprintf(a, b, c);

@@ -248,7 +248,12 @@ double custom_round(double num, int precision) {
 int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
   if (s21_strchr("dioxX", writer->specification) ||
       (writer->specification == 'f' && writer->precision == 0)) {
-    int num = va_arg(vars, int);
+    int num = 0;
+    if (writer->specification == 'f') {
+      num = (int)round(va_arg(vars, double));
+    } else {
+      num = va_arg(vars, int);
+    }
 
     if (num < 0) {
       writer->flags.plus_flag = -1;
@@ -273,11 +278,11 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     }
     convert_int_to_string(num, number_system, formatted_string);
     if (writer->specification == 'x' && *formatted_string) {
-      for (char* str = *formatted_string; *str; ++str) {
-        if (*str >= 'A' && *str <= 'F') {
-          *str = *str - 'A' + 'a';
-        }
-      }
+      char* temp = s21_to_lower(*formatted_string);
+      safe_replace(formatted_string, &temp);
+    }
+    if (writer->specification == 'f' && writer->flags.lattice_flag) {
+        *(char*)(s21_memchr(*formatted_string, '\0', s21_strlen(*formatted_string) + 1)) = '.';
     }
     if (*formatted_string == NULL) {
       return FAIL;
