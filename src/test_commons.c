@@ -6,18 +6,32 @@
 #include <string.h>
 
 void print_debug(char* format, void* values, Types type, char* my_res,
-                 char* std_res) {
-  printf("---------\nformat:\n%s\n", format);
-  if (type == INT) {
-    printf("val:\n%d\n", *((int*)values));
-  } else if (type == STRING) {
-    printf("val:\n%s\n", (char*)values);
-  } else if (type == CHAR) {
-    printf("val:\n%c\n", *((char*)values));
-  } else if (type == DOUBLE) {
-    printf("val:\n%f\n", *((double*)values));
+                 char* std_res, int full) {
+  if (full) {
+    printf("---------\nformat:\n%s\n", format);
+    if (type == INT) {
+      printf("val:\n%d\n", *((int*)values));
+    } else if (type == STRING) {
+      printf("val:\n%s\n", (char*)values);
+    } else if (type == CHAR) {
+      printf("val:\n%c\n", *((char*)values));
+    } else if (type == DOUBLE) {
+      printf("val:\n%f\n", *((double*)values));
+    }
+    printf("results(my - std):\n\"%s\"\n\"%s\"\n---------\n", my_res, std_res);
+  } else {
+    printf("%s | ", format);
+    if (type == INT) {
+      printf("%d", *((int*)values));
+    } else if (type == STRING) {
+      printf("%s", (char*)values);
+    } else if (type == CHAR) {
+      printf("%c", *((char*)values));
+    } else if (type == DOUBLE) {
+      printf("%f", *((double*)values));
+    }
+    printf(" | \"%s\" | \"%s\"\n", my_res, std_res);
   }
-  printf("results(my - std):\n\"%s\"\n\"%s\"\n---------\n", my_res, std_res);
 }
 
 void sprintf_test_common(char* format, void* values, Types type) {
@@ -38,8 +52,13 @@ void sprintf_test_common(char* format, void* values, Types type) {
   }
 
   if (s21_strcmp(my_res, std_res)) {
-    print_debug(format, values, type, my_res, std_res);
+    print_debug(format, values, type, my_res, std_res, 1);
   }
+#ifdef DEBUG
+  else {
+    print_debug(format, values, type, my_res, std_res, 0);
+  }
+#endif
   ck_assert_str_eq(my_res, std_res);
 }
 

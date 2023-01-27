@@ -33,12 +33,12 @@ START_TEST(sprintf_basic) {
 
 START_TEST(sprintf_random_int) {
   srand(time(NULL));
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 100000; ++i) {
     int a = rand() % 10000 - 5000;
-    char format[10] = {0};
+    char format[15] = {0};
     format[0] = '%';
     int index = 1;
-    for (int max_flags = rand() % 3; index < max_flags; ++index) {
+    for (int max_flags = rand() % 6; index < max_flags; ++index) {
       format[index] = writer_flags_test[rand() % 5];
     }
     if (rand() % 2 == 0) {
@@ -54,11 +54,20 @@ START_TEST(sprintf_random_int) {
     WriterFormat writer;
     init_writer(&writer);
     parse_into_writer(&writer, format);
+#ifdef DEBUG
+    printf("%d | ", i);
+#endif
     if (validate_writer(&writer) == OK) {
       sprintf_test_common(format, (void*)(&a), INT);
     }
+#ifdef DEBUG
+    else {
+      printf("format not allowed: %s\n", format);
+    }
+#endif
   }
 }
+//}
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
 
@@ -367,8 +376,8 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  s21_sprintf(a, "%05d", 1000);
-  printf("%s", a);
+  s21_sprintf(a, "%++60.71d", 3220);
+  // printf("%s", a);
 
   return 0;
 }

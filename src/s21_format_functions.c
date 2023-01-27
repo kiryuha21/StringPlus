@@ -50,21 +50,16 @@ int str_to_int(const char* str, int* index) {
 
 int validate_writer_flags(WriterFormat* writer) {
   Flags flags = writer->flags;
-  if (flags.space_flag > 1 || flags.plus_flag > 1 || flags.zero_flag > 1 ||
-      flags.minus_flag > 1 || flags.lattice_flag > 1) {
-    return FAIL;
+
+  if (flags.plus_flag > 1) {
+    writer->flags.plus_flag = 1;
   }
 
   if (flags.plus_flag && s21_strchr("cosp%", writer->specification)) {
     return FAIL;
   }
 
-  if (flags.space_flag &&
-      (flags.plus_flag || s21_strchr("cosp%", writer->specification))) {
-    return FAIL;
-  }
-
-  if (flags.minus_flag && flags.zero_flag) {
+  if (flags.space_flag && s21_strchr("cosp%", writer->specification)) {
     return FAIL;
   }
 
@@ -102,7 +97,8 @@ int validate_writer_length(WriterFormat* writer) {
 
 int validate_writer(WriterFormat* writer) {
   if (validate_writer_flags(writer) == FAIL ||
-      validate_writer_length(writer) == FAIL) {
+      validate_writer_length(writer) == FAIL ||
+      !s21_strchr(specifications, writer->specification)) {
     return FAIL;
   }
 
@@ -311,7 +307,10 @@ size_t apply_width(char** formatted_string, WriterFormat* writer) {
       size_t diff = writer->width - len;
 
       char* spacer = (char*)calloc(sizeof(char), diff + 1);
-      s21_memset(spacer, writer->flags.zero_flag ? '0' : ' ', diff);
+      s21_memset(
+          spacer,
+          writer->flags.zero_flag && !writer->flags.minus_flag ? '0' : ' ',
+          diff);
 
       char* with_spacer;
       if (writer->flags.minus_flag) {

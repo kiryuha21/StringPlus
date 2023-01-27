@@ -25,6 +25,13 @@ test: $(SRC_C_FILES) $(SRC_H_FILES)
 	$(CC) $(FLAGS) $(SRC_C_FILES) $(SRC_H_FILES) $(TEST_C_FILES) $(TEST_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
 	./$(TEST_TARGET)
 
+test_debug: $(SRC_C_FILES) $(SRC_H_FILES)
+	cp ../materials/linters/.clang-format .
+	clang-format -i *.[ch]
+	rm -f .clang-format
+	$(CC) $(FLAGS) $(SRC_C_FILES) $(SRC_H_FILES) $(TEST_C_FILES) $(TEST_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS) -D DEBUG
+	./$(TEST_TARGET)
+
 gcov_report:
 	$(CC) --coverage $(FLAGS) $(SRC_C_FILES) $(TEST_C_FILES) $(SRC_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
 	./$(TEST_TARGET)
