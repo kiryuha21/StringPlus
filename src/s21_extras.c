@@ -25,7 +25,7 @@ void *s21_to_upper(const char *str) { return change_case_common(str, 1); }
 void *s21_to_lower(const char *str) { return change_case_common(str, 0); }
 
 void *s21_insert(const char *src, const char *str, size_t start_index) {
-  size_t len = s21_strlen(str) + s21_strlen(str);
+  size_t len = s21_strlen(src) + s21_strlen(str);
 
   char *result = (char *)calloc(sizeof(char), len + 1);
   if (result != NULL) {

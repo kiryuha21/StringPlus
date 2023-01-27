@@ -1,10 +1,15 @@
 #include <check.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "s21_format_functions.h"
 #include "s21_string.h"
 #include "test_commons.h"
+
+const char* writer_flags_test = "-+ #0";
+// const char* lengths_test = "hlL";
 
 START_TEST(sprintf_basic) {
   int a = 10;
@@ -13,6 +18,46 @@ START_TEST(sprintf_basic) {
   sprintf_test_common("%-5.10d", (void*)(&a), INT);
   a = 1000;
   sprintf_test_common("%05d", (void*)(&a), INT);
+  a = 0;
+  sprintf_test_common("%+d", (void*)(&a), INT);
+  sprintf_test_common("%+5d", (void*)(&a), INT);
+  a = -2896;
+  sprintf_test_common("%051.30d", (void*)(&a), INT);
+  a = -793;
+  sprintf_test_common("%.33d", (void*)(&a), INT);
+  a = -10;
+  sprintf_test_common("%4.3d", (void*)(&a), INT);
+  char c = 'a';
+  sprintf_test_common("%05c", (void*)(&c), CHAR);
+}
+
+START_TEST(sprintf_random_int) {
+  srand(time(NULL));
+  for (int i = 0; i < 1000; ++i) {
+    int a = rand() % 10000 - 5000;
+    char format[10] = {0};
+    format[0] = '%';
+    int index = 1;
+    for (int max_flags = rand() % 3; index < max_flags; ++index) {
+      format[index] = writer_flags_test[rand() % 5];
+    }
+    if (rand() % 2 == 0) {
+      format[index++] = '1' + rand() % 8;
+      format[index++] = '0' + rand() % 9;
+    }
+    if (rand() % 2 == 0) {
+      format[index++] = '.';
+      format[index++] = '1' + rand() % 8;
+      format[index++] = '0' + rand() % 9;
+    }
+    format[index++] = 'd';
+    WriterFormat writer;
+    init_writer(&writer);
+    parse_into_writer(&writer, format);
+    if (validate_writer(&writer) == OK) {
+      sprintf_test_common(format, (void*)(&a), INT);
+    }
+  }
 }
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
@@ -285,6 +330,7 @@ Suite* string_suite(void) {
 
   TCase* sprintf_cases = tcase_create("SPrintF");
   tcase_add_test(sprintf_cases, sprintf_basic);
+  tcase_add_test(sprintf_cases, sprintf_random_int);
 
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strerror_cases);
@@ -312,9 +358,6 @@ Suite* string_suite(void) {
   return s;
 }
 
-// TODO: remove
-#include <stdlib.h>
-
 int main(void) {
   Suite* s = string_suite();
   SRunner* sr = srunner_create(s);
@@ -322,5 +365,10 @@ int main(void) {
   srunner_run_all(sr, CK_NORMAL);
 
   srunner_free(sr);
+  // TODO: remove (debug)
+  char a[100] = {0};
+  s21_sprintf(a, "%05d", 1000);
+  printf("%s", a);
+
   return 0;
 }

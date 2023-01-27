@@ -55,6 +55,10 @@ int validate_writer_flags(WriterFormat* writer) {
     return FAIL;
   }
 
+  if (flags.plus_flag && s21_strchr("cosp%", writer->specification)) {
+    return FAIL;
+  }
+
   if (flags.space_flag &&
       (flags.plus_flag || s21_strchr("cosp%", writer->specification))) {
     return FAIL;
@@ -68,8 +72,8 @@ int validate_writer_flags(WriterFormat* writer) {
     return FAIL;
   }
 
-  if (flags.zero_flag && writer->precision != UNKNOWN) {
-    return FAIL;
+  if (writer->precision != UNKNOWN && flags.zero_flag) {
+    writer->flags.zero_flag = 0;
   }
 
   return OK;
@@ -242,7 +246,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     int num = va_arg(vars, int);
     int len = get_digits_amount(num);
 
-    *formatted_string = (char*)calloc(sizeof(char), len + 2);
+    *formatted_string = (char*)calloc(sizeof(char), len + 4);
     if (*formatted_string == NULL) {
       return FAIL;
     }
@@ -251,6 +255,9 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       writer->flags.plus_flag = -1;
     }
 
+    if (num == 0) {
+      (*formatted_string)[0] = '0';
+    }
     num = abs(num);
     for (int i = len - 1; i >= 0 && num > 0; --i, num /= 10) {
       (*formatted_string)[i] = (char)(num % 10 + '0');
@@ -274,7 +281,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     int decimal_part = abs((int)d);
     int float_part = abs((int)(pow(10, precision) * f));
 
-    *formatted_string = (char*)calloc(sizeof(char), len + 1);
+    *formatted_string = (char*)calloc(sizeof(char), len + 4);
     if (*formatted_string == NULL) {
       return FAIL;
     }
@@ -296,7 +303,8 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
   return OK;
 }
 
-void apply_width(char** formatted_string, WriterFormat* writer) {
+size_t apply_width(char** formatted_string, WriterFormat* writer) {
+  size_t res = 0;
   if (writer->width != UNKNOWN) {
     int len = (int)s21_strlen(*formatted_string);
     if (writer->width > len) {
@@ -310,14 +318,15 @@ void apply_width(char** formatted_string, WriterFormat* writer) {
         with_spacer = s21_insert(spacer, *formatted_string, 0);
       } else {
         with_spacer = s21_insert(*formatted_string, spacer, 0);
+        res = s21_strlen(spacer);
       }
       safe_replace(formatted_string, &with_spacer);
       free(spacer);
     }
   }
+  return res;
 }
 
-// TODO: handle negative values
 void apply_precision(char** formatted_string, WriterFormat* writer) {
   if (writer->precision != UNKNOWN) {
     if (writer->specification == 'i' || writer->specification == 'd') {
@@ -338,7 +347,8 @@ void apply_precision(char** formatted_string, WriterFormat* writer) {
   }
 }
 
-void apply_flags(char** formatted_string, WriterFormat* writer) {
+void apply_flags(char** formatted_string, WriterFormat* writer,
+                 size_t left_space) {
   if (writer->specification == 'i' || writer->specification == 'd') {
     if (writer->flags.zero_flag) {
       char* str = *formatted_string;
@@ -347,13 +357,30 @@ void apply_flags(char** formatted_string, WriterFormat* writer) {
       }
     }
     if (writer->flags.plus_flag || writer->flags.space_flag) {
-      char* with_sign_or_space =
-          (char*)s21_insert(*formatted_string,
-                            (writer->flags.plus_flag
-                                 ? ((writer->flags.plus_flag == 1) ? "+" : "-")
-                                 : " "),
-                            0);
-      safe_replace(formatted_string, &with_sign_or_space);
+      if (**formatted_string == ' ') {
+        char* str = *formatted_string;
+        for (; *str == ' '; ++str)
+          ;
+        *(str - 1) = writer->flags.plus_flag == 0   ? ' '
+                     : writer->flags.plus_flag == 1 ? '+'
+                                                    : '-';
+      } else if (left_space > 0) {
+        **formatted_string = writer->flags.plus_flag == 0   ? ' '
+                             : writer->flags.plus_flag == 1 ? '+'
+                                                            : '-';
+      } else {
+        char* with_sign_or_space =
+            s21_insert(*formatted_string,
+                       writer->flags.plus_flag == 0   ? " "
+                       : writer->flags.plus_flag == 1 ? "+"
+                                                      : "-",
+                       0);
+        safe_replace(formatted_string, &with_sign_or_space);
+        if (writer->flags.minus_flag &&
+            (*formatted_string)[s21_strlen(*formatted_string) - 1] == ' ') {
+          (*formatted_string)[s21_strlen(*formatted_string) - 1] = '\0';
+        }
+      }
     }
   }
 }
@@ -362,8 +389,8 @@ void build_format_string(char** formatted_string, WriterFormat* writer,
                          va_list vars) {
   build_base(formatted_string, writer, vars);
   apply_precision(formatted_string, writer);
-  apply_flags(formatted_string, writer);
-  apply_width(formatted_string, writer);
+  size_t left_space = apply_width(formatted_string, writer);
+  apply_flags(formatted_string, writer, left_space);
 }
 
 int s21_sprintf(char* str, const char* format, ...) {

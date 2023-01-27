@@ -34,6 +34,7 @@ typedef struct WriterFormat {
 void init_writer(WriterFormat* writer);
 void parse_into_writer(WriterFormat* writer,
                        const char* src);  // src = pointer to '%'
+int validate_writer(WriterFormat* writer);
 
 typedef struct ReaderFormat {
   int skip_assignment;  // true if asterisk before specification
