@@ -282,7 +282,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       safe_replace(formatted_string, &temp);
     }
     if (writer->specification == 'f' && writer->flags.lattice_flag) {
-        *(char*)(s21_memchr(*formatted_string, '\0', s21_strlen(*formatted_string) + 1)) = '.';
+      (*formatted_string)[s21_strlen(*formatted_string)] = '.';
     }
     if (*formatted_string == NULL) {
       return FAIL;
