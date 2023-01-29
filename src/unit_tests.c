@@ -8,7 +8,7 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdioxXufefgGspn%";
+const char* specifications_test = "cdioxXu%fefgGspn";
 // TODO : - flag
 const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
@@ -39,9 +39,9 @@ START_TEST(sprintf_basic) {
 
 START_TEST(sprintf_random_int) {
   srand(time(NULL));
-  // TODO: 7 -> 16
   for (int i = 0; i < 100000; ++i) {
-    char specification = specifications_test[rand() % 7];
+    // TODO: test for all flags
+    char specification = specifications_test[rand() % 8];
     char format[15] = {0};
     format[0] = '%';
     int index = 1;
@@ -97,6 +97,9 @@ START_TEST(sprintf_random_int) {
       } else if (specification == 'u') {
         int res = rand() % 10000;
         sprintf_test_common(format, (void*)(&res), INT);
+      } else if (specification == '%') {
+        char res = '%';
+        sprintf_test_common(format, (void*)(&res), CHAR);
       }
     }
 #ifdef DEBUG
@@ -415,8 +418,8 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  char b[100] = "%.42u";
-  int c = 3727;
+  char b[100] = "%42c";
+  char c = '%';
   s21_sprintf(a, b, c);
   printf("my_res:\n\"%s\"\nreal_res:\n", a);
   sprintf(a, b, c);

@@ -67,7 +67,7 @@ int validate_writer_flags(WriterFormat* writer) {
     writer->flags.zero_flag = 0;
   }
 
-  if (s21_strchr("oxXcu", writer->specification)) {
+  if (s21_strchr("oxXcu%", writer->specification)) {
     writer->flags.plus_flag = 0;
     writer->flags.space_flag = 0;
   }
@@ -287,8 +287,14 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     if (*formatted_string == NULL) {
       return FAIL;
     }
-  } else if (writer->specification == 'c') {
-    int num = va_arg(vars, int);
+  } else if (writer->specification == 'c' || writer->specification == '%') {
+    int num = '%';
+    if (writer->specification == 'c') {
+      num = va_arg(vars, int);
+    } else {
+      writer->width = UNKNOWN;
+    }
+    writer->specification = 'c';
     *formatted_string = (char*)calloc(sizeof(char), 2);
     if (*formatted_string == NULL) {
       return FAIL;
