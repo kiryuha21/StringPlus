@@ -58,7 +58,7 @@ int validate_writer_flags(WriterFormat* writer) {
     writer->flags.zero_flag = 0;
   }
 
-  if (!s21_strchr("oxXeEf", writer->specification)) {
+  if (!s21_strchr("oxXeEfu", writer->specification)) {
     writer->flags.lattice_flag = 0;
   }
 
@@ -67,7 +67,7 @@ int validate_writer_flags(WriterFormat* writer) {
     writer->flags.zero_flag = 0;
   }
 
-  if (s21_strchr("oxXc", writer->specification)) {
+  if (s21_strchr("oxXcu", writer->specification)) {
     writer->flags.plus_flag = 0;
     writer->flags.space_flag = 0;
   }
@@ -246,7 +246,7 @@ double custom_round(double num, int precision) {
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
 int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
-  if (s21_strchr("dioxX", writer->specification) ||
+  if (s21_strchr("dioxXu", writer->specification) ||
       (writer->specification == 'f' && writer->precision == 0)) {
     int num = 0;
     if (writer->specification == 'f') {
@@ -354,7 +354,7 @@ size_t apply_width(char** formatted_string, WriterFormat* writer) {
 
 void apply_precision(char** formatted_string, WriterFormat* writer) {
   if (writer->precision != UNKNOWN) {
-    if (s21_strchr("idoxX", writer->specification)) {
+    if (s21_strchr("iduoxX", writer->specification)) {
       size_t len = s21_strlen(*formatted_string);
       if (writer->precision >= (int)len) {
         char* trimmed = s21_trim(*formatted_string, " ");
