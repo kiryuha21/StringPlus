@@ -208,16 +208,15 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 }
 
-int get_digits_amount(unsigned int num, int number_system) {
+int get_digits_amount(unsigned long long num, int number_system) {
   if (num == 0) {
     return 1;
   }
 
-  return (int)floor(log2((num)) / log2(number_system)) + 1;
+  return (int)floorl(log2l((num)) / log2l(number_system)) + 1;
 }
 
-void convert_unsigned_int_to_string(unsigned int num, int number_system,
-                                    char** str) {
+void convert_ll_to_string(long long num, int number_system, char** str) {
   int len = get_digits_amount(num, number_system);
 
   *str = (char*)calloc(sizeof(char), len + 4);
@@ -254,24 +253,70 @@ int handle_zero(char** formatted_string, WriterFormat* writer) {
   return OK;
 }
 
+long long handle_overflow(long long int num, WriterFormat* writer) {
+  if (num < 0) {
+    writer->flags.plus_flag = -1;
+  }
+  return llabs(num);
+}
+
+void apply_decimal_length(WriterFormat* writer, long long num,
+                          int number_system, char** formatted_string) {
+  if (s21_strchr("id", writer->specification)) {
+    if (writer->length.l == 1 || writer->length.L == 1) {
+      long li = (long)num;
+      long long res = handle_overflow(li, writer);
+      convert_ll_to_string(res, number_system, formatted_string);
+    } else if (writer->length.l >= 2 || writer->length.L >= 2) {
+      long long lli = (long long)num;
+      long long res = handle_overflow(lli, writer);
+      convert_ll_to_string(res, number_system, formatted_string);
+    } else if (writer->length.h == 1) {
+      short si = (short)num;
+      long long res = handle_overflow(si, writer);
+      convert_ll_to_string(res, number_system, formatted_string);
+    } else if (writer->length.h >= 2) {
+      char ci = (char)num;
+      long long res = handle_overflow(ci, writer);
+      convert_ll_to_string(res, number_system, formatted_string);
+    } else {
+      int i = (int)num;
+      long long res = handle_overflow(i, writer);
+      convert_ll_to_string(res, number_system, formatted_string);
+    }
+  } else if (s21_strchr("xXuo", writer->specification)) {
+    if (writer->length.l == 1 || writer->length.L == 1) {
+      unsigned long uli = (unsigned long)num;
+      convert_ll_to_string((long long)uli, number_system, formatted_string);
+    } else if (writer->length.l >= 2 || writer->length.L >= 2) {
+      unsigned long long ulli = (unsigned long long)num;
+      convert_ll_to_string((long long)ulli, number_system, formatted_string);
+    } else if (writer->length.h == 1) {
+      unsigned short usi = (unsigned short)num;
+      convert_ll_to_string(usi, number_system, formatted_string);
+    } else if (writer->length.h >= 2) {
+      unsigned char uci = (unsigned char)num;
+      convert_ll_to_string(uci, number_system, formatted_string);
+    } else {
+      unsigned int i = (unsigned int)num;
+      convert_ll_to_string(i, number_system, formatted_string);
+    }
+  }
+}
+
 // const char* specifications = "cdieEfgGosuxXpn%";
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
 int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
   if (s21_strchr("dioxXu", writer->specification)) {
-    int num = va_arg(vars, int);
+    long long num = va_arg(vars, long long);
 
     if (num == 0) {
       return handle_zero(formatted_string, writer);
     }
 
-    unsigned int un_num = abs(num);
-    if (num < 0) {
-      if (s21_strchr("di", writer->specification)) {
-        writer->flags.plus_flag = -1;
-      } else {
-        un_num = num;
-      }
+    if (num < 0 && s21_strchr("di", writer->specification)) {
+      writer->flags.plus_flag = -1;
     }
 
     int number_system = 10;
@@ -281,7 +326,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       number_system = 8;
     }
 
-    convert_unsigned_int_to_string(un_num, number_system, formatted_string);
+    apply_decimal_length(writer, llabs(num), number_system, formatted_string);
 
     if (s21_strchr("x", writer->specification)) {
       char* temp = s21_to_lower(*formatted_string);

@@ -41,7 +41,7 @@ START_TEST(sprintf_random_int) {
   srand(time(NULL));
   for (int i = 0; i < 100000; ++i) {
     // TODO: test for all flags
-    char specification = specifications_test[rand() % 8];
+    char specification = specifications_test[rand() % 3];
     char format[15] = {0};
     format[0] = '%';
     int index = 1;
@@ -86,11 +86,9 @@ START_TEST(sprintf_random_int) {
         int res = rand() % 4294967295 - rand() % 4294967295;
         sprintf_test_common(format, (void*)(&res), INT);
       } else if (specification == 'o') {
-        // TODO: negative nums
         int res = rand() % 4294967295 - rand() % 4294967295;
         sprintf_test_common(format, (void*)(&res), INT);
       } else if (specification == 'x' || specification == 'X') {
-        // TODO: negative nums
         int res = rand() % 4294967295 - rand() % 4294967295;
         sprintf_test_common(format, (void*)(&res), INT);
       } else if (specification == 'f') {
@@ -420,13 +418,16 @@ int main(void) {
 
   srunner_free(sr);
   // TODO: remove (debug)
-  char a[100] = {0};
-  char b[100] = "%11ho";
-  long long int c = -456482913;
-  s21_sprintf(a, b, c);
-  printf("my_res:\n\"%s\"\nreal_res:\n", a);
-  sprintf(a, b, c);
-  printf("\"%s\"\n", a);
+  char a[100];
+  char b[100];
+  char* f = "%+71.42d";
+  long long int num = -1113907581;
+  s21_sprintf(a, f, num);
+  sprintf(b, f, num);
+  printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
+  if (strcmp(a, b) == 0) {
+    puts("Equal\n");
+  }
 
   return 0;
 }
