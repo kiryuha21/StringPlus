@@ -298,8 +298,8 @@ void apply_decimal_length(WriterFormat* writer, long long num,
       unsigned char uci = (unsigned char)num;
       convert_ll_to_string(uci, number_system, formatted_string);
     } else {
-      unsigned int i = (unsigned int)num;
-      convert_ll_to_string(i, number_system, formatted_string);
+      unsigned int ui = (unsigned int)num;
+      convert_ll_to_string(ui, number_system, formatted_string);
     }
   }
 }

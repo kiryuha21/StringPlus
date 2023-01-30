@@ -41,7 +41,7 @@ START_TEST(sprintf_random_int) {
   srand(time(NULL));
   for (int i = 0; i < 100000; ++i) {
     // TODO: test for all flags
-    char specification = specifications_test[rand() % 3];
+    char specification = specifications_test[rand() % 8];
     char format[15] = {0};
     format[0] = '%';
     int index = 1;
