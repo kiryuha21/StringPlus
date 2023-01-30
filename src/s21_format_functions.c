@@ -316,14 +316,14 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       return handle_zero(formatted_string, writer);
     }
 
-    if (num < 0) {
-      writer->flags.plus_flag = -1;
-    }
-
-    apply_decimal_length(writer, llabs(num), 10, formatted_string);
+    apply_decimal_length(writer, num, 10, formatted_string);
 
   } else if (s21_strchr("oxXu", writer->specification)) {
     unsigned long long num = va_arg(vars, unsigned long long);
+
+    if (num == 0) {
+      return handle_zero(formatted_string, writer);
+    }
 
     int number_system = 10;
     if (s21_strchr("xX", writer->specification)) {
