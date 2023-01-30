@@ -65,7 +65,7 @@ START_TEST(sprintf_random_int) {
     if (rand() % 2 == 0) {
       format[index++] = lengths_test[rand() % 3];
     }
-    // specification
+    //  specification
     format[index++] = specification;
     WriterFormat writer;
     init_writer(&writer);
@@ -80,18 +80,18 @@ START_TEST(sprintf_random_int) {
         char res = rand() % 100 + '0';
         sprintf_test_common(format, (void*)(&res), CHAR);
       } else if (specification == 'd') {
-        int res = rand() % 10000 - 5000;
+        int res = rand() % 4294967295 - rand() % 4294967295;
         sprintf_test_common(format, (void*)(&res), INT);
       } else if (specification == 'i') {
-        int res = rand() % 10000 - 5000;
+        int res = rand() % 4294967295 - rand() % 4294967295;
         sprintf_test_common(format, (void*)(&res), INT);
       } else if (specification == 'o') {
         // TODO: negative nums
-        int res = rand() % 10000;
+        int res = rand() % 4294967295 - rand() % 4294967295;
         sprintf_test_common(format, (void*)(&res), INT);
       } else if (specification == 'x' || specification == 'X') {
         // TODO: negative nums
-        int res = rand() % 10000;
+        int res = rand() % 4294967295 - rand() % 4294967295;
         sprintf_test_common(format, (void*)(&res), INT);
       } else if (specification == 'f') {
         double res = rand() % 10000 +
@@ -421,8 +421,8 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  char b[100] = "%-+-.66li";
-  int c = -2710;
+  char b[100] = "%11ho";
+  long long int c = -456482913;
   s21_sprintf(a, b, c);
   printf("my_res:\n\"%s\"\nreal_res:\n", a);
   sprintf(a, b, c);

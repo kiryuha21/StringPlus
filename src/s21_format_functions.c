@@ -216,33 +216,8 @@ int get_digits_amount(unsigned int num, int number_system) {
   return (int)floor(log2((num)) / log2(number_system)) + 1;
 }
 
-// TODO: do smth about 3 funcs from below
-void convert_int_to_string(int num, int number_system, char** str) {
-  int len = get_digits_amount(num, number_system);
-
-  *str = (char*)calloc(sizeof(char), len + 4);
-
-  if (*str != NULL) {
-    for (int i = len - 1; i >= 0 && num > 0; --i, num /= number_system) {
-      (*str)[i] = (char)(decimal_places[num % number_system]);
-    }
-  }
-}
-
 void convert_unsigned_int_to_string(unsigned int num, int number_system,
                                     char** str) {
-  int len = get_digits_amount(num, number_system);
-
-  *str = (char*)calloc(sizeof(char), len + 4);
-
-  if (*str != NULL) {
-    for (int i = len - 1; i >= 0 && num > 0; --i, num /= number_system) {
-      (*str)[i] = (char)(decimal_places[num % number_system]);
-    }
-  }
-}
-
-void convert_short_int_to_string(short int num, int number_system, char** str) {
   int len = get_digits_amount(num, number_system);
 
   *str = (char*)calloc(sizeof(char), len + 4);
@@ -269,63 +244,48 @@ double custom_round(double num, int precision) {
   return round(num * pow(10, precision)) * pow(0.1, precision);
 }
 
+int handle_zero(char** formatted_string, WriterFormat* writer) {
+  writer->flags.lattice_flag = 0;
+  *formatted_string = (char*)calloc(5, sizeof(char));
+  if (*formatted_string == NULL) {
+    return FAIL;
+  }
+  (*formatted_string)[0] = '0';
+  return OK;
+}
+
 // const char* specifications = "cdieEfgGosuxXpn%";
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
 int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
-  if (s21_strchr("dioxXu", writer->specification) ||
-      (writer->specification == 'f' && writer->precision == 0)) {
-    int num = 0;
-    if (writer->specification == 'f') {
-      num = (int)round(va_arg(vars, double));
-    } else {
-      num = va_arg(vars, int);
-    }
+  if (s21_strchr("dioxXu", writer->specification)) {
+    int num = va_arg(vars, int);
 
     if (num == 0) {
-      writer->flags.lattice_flag = 0;
-      *formatted_string = (char*)calloc(5, sizeof(char));
-      if (*formatted_string == NULL) {
-        return FAIL;
+      return handle_zero(formatted_string, writer);
+    }
+
+    unsigned int un_num = abs(num);
+    if (num < 0) {
+      if (s21_strchr("di", writer->specification)) {
+        writer->flags.plus_flag = -1;
+      } else {
+        un_num = num;
       }
-      (*formatted_string)[0] = '0';
-      return OK;
     }
 
     int number_system = 10;
-    if (writer->specification == 'o') {
-      number_system = 8;
-    } else if (writer->specification == 'x' || writer->specification == 'X') {
+    if (s21_strchr("xX", writer->specification)) {
       number_system = 16;
+    } else if (s21_strchr("o", writer->specification)) {
+      number_system = 8;
     }
-    if (writer->length.h == 0 && writer->length.l == 0 &&
-        writer->length.L == 0) {
-      if (num < 0) {
-        writer->flags.plus_flag = -1;
-        num = abs(num);
-      }
-      convert_int_to_string(num, number_system, formatted_string);
-    } else if (writer->length.l || writer->length.L) {
-      unsigned int unsigned_num = (unsigned int)num;
-      convert_unsigned_int_to_string(unsigned_num, number_system,
-                                     formatted_string);
-    } else if (writer->length.h) {
-      short int short_num = (short int)num;
-      if (short_num < 0) {
-        writer->flags.plus_flag = -1;
-        short_num = (short int)abs(short_num);
-      }
-      convert_short_int_to_string(short_num, number_system, formatted_string);
-    }
-    if (writer->specification == 'x' && *formatted_string) {
+
+    convert_unsigned_int_to_string(un_num, number_system, formatted_string);
+
+    if (s21_strchr("x", writer->specification)) {
       char* temp = s21_to_lower(*formatted_string);
       safe_replace(formatted_string, &temp);
-    }
-    if (writer->specification == 'f' && writer->flags.lattice_flag) {
-      (*formatted_string)[s21_strlen(*formatted_string)] = '.';
-    }
-    if (*formatted_string == NULL) {
-      return FAIL;
     }
   } else if (writer->specification == 'c' || writer->specification == '%') {
     int num = '%';
