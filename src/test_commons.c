@@ -34,8 +34,10 @@ void print_debug(char* format, void* values, Types type, char* my_res,
   }
 }
 
-void sprintf_test_common(char* format, void* values, Types type) {
-  char my_res[100], std_res[100];
+int sprintf_test_common(char* format, void* values, Types type, int assert) {
+  char my_res[10000], std_res[10000];
+
+  s21_memset(my_res, '\0', 10000);
 
   if (type == INT) {
     sprintf(std_res, format, *((int*)values));
@@ -59,7 +61,10 @@ void sprintf_test_common(char* format, void* values, Types type) {
     print_debug(format, values, type, my_res, std_res, 0);
   }
 #endif
-  ck_assert_str_eq(my_res, std_res);
+  if (assert) {
+    ck_assert_str_eq(my_res, std_res);
+  }
+  return s21_strcmp(my_res, std_res);
 }
 
 void strtok_test_common(char s21_haystack[], char str_haystack[],

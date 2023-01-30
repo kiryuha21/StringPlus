@@ -54,22 +54,32 @@ void validate_writer_flags(WriterFormat* writer) {
     writer->flags.plus_flag = 1;
   }
 
-  if (writer->precision != UNKNOWN && writer->flags.zero_flag) {
+  if (writer->flags.minus_flag) {
     writer->flags.zero_flag = 0;
   }
 
-  if (!s21_strchr("oxXeEfu", writer->specification)) {
-    writer->flags.lattice_flag = 0;
-  }
-
-  if ((writer->flags.zero_flag || writer->flags.space_flag) &&
-      s21_strchr("csp%", writer->specification)) {
-    writer->flags.zero_flag = 0;
-  }
-
-  if (s21_strchr("oxXcu%", writer->specification)) {
-    writer->flags.plus_flag = 0;
+  if (writer->flags.plus_flag) {
     writer->flags.space_flag = 0;
+  }
+
+  if (writer->specification != UNKNOWN) {
+    if (writer->precision != UNKNOWN) {
+      writer->flags.zero_flag = 0;
+    }
+
+    if (!s21_strchr("oxXeEfu", writer->specification)) {
+      writer->flags.lattice_flag = 0;
+    }
+
+    if ((writer->flags.zero_flag || writer->flags.space_flag) &&
+        s21_strchr("csp%", writer->specification)) {
+      writer->flags.zero_flag = 0;
+    }
+
+    if (s21_strchr("oxXcu%", writer->specification)) {
+      writer->flags.plus_flag = 0;
+      writer->flags.space_flag = 0;
+    }
   }
 }
 
@@ -77,6 +87,29 @@ void validate_writer_flags(WriterFormat* writer) {
 int validate_writer(WriterFormat* writer) {
   validate_writer_flags(writer);
   return OK;
+}
+
+char* get_writer_flags(WriterFormat* writer) {
+  validate_writer(writer);
+  char* res = (char*)calloc(6, sizeof(char));
+  res[0] = '%';
+  int i = 1;
+  if (writer->flags.lattice_flag) {
+    res[i++] = '#';
+  }
+  if (writer->flags.plus_flag) {
+    res[i++] = '+';
+  }
+  if (writer->flags.space_flag) {
+    res[i++] = ' ';
+  }
+  if (writer->flags.minus_flag) {
+    res[i++] = '-';
+  }
+  if (writer->flags.zero_flag) {
+    res[i++] = '0';
+  }
+  return res;
 }
 
 int parse_into_writer(WriterFormat* writer, const char* src) {
@@ -118,6 +151,8 @@ int parse_into_writer(WriterFormat* writer, const char* src) {
           str_to_int(&src[writer->parsed_length], &writer->parsed_length);
       if (precision != -1) {
         writer->precision = precision;
+      } else {
+        writer->precision = EMPTY;
       }
     }
   }
@@ -125,17 +160,17 @@ int parse_into_writer(WriterFormat* writer, const char* src) {
   // length
   while (s21_strchr(lengths, src[writer->parsed_length]) != NULL) {
     if (src[writer->parsed_length] == 'L') {
-      if (writer->length.l || writer->length.h) {
+      if (writer->length.l || writer->length.h || writer->length.L == 1) {
         return writer->parsed_length;
       }
       ++writer->length.L;
     } else if (src[writer->parsed_length] == 'l') {
-      if (writer->length.L || writer->length.h) {
+      if (writer->length.L || writer->length.h || writer->length.l == 2) {
         return writer->parsed_length;
       }
       ++writer->length.l;
     } else if (src[writer->parsed_length] == 'h') {
-      if (writer->length.l || writer->length.L) {
+      if (writer->length.l || writer->length.L || writer->length.h == 2) {
         return writer->parsed_length;
       }
       ++writer->length.h;
@@ -205,6 +240,11 @@ void convert_ll_to_string(unsigned long long num, int number_system,
 
   *str = (char*)calloc(sizeof(char), len + 4);
 
+  if (num == 0) {
+    **str = '0';
+    return;
+  }
+
   if (*str != NULL) {
     for (int i = len - 1; i >= 0 && num > 0; --i, num /= number_system) {
       (*str)[i] = (char)(decimal_places[num % number_system]);
@@ -244,8 +284,8 @@ long long handle_overflow(long long int num, WriterFormat* writer) {
   return llabs(num);
 }
 
-void apply_decimal_length(WriterFormat* writer, long long num,
-                          int number_system, char** formatted_string) {
+void apply_signed_length(WriterFormat* writer, long long num, int number_system,
+                         char** formatted_string) {
   if (writer->length.l == 1 || writer->length.L == 1) {
     long li = (long)num;
     long long res = handle_overflow(li, writer);
@@ -268,8 +308,8 @@ void apply_decimal_length(WriterFormat* writer, long long num,
     convert_ll_to_string(res, number_system, formatted_string);
   }
 }
-void apply_not_decimal_length(WriterFormat* writer, unsigned long long num,
-                              int number_system, char** formatted_string) {
+void apply_unsigned_length(WriterFormat* writer, unsigned long long num,
+                           int number_system, char** formatted_string) {
   if (writer->length.l == 1 || writer->length.L == 1) {
     unsigned long uli = (unsigned long)num;
     convert_ll_to_string((long long)uli, number_system, formatted_string);
@@ -295,18 +335,10 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
   if (s21_strchr("di", writer->specification)) {
     long long num = va_arg(vars, long long);
 
-    if (num == 0) {
-      return handle_zero(formatted_string, writer);
-    }
-
-    apply_decimal_length(writer, num, 10, formatted_string);
+    apply_signed_length(writer, num, 10, formatted_string);
 
   } else if (s21_strchr("oxXu", writer->specification)) {
     unsigned long long num = va_arg(vars, unsigned long long);
-
-    if (num == 0) {
-      return handle_zero(formatted_string, writer);
-    }
 
     int number_system = 10;
     if (s21_strchr("xX", writer->specification)) {
@@ -315,11 +347,17 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       number_system = 8;
     }
 
-    apply_not_decimal_length(writer, num, number_system, formatted_string);
+    apply_unsigned_length(writer, num, number_system, formatted_string);
 
     if (s21_strchr("x", writer->specification)) {
       char* temp = s21_to_lower(*formatted_string);
       safe_replace(formatted_string, &temp);
+    }
+
+    if (s21_strlen(*formatted_string) == 1 && **formatted_string == '0' &&
+        s21_strchr("uxX", writer->specification) && num != 0) {
+      writer->flags.lattice_flag = 0;
+      **formatted_string = '\0';
     }
   } else if (writer->specification == 'c' || writer->specification == '%') {
     int num = '%';
@@ -337,8 +375,9 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
     (*formatted_string)[0] = (char)num;
   } else if (writer->specification == 'f') {
     double num = va_arg(vars, double);
-    int precision =
-        writer->precision == UNKNOWN ? DEFAULT_PRECISION : writer->precision;
+    int precision = writer->precision == UNKNOWN || writer->precision == EMPTY
+                        ? DEFAULT_PRECISION
+                        : writer->precision;
     num = custom_round(num, precision);
     int len = get_digits_amount((int)num, 10) + 1 + precision;
 
@@ -394,7 +433,7 @@ size_t apply_width(char** formatted_string, WriterFormat* writer) {
 }
 
 void apply_precision(char** formatted_string, WriterFormat* writer) {
-  if (writer->precision != UNKNOWN) {
+  if (writer->precision != UNKNOWN && writer->precision != EMPTY) {
     if (s21_strchr("iduoxX", writer->specification)) {
       size_t len = s21_strlen(*formatted_string);
       if (writer->precision >= (int)len) {
@@ -520,7 +559,7 @@ int s21_sprintf(char* str, const char* format, ...) {
       init_writer(&writer);
       int skip = parse_into_writer(&writer, format + 1);
       validate_writer(&writer);
-      if (skip == 0) {
+      if (skip == 0 && writer.specification != UNKNOWN) {
         format += writer.parsed_length + 1;
         ++result;
 
@@ -539,11 +578,35 @@ int s21_sprintf(char* str, const char* format, ...) {
         str += s21_strlen(str) - size_before;
 
         free(formatted_arg);
-      } else {
-        for (int i = 0; i < skip; ++i, ++format, ++str) {
-          *str = *format;
-        }
+      } else if (!*(format + 1)) {
+        *str = '%';
+        ++str;
         ++format;
+      } else {
+        char* add_flags = get_writer_flags(&writer);
+        for (char* ptr = add_flags; *ptr; ++ptr, ++str) {
+          *str = *ptr;
+        }
+        free(add_flags);
+        ++format;                                            // skip %
+        for (; s21_strchr(writer_flags, *format); ++format)  // skip flags
+          ;
+        for (; !s21_strchr(lengths, *format);
+             ++str, ++format) {  // copy until lengths
+          *str = *format;
+          if (*str == '.') {
+            for (; *(format + 1) == '0'; ++format)
+              ;
+            if (*(format + 1) < '0' || *(format + 1) > '9') {
+              ++str;
+              *str = '0';
+            }
+          }
+        }
+        ++format;  // skip lengths
+        if (*format == *(format - 1) && *format != 'L') {
+          ++format;
+        }
       }
     }
   }

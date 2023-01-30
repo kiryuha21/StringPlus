@@ -14,104 +14,108 @@ const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
 
 START_TEST(sprintf_basic) {
+  int assert = 1;
   int a = 10;
-  sprintf_test_common("%10d", (void*)(&a), INT);
-  sprintf_test_common("%010.34lLd", (void*)(&a), INT);
-  sprintf_test_common("%1.230hLd", (void*)(&a), INT);
+  sprintf_test_common("%10d", (void*)(&a), INT, assert);
+  sprintf_test_common("%010.34lLd", (void*)(&a), INT, assert);
+  sprintf_test_common("%1.230hLd", (void*)(&a), INT, assert);
   a = -1000;
-  sprintf_test_common("%-5.10d", (void*)(&a), INT);
+  sprintf_test_common("%-5.10d", (void*)(&a), INT, assert);
   a = 1000;
-  sprintf_test_common("%05d", (void*)(&a), INT);
+  sprintf_test_common("%05d", (void*)(&a), INT, assert);
   a = 0;
-  sprintf_test_common("%+d", (void*)(&a), INT);
-  sprintf_test_common("%+5d", (void*)(&a), INT);
+  sprintf_test_common("%+d", (void*)(&a), INT, assert);
+  sprintf_test_common("%+5d", (void*)(&a), INT, assert);
   a = -2896;
-  sprintf_test_common("%051.30d", (void*)(&a), INT);
+  sprintf_test_common("%051.30d", (void*)(&a), INT, assert);
   a = -793;
-  sprintf_test_common("%.33d", (void*)(&a), INT);
+  sprintf_test_common("%.33d", (void*)(&a), INT, assert);
   a = -10;
-  sprintf_test_common("%4.3d", (void*)(&a), INT);
-  sprintf_test_common("%-.3d", (void*)(&a), INT);
+  sprintf_test_common("%4.3d", (void*)(&a), INT, assert);
+  sprintf_test_common("%-.3d", (void*)(&a), INT, assert);
   char c = 'a';
-  sprintf_test_common("%05c", (void*)(&c), CHAR);
-  sprintf_test_common("%023c", (void*)(&c), CHAR);
-  sprintf_test_common("% 0- c", (void*)(&c), CHAR);
-  sprintf_test_common("%+ 0#.73c", (void*)(&c), CHAR);
+  sprintf_test_common("%05c", (void*)(&c), CHAR, assert);
+  sprintf_test_common("%023c", (void*)(&c), CHAR, assert);
+  sprintf_test_common("% 0- c", (void*)(&c), CHAR, assert);
+  sprintf_test_common("%+ 0#.73c", (void*)(&c), CHAR, assert);
 }
 
-START_TEST(sprintf_random_int) {
-  srand(time(NULL));
-  for (int i = 0; i < 100000; ++i) {
-    // TODO: test for all flags
-    char specification = specifications_test[rand() % 8];
-    char format[15] = {0};
-    format[0] = '%';
-    int index = 1;
-    // flags
-    for (int max_flags = rand() % 6; index < max_flags; ++index) {
-      format[index] = writer_flags_test[rand() % 4];
-    }
-    // width
-    if (rand() % 2 == 0) {
-      format[index++] = '1' + rand() % 8;
-      format[index++] = '0' + rand() % 9;
-    }
-    // precision
-    if (rand() % 2 == 0) {
-      format[index++] = '.';
-      if (specification != 'f') {
-        format[index++] = '1' + rand() % 8;
-      }
-      format[index++] = '0' + rand() % 9;
-    }
-    if (rand() % 2 == 0) {
-      format[index++] = lengths_test[rand() % 3];
-    }
-    //  specification
-    format[index++] = specification;
-    WriterFormat writer;
-    init_writer(&writer);
-    parse_into_writer(&writer, format);
-#ifdef DEBUG
-    printf("%d | ", i);
-#endif
-    int validation = validate_writer(&writer);
-    if (validation == OK) {
-      printf("%s\n", format);
-      if (specification == 'c') {
-        char res = rand() % 100 + '0';
-        sprintf_test_common(format, (void*)(&res), CHAR);
-      } else if (specification == 'd') {
-        int res = rand() % 4294967295 - rand() % 4294967295;
-        sprintf_test_common(format, (void*)(&res), INT);
-      } else if (specification == 'i') {
-        int res = rand() % 4294967295 - rand() % 4294967295;
-        sprintf_test_common(format, (void*)(&res), INT);
-      } else if (specification == 'o') {
-        int res = rand() % 4294967295 - rand() % 4294967295;
-        sprintf_test_common(format, (void*)(&res), INT);
-      } else if (specification == 'x' || specification == 'X') {
-        int res = rand() % 4294967295 - rand() % 4294967295;
-        sprintf_test_common(format, (void*)(&res), INT);
-      } else if (specification == 'f') {
-        double res = rand() % 10000 +
-                     (double)(rand() % 10000000) / (double)(rand() % 10000000);
-        sprintf_test_common(format, (void*)(&res), DOUBLE);
-      } else if (specification == 'u') {
-        int res = rand() % 10000;
-        sprintf_test_common(format, (void*)(&res), INT);
-      } else if (specification == '%') {
-        char res = '%';
-        sprintf_test_common(format, (void*)(&res), CHAR);
-      }
-    }
-#ifdef DEBUG
-    if (validation != OK) {
-      printf(" format not allowed: %s\n", format);
-    }
-#endif
+int random_test(int assert) {
+  // TODO: test for all flags
+  char specification = specifications_test[rand() % 8];
+  char format[100] = {0};
+  format[0] = '%';
+  int index = 1;
+  // flags
+  for (int j = 0; rand() % 3 > 0 && j < 4; ++j) {
+    format[index++] = writer_flags_test[rand() % 5];
   }
+  // width
+  for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
+    format[index++] = '0' + rand() % 9;
+  }
+  // precision
+  if (rand() % 2) {
+    format[index++] = '.';
+    for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
+      format[index++] = '0' + rand() % 9;
+    }
+  }
+  for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
+    format[index++] = lengths_test[rand() % 3];
+  }
+  //  specification
+  format[index++] = specification;
+  WriterFormat writer;
+  init_writer(&writer);
+  parse_into_writer(&writer, format);
+  validate_writer(&writer);
+  int cmp = 0;
+  printf("%s\n", format);
+  if (specification == 'c') {
+    char res = rand() % 100 + '0';
+    cmp = sprintf_test_common(format, (void*)(&res), CHAR, assert);
+  } else if (specification == 'd') {
+    int res = rand() % 4294967295 - rand() % 4294967295;
+    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+  } else if (specification == 'i') {
+    int res = rand() % 4294967295 - rand() % 4294967295;
+    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+  } else if (specification == 'o') {
+    int res = rand() % 4294967295 - rand() % 4294967295;
+    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+  } else if (specification == 'x' || specification == 'X') {
+    int res = rand() % 4294967295 - rand() % 4294967295;
+    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+  } else if (specification == 'f') {
+    double res = rand() % 10000 +
+                 (double)(rand() % 10000000) / (double)(rand() % 10000000);
+    cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, 1);
+  } else if (specification == 'u') {
+    int res = rand() % 10000;
+    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+  } else if (specification == '%') {
+    char res = '%';
+    cmp = sprintf_test_common(format, (void*)(&res), CHAR, assert);
+  }
+
+  return cmp;
 }
+
+void random_tests(int assert, int count) {
+  int cmp = 0;
+  srand(time(NULL));
+  for (int i = 0; i < count && cmp == 0; ++i) {
+#ifdef DEBUG
+    printf("%d | ", i + 1);
+#endif
+    cmp = random_test(assert);
+  }
+
+  printf(cmp ? "ERROR" : "SUCCESS");
+}
+
+START_TEST(sprintf_random_int) { random_tests(1, 1); }
 //}
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
@@ -422,16 +426,18 @@ int main(void) {
 
   srunner_free(sr);
   // TODO: remove (debug)
-  char a[100];
-  char b[100];
-  char* f = "%-#+-75X";
-  int num = -24517370;
-  s21_sprintf(a, f, num);
-  sprintf(b, f, num);
+  char a[10000];
+  char b[10000];
+  char* f = "%+# 0hhX";
+  int num = -1566921984;
+  s21_sprintf(a, f, num, num);
+  sprintf(b, f, num, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0) {
     puts("Equal\n");
   }
+
+  random_tests(0, 10000000);
 
   return 0;
 }

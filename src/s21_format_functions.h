@@ -1,6 +1,7 @@
 #ifndef C2_S21_STRINGPLUS_0_S21_FORMAT_FUNCTIONS_H
 #define C2_S21_STRINGPLUS_0_S21_FORMAT_FUNCTIONS_H
 
+#define EMPTY (-30)
 #define ASTERISK (-20)
 #define UNKNOWN (-10)
 #define FAIL (-1)
@@ -30,18 +31,6 @@ typedef struct WriterFormat {
   int precision;  // could be ASTERISK
   int parsed_length;
 } WriterFormat;
-
-typedef struct ll_map {
-  char key[4];
-  long long min;
-  long long max;
-} ll_map;
-
-typedef struct ull_map {
-  char key[4];
-  long long min;
-  long long max;
-} ull_map;
 
 void init_writer(WriterFormat* writer);
 int parse_into_writer(WriterFormat* writer,
