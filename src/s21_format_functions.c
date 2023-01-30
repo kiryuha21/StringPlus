@@ -216,7 +216,8 @@ int get_digits_amount(unsigned long long num, int number_system) {
   return (int)floorl(log2l((num)) / log2l(number_system)) + 1;
 }
 
-void convert_ll_to_string(long long num, int number_system, char** str) {
+void convert_ll_to_string(unsigned long long num, int number_system,
+                          char** str) {
   int len = get_digits_amount(num, number_system);
 
   *str = (char*)calloc(sizeof(char), len + 4);
@@ -262,45 +263,45 @@ long long handle_overflow(long long int num, WriterFormat* writer) {
 
 void apply_decimal_length(WriterFormat* writer, long long num,
                           int number_system, char** formatted_string) {
-  if (s21_strchr("id", writer->specification)) {
-    if (writer->length.l == 1 || writer->length.L == 1) {
-      long li = (long)num;
-      long long res = handle_overflow(li, writer);
-      convert_ll_to_string(res, number_system, formatted_string);
-    } else if (writer->length.l >= 2 || writer->length.L >= 2) {
-      long long lli = (long long)num;
-      long long res = handle_overflow(lli, writer);
-      convert_ll_to_string(res, number_system, formatted_string);
-    } else if (writer->length.h == 1) {
-      short si = (short)num;
-      long long res = handle_overflow(si, writer);
-      convert_ll_to_string(res, number_system, formatted_string);
-    } else if (writer->length.h >= 2) {
-      char ci = (char)num;
-      long long res = handle_overflow(ci, writer);
-      convert_ll_to_string(res, number_system, formatted_string);
-    } else {
-      int i = (int)num;
-      long long res = handle_overflow(i, writer);
-      convert_ll_to_string(res, number_system, formatted_string);
-    }
-  } else if (s21_strchr("xXuo", writer->specification)) {
-    if (writer->length.l == 1 || writer->length.L == 1) {
-      unsigned long uli = (unsigned long)num;
-      convert_ll_to_string((long long)uli, number_system, formatted_string);
-    } else if (writer->length.l >= 2 || writer->length.L >= 2) {
-      unsigned long long ulli = (unsigned long long)num;
-      convert_ll_to_string((long long)ulli, number_system, formatted_string);
-    } else if (writer->length.h == 1) {
-      unsigned short usi = (unsigned short)num;
-      convert_ll_to_string(usi, number_system, formatted_string);
-    } else if (writer->length.h >= 2) {
-      unsigned char uci = (unsigned char)num;
-      convert_ll_to_string(uci, number_system, formatted_string);
-    } else {
-      unsigned int ui = (unsigned int)num;
-      convert_ll_to_string(ui, number_system, formatted_string);
-    }
+  if (writer->length.l == 1 || writer->length.L == 1) {
+    long li = (long)num;
+    long long res = handle_overflow(li, writer);
+    convert_ll_to_string(res, number_system, formatted_string);
+  } else if (writer->length.l >= 2 || writer->length.L >= 2) {
+    long long lli = (long long)num;
+    long long res = handle_overflow(lli, writer);
+    convert_ll_to_string(res, number_system, formatted_string);
+  } else if (writer->length.h == 1) {
+    short si = (short)num;
+    long long res = handle_overflow(si, writer);
+    convert_ll_to_string(res, number_system, formatted_string);
+  } else if (writer->length.h >= 2) {
+    char ci = (char)num;
+    long long res = handle_overflow(ci, writer);
+    convert_ll_to_string(res, number_system, formatted_string);
+  } else {
+    int i = (int)num;
+    long long res = handle_overflow(i, writer);
+    convert_ll_to_string(res, number_system, formatted_string);
+  }
+}
+void apply_not_decimal_length(WriterFormat* writer, unsigned long long num,
+                              int number_system, char** formatted_string) {
+  if (writer->length.l == 1 || writer->length.L == 1) {
+    unsigned long uli = (unsigned long)num;
+    convert_ll_to_string((long long)uli, number_system, formatted_string);
+  } else if (writer->length.l >= 2 || writer->length.L >= 2) {
+    unsigned long long ulli = (unsigned long long)num;
+    convert_ll_to_string((long long)ulli, number_system, formatted_string);
+  } else if (writer->length.h == 1) {
+    unsigned short usi = (unsigned short)num;
+    convert_ll_to_string(usi, number_system, formatted_string);
+  } else if (writer->length.h >= 2) {
+    unsigned char uci = (unsigned char)num;
+    convert_ll_to_string(uci, number_system, formatted_string);
+  } else {
+    unsigned int ui = (unsigned int)num;
+    convert_ll_to_string(ui, number_system, formatted_string);
   }
 }
 
@@ -308,16 +309,21 @@ void apply_decimal_length(WriterFormat* writer, long long num,
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
 int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
-  if (s21_strchr("dioxXu", writer->specification)) {
+  if (s21_strchr("di", writer->specification)) {
     long long num = va_arg(vars, long long);
 
     if (num == 0) {
       return handle_zero(formatted_string, writer);
     }
 
-    if (num < 0 && s21_strchr("di", writer->specification)) {
+    if (num < 0) {
       writer->flags.plus_flag = -1;
     }
+
+    apply_decimal_length(writer, llabs(num), 10, formatted_string);
+
+  } else if (s21_strchr("oxXu", writer->specification)) {
+    unsigned long long num = va_arg(vars, unsigned long long);
 
     int number_system = 10;
     if (s21_strchr("xX", writer->specification)) {
@@ -326,7 +332,7 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       number_system = 8;
     }
 
-    apply_decimal_length(writer, llabs(num), number_system, formatted_string);
+    apply_not_decimal_length(writer, num, number_system, formatted_string);
 
     if (s21_strchr("x", writer->specification)) {
       char* temp = s21_to_lower(*formatted_string);

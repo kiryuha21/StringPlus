@@ -410,6 +410,8 @@ Suite* string_suite(void) {
   return s;
 }
 
+#include <limits.h>
+
 int main(void) {
   Suite* s = string_suite();
   SRunner* sr = srunner_create(s);
@@ -420,8 +422,8 @@ int main(void) {
   // TODO: remove (debug)
   char a[100];
   char b[100];
-  char* f = "%+71.42d";
-  long long int num = -1113907581;
+  char* f = "%llu";
+  unsigned long long int num = ULLONG_MAX;
   s21_sprintf(a, f, num);
   sprintf(b, f, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
