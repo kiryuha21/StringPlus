@@ -62,6 +62,9 @@ START_TEST(sprintf_random_int) {
       }
       format[index++] = '0' + rand() % 9;
     }
+    if (rand() % 2 == 0) {
+      format[index++] = lengths_test[rand() % 3];
+    }
     // specification
     format[index++] = specification;
     WriterFormat writer;
@@ -418,8 +421,8 @@ int main(void) {
   srunner_free(sr);
   // TODO: remove (debug)
   char a[100] = {0};
-  char b[100] = "%42c";
-  char c = '%';
+  char b[100] = "%-+-.66li";
+  int c = -2710;
   s21_sprintf(a, b, c);
   printf("my_res:\n\"%s\"\nreal_res:\n", a);
   sprintf(a, b, c);

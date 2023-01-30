@@ -14,7 +14,7 @@ void print_debug(char* format, void* values, Types type, char* my_res,
     } else if (type == STRING) {
       printf("val:\n%s\n", (char*)values);
     } else if (type == CHAR) {
-      printf("val:\n%c\n", *((char*)values));
+      printf("val:\n%c -(%d)\n", *((char*)values), (int)*((char*)values));
     } else if (type == DOUBLE) {
       printf("val:\n%f\n", *((double*)values));
     }
