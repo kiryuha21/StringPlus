@@ -16,6 +16,8 @@ const char* lengths_test = "hlL";
 START_TEST(sprintf_basic) {
   int a = 10;
   sprintf_test_common("%10d", (void*)(&a), INT);
+  sprintf_test_common("%010.34lLd", (void*)(&a), INT);
+  sprintf_test_common("%1.230hLd", (void*)(&a), INT);
   a = -1000;
   sprintf_test_common("%-5.10d", (void*)(&a), INT);
   a = 1000;
@@ -422,8 +424,8 @@ int main(void) {
   // TODO: remove (debug)
   char a[100];
   char b[100];
-  char* f = "%llu";
-  unsigned long long int num = ULLONG_MAX;
+  char* f = "%-#+-75X";
+  int num = -24517370;
   s21_sprintf(a, f, num);
   sprintf(b, f, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);

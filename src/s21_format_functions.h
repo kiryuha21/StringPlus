@@ -31,9 +31,21 @@ typedef struct WriterFormat {
   int parsed_length;
 } WriterFormat;
 
+typedef struct ll_map {
+  char key[4];
+  long long min;
+  long long max;
+} ll_map;
+
+typedef struct ull_map {
+  char key[4];
+  long long min;
+  long long max;
+} ull_map;
+
 void init_writer(WriterFormat* writer);
-void parse_into_writer(WriterFormat* writer,
-                       const char* src);  // src = pointer to '%'
+int parse_into_writer(WriterFormat* writer,
+                      const char* src);  // src = pointer to '%'
 int validate_writer(WriterFormat* writer);
 
 typedef struct ReaderFormat {

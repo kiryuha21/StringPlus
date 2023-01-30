@@ -49,7 +49,7 @@ int str_to_int(const char* str, int* index) {
   return res;
 }
 
-int validate_writer_flags(WriterFormat* writer) {
+void validate_writer_flags(WriterFormat* writer) {
   if (writer->flags.plus_flag > 1) {
     writer->flags.plus_flag = 1;
   }
@@ -71,43 +71,15 @@ int validate_writer_flags(WriterFormat* writer) {
     writer->flags.plus_flag = 0;
     writer->flags.space_flag = 0;
   }
-
-  return OK;
 }
 
-int validate_writer_length(WriterFormat* writer) {
-  if (writer->specification == UNKNOWN) {
-    return FAIL;
-  }
-
-  // TODO: diff types
-  if (writer->length.h != 0 &&
-      s21_strchr("idouxX", writer->specification) == NULL) {
-    return FAIL;
-  }
-  if (writer->length.l != 0 &&
-      s21_strchr("idouxX", writer->specification) == NULL) {
-    return FAIL;
-  }
-  if (writer->length.L != 0 &&
-      s21_strchr("eEfgG", writer->specification) == NULL) {
-    return FAIL;
-  }
-
-  return OK;
-}
-
+// TODO: test
 int validate_writer(WriterFormat* writer) {
-  if (validate_writer_flags(writer) == FAIL ||
-      // validate_writer_length(writer) == FAIL ||
-      !s21_strchr(specifications, writer->specification)) {
-    return FAIL;
-  }
-
+  validate_writer_flags(writer);
   return OK;
 }
 
-void parse_into_writer(WriterFormat* writer, const char* src) {
+int parse_into_writer(WriterFormat* writer, const char* src) {
   // flags
   while (s21_strchr(writer_flags, src[writer->parsed_length]) != NULL) {
     if (src[writer->parsed_length] == '-') {
@@ -153,10 +125,19 @@ void parse_into_writer(WriterFormat* writer, const char* src) {
   // length
   while (s21_strchr(lengths, src[writer->parsed_length]) != NULL) {
     if (src[writer->parsed_length] == 'L') {
+      if (writer->length.l || writer->length.h) {
+        return writer->parsed_length;
+      }
       ++writer->length.L;
     } else if (src[writer->parsed_length] == 'l') {
+      if (writer->length.L || writer->length.h) {
+        return writer->parsed_length;
+      }
       ++writer->length.l;
     } else if (src[writer->parsed_length] == 'h') {
+      if (writer->length.l || writer->length.L) {
+        return writer->parsed_length;
+      }
       ++writer->length.h;
     }
 
@@ -168,6 +149,8 @@ void parse_into_writer(WriterFormat* writer, const char* src) {
     writer->specification = src[writer->parsed_length];
     ++writer->parsed_length;
   }
+
+  return 0;
 }
 
 void init_reader(ReaderFormat* reader) {
@@ -529,33 +512,42 @@ int s21_sprintf(char* str, const char* format, ...) {
   s21_memset(str, '\0', 100);
 
   while (*format != '\0') {
-    for (; *format != '%'; ++str, ++format) {
+    for (; *format != '%' && *format; ++str, ++format) {
       *str = *format;
     }
-    WriterFormat writer;
-    init_writer(&writer);
-    parse_into_writer(&writer, format + 1);
-    format += writer.parsed_length + 1;
-    if (validate_writer(&writer) == OK) {
-      ++result;
+    if (*format) {
+      WriterFormat writer;
+      init_writer(&writer);
+      int skip = parse_into_writer(&writer, format + 1);
+      validate_writer(&writer);
+      if (skip == 0) {
+        format += writer.parsed_length + 1;
+        ++result;
 
-      if (writer.width == ASTERISK) {
-        writer.width = va_arg(vars, int);
+        if (writer.width == ASTERISK) {
+          writer.width = va_arg(vars, int);
+        }
+        if (writer.precision == ASTERISK) {
+          writer.precision = va_arg(vars, int);
+        }
+
+        char* formatted_arg = NULL;
+        build_format_string(&formatted_arg, &writer, vars);
+
+        size_t size_before = s21_strlen(str);
+        s21_strcat(str, formatted_arg);
+        str += s21_strlen(str) - size_before;
+
+        free(formatted_arg);
+      } else {
+        for (int i = 0; i < skip; ++i, ++format, ++str) {
+          *str = *format;
+        }
+        ++format;
       }
-      if (writer.precision == ASTERISK) {
-        writer.precision = va_arg(vars, int);
-      }
-
-      char* formatted_arg = NULL;
-      build_format_string(&formatted_arg, &writer, vars);
-
-      size_t size_before = s21_strlen(str);
-      s21_strcat(str, formatted_arg);
-      str += s21_strlen(str) - size_before;
-
-      free(formatted_arg);
     }
   }
+
   *(str + 1) = '\0';
 
   va_end(vars);
