@@ -35,7 +35,6 @@ void print_debug(char* format, void* values, Types type, char* my_res,
 }
 
 int sprintf_test_common(char* format, void* values, Types type, int assert) {
-  // TODO: do smth about max len
   char my_res[10000], std_res[10000];
   int my_ret = 0, std_ret = 1;
 
