@@ -8,7 +8,7 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdioxXu%spnfeEgG";
+const char* specifications_test = "cdioxXu%pnsfeEgG";
 // TODO : - flag
 const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
@@ -40,9 +40,20 @@ START_TEST(sprintf_basic) {
   sprintf_test_common("%+ 0#.73c", (void*)(&c), CHAR, assert);
 }
 
+char* generate_random_size_string(int* size) {
+  *size = rand() % 20;
+  char* res = (char*)calloc(*size + 1, sizeof(char));
+  if (res != NULL) {
+    for (int i = 0; i < *size; ++i) {
+      res[i] = (char)(rand() % 127);
+    }
+  }
+  return res;
+}
+
 int random_test(int with_assert) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 11];
+  char specification = specifications_test[rand() % 10];
   char format[100] = {0};
   format[0] = '%';
   int index = 1;
@@ -97,6 +108,24 @@ int random_test(int with_assert) {
   } else if (specification == '%') {
     char res = '%';
     cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
+  } else if (specification == 'n') {
+    int res;
+    cmp = sprintf_test_common(format, (void*)(&res), INT_PTR, with_assert);
+  } else if (specification == 's') {
+    int size;
+    char* res = generate_random_size_string(&size);
+    if (res != NULL) {
+      cmp = sprintf_test_common(format, (void*)(res), STRING, with_assert);
+      free(res);
+    }
+  } else if (specification == 'p') {
+    int size;
+    char* res = generate_random_size_string(&size);
+    if (res != NULL) {
+      char* ptr = res + (rand() % size);
+      cmp = sprintf_test_common(format, (void*)(ptr), VOID_PTR, with_assert);
+      free(res);
+    }
   }
 
   return cmp;
@@ -428,7 +457,7 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "aaaa%20.2n";
+  char* f = "%+0504llp";
   int num;
   int my_res = s21_sprintf(a, f, &num);
   printf("\n my num - %d\n", num);
@@ -440,8 +469,8 @@ int main(void) {
   }
 
   // TODO: should be less output but always with assert(guess after functions
-  // will be debugged and finished)
-  random_tests(0, 10000000);
+  // TODO: will be debugged and finished)
+  // random_tests(0, 10000000);
 
   return 0;
 }

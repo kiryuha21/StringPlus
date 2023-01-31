@@ -53,6 +53,21 @@ int sprintf_test_common(char* format, void* values, Types type,
   } else if (type == DOUBLE) {
     std_ret = sprintf(std_res, format, *((double*)values));
     my_ret = s21_sprintf(my_res, format, *((double*)values));
+  } else if (type == INT_PTR) {  // only for %n specifier
+    std_ret = sprintf(std_res, format, (int*)values);
+    int my_num = *(int*)values;
+
+    my_ret = s21_sprintf(my_res, format, (int*)values);
+    int std_num = *(int*)values;
+
+    if (my_num != std_num) {
+      printf("\nmy num - %d, std num - %d\n", my_num, std_num);
+      print_debug(format, values, type, my_res, std_res, 0);
+      return 1;
+    }
+  } else if (type == VOID_PTR) {
+    std_ret = sprintf(std_res, format, values);
+    my_ret = s21_sprintf(my_res, format, values);
   }
 
   if (s21_strcmp(my_res, std_res) || my_ret != std_ret) {

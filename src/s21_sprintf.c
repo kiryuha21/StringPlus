@@ -43,7 +43,8 @@ void validate_writer_flags(WriterFormat* writer) {
     writer->flags.zero_flag = 0;
   }
 
-  if (writer->flags.plus_flag) {
+  // TODO: should it actually be so?
+  if (writer->flags.plus_flag && writer->specification != 'p') {
     writer->flags.space_flag = 0;
   }
 
@@ -56,6 +57,7 @@ void validate_writer_flags(WriterFormat* writer) {
       writer->flags.lattice_flag = 0;
     }
 
+    // TODO: should it actually be so??
     if ((writer->flags.zero_flag || writer->flags.space_flag) &&
         s21_strchr("csp%", writer->specification)) {
       writer->flags.zero_flag = 0;
@@ -354,6 +356,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
   } else if (writer->specification == 'n') {
     int* num = va_arg(vars, int*);
     *num = (int)written_bytes;
+    *bad_return = 0;
   }
   return OK;
 }
@@ -385,6 +388,15 @@ size_t apply_width(char** formatted_string, WriterFormat* writer) {
   return res;
 }
 
+void insert_null_spacer_at_index(char** src, int index, int nsp_size) {
+  char* null_spacer = (char*)calloc(sizeof(char), nsp_size + 1);
+  s21_memset(null_spacer, '0', nsp_size);
+
+  char* result = s21_insert(*src, null_spacer, index);
+  safe_replace(src, &result);
+  free(null_spacer);
+}
+
 void apply_precision(char** formatted_string, WriterFormat* writer,
                      int* bad_return) {
   if (writer->precision != UNKNOWN) {
@@ -397,12 +409,7 @@ void apply_precision(char** formatted_string, WriterFormat* writer,
           safe_replace(formatted_string, &trimmed);
 
           int diff = writer->precision - (int)s21_strlen(*formatted_string);
-          char* null_spacer = (char*)calloc(sizeof(char), diff + 1);
-          s21_memset(null_spacer, '0', diff);
-
-          char* result = s21_insert(*formatted_string, null_spacer, 0);
-          safe_replace(formatted_string, &result);
-          free(null_spacer);
+          insert_null_spacer_at_index(formatted_string, 0, diff);
         }
       } else {
         **formatted_string = '\0';
@@ -413,6 +420,12 @@ void apply_precision(char** formatted_string, WriterFormat* writer,
         char* cutted = (char*)calloc(writer->precision + 1, sizeof(char));
         s21_strncpy(cutted, *formatted_string, writer->precision);
         safe_replace(formatted_string, &cutted);
+      }
+    } else if (writer->specification == 'p') {
+      if (writer->precision >
+          (int)s21_strlen(*formatted_string) + 2) {  // 0x is added later
+        int diff = writer->precision - (int)s21_strlen(*formatted_string);
+        insert_null_spacer_at_index(formatted_string, 0, diff);
       }
     }
   }
@@ -470,13 +483,7 @@ void apply_flags(char** formatted_string, WriterFormat* writer,
       }
     }
   }
-  if (writer->flags.plus_flag == 1) {
-    add_to_num(formatted_string, "+", writer->flags.minus_flag, left_space);
-  } else if (writer->flags.plus_flag == -1) {
-    add_to_num(formatted_string, "-", writer->flags.minus_flag, left_space);
-  } else if (writer->flags.space_flag) {
-    add_to_num(formatted_string, " ", writer->flags.minus_flag, left_space);
-  }
+
   if (writer->flags.lattice_flag) {
     // check if 0 is already in the right place
     if (writer->specification == 'o') {
@@ -497,6 +504,17 @@ void apply_flags(char** formatted_string, WriterFormat* writer,
       add_to_num(formatted_string, "0x", writer->flags.minus_flag, left_space);
     } else if (writer->specification == 'X') {
       add_to_num(formatted_string, "0X", writer->flags.minus_flag, left_space);
+    }
+  }
+
+  // TODO: check for specifications inapplicable with these flags
+  if (writer->specification != 'n') {
+    if (writer->flags.plus_flag == 1) {
+      add_to_num(formatted_string, "+", writer->flags.minus_flag, left_space);
+    } else if (writer->flags.plus_flag == -1) {
+      add_to_num(formatted_string, "-", writer->flags.minus_flag, left_space);
+    } else if (writer->flags.space_flag) {
+      add_to_num(formatted_string, " ", writer->flags.minus_flag, left_space);
     }
   }
 }
