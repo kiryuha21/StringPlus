@@ -437,7 +437,8 @@ int main(void) {
     puts("Equal\n");
   }
 
-  // random_tests(0, 10000000);
+  // TODO: should be less output but always with assert(guess after functions will be debugged and finished)
+  random_tests(0, 10000000);
 
   return 0;
 }
