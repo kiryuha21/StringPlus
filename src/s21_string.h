@@ -5,6 +5,16 @@
 #define NULL ((void*)0)
 #endif
 
+#define EMPTY (-30)
+#define ASTERISK (-20)
+#define UNKNOWN (-10)
+#define FAIL (-1)
+#define OK 0
+
+#define DEFAULT_PRECISION 6
+
+typedef unsigned long long ull;
+
 typedef unsigned long size_t;
 
 typedef struct IntStringMap {
@@ -297,5 +307,8 @@ void* s21_to_upper(const char* str);
 void* s21_to_lower(const char* str);
 void* s21_insert(const char* src, const char* str, size_t start_index);
 void* s21_trim(const char* src, const char* trim_chars);
+
+// s21_format_commons.c
+int str_to_int(const char* str, int* index);
 
 #endif  // C2_S21_STRINGPLUS_0_S21_STRING_H

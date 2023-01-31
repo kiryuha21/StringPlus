@@ -1,7 +1,7 @@
 #ifndef C2_S21_STRINGPLUS_0_TEST_COMMONS_H
 #define C2_S21_STRINGPLUS_0_TEST_COMMONS_H
 
-#include "s21_format_functions.h"
+#include "s21_sprintf.h"
 #include "s21_string.h"
 
 typedef enum { INT, DOUBLE, STRING, CHAR } Types;
