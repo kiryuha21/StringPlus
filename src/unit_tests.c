@@ -428,10 +428,10 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%p";
-  int num = 12;
-  int my_res = s21_sprintf(a, f, &num);
-  int std_res = sprintf(b, f, &num);
+  char* f = "%20.2s";
+  char* str = "abc";
+  int my_res = s21_sprintf(a, f, str);
+  int std_res = sprintf(b, f, str);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
