@@ -35,25 +35,27 @@ void print_debug(char* format, void* values, Types type, char* my_res,
 }
 
 int sprintf_test_common(char* format, void* values, Types type, int assert) {
+  // TODO: do smth about max len
   char my_res[10000], std_res[10000];
+  int my_ret = 0, std_ret = 1;
 
   s21_memset(my_res, '\0', 10000);
 
   if (type == INT) {
-    sprintf(std_res, format, *((int*)values));
-    s21_sprintf(my_res, format, *((int*)values));
+    std_ret = sprintf(std_res, format, *((int*)values));
+    my_ret = s21_sprintf(my_res, format, *((int*)values));
   } else if (type == STRING) {
-    sprintf(std_res, format, (char*)values);
-    s21_sprintf(my_res, format, (char*)values);
+    std_ret = sprintf(std_res, format, (char*)values);
+    my_ret = s21_sprintf(my_res, format, (char*)values);
   } else if (type == CHAR) {
-    sprintf(std_res, format, *((char*)values));
-    s21_sprintf(my_res, format, *((char*)values));
+    std_ret = sprintf(std_res, format, *((char*)values));
+    my_ret = s21_sprintf(my_res, format, *((char*)values));
   } else if (type == DOUBLE) {
-    sprintf(std_res, format, *((double*)values));
-    s21_sprintf(my_res, format, *((double*)values));
+    std_ret = sprintf(std_res, format, *((double*)values));
+    my_ret = s21_sprintf(my_res, format, *((double*)values));
   }
 
-  if (s21_strcmp(my_res, std_res)) {
+  if (s21_strcmp(my_res, std_res) || my_ret != std_ret) {
     print_debug(format, values, type, my_res, std_res, 1);
   }
 #ifdef DEBUG
@@ -64,7 +66,7 @@ int sprintf_test_common(char* format, void* values, Types type, int assert) {
   if (assert) {
     ck_assert_str_eq(my_res, std_res);
   }
-  return s21_strcmp(my_res, std_res);
+  return (s21_strcmp(my_res, std_res) || my_ret != std_ret) ? 1 : 0;
 }
 
 void strtok_test_common(char s21_haystack[], char str_haystack[],

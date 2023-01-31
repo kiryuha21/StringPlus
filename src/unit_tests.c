@@ -428,12 +428,12 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%+# 0hhX";
-  int num = -1566921984;
-  s21_sprintf(a, f, num, num);
-  sprintf(b, f, num, num);
+  char* f = "%-#-.hho";
+  int num = -345701376;
+  int my_res = s21_sprintf(a, f, num);
+  int std_res = sprintf(b, f, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
-  if (strcmp(a, b) == 0) {
+  if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
   }
 

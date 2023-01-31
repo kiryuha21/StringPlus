@@ -267,16 +267,6 @@ double custom_round(double num, int precision) {
   return round(num * pow(10, precision)) * pow(0.1, precision);
 }
 
-int handle_zero(char** formatted_string, WriterFormat* writer) {
-  writer->flags.lattice_flag = 0;
-  *formatted_string = (char*)calloc(5, sizeof(char));
-  if (*formatted_string == NULL) {
-    return FAIL;
-  }
-  (*formatted_string)[0] = '0';
-  return OK;
-}
-
 long long handle_overflow(long long int num, WriterFormat* writer) {
   if (num < 0) {
     writer->flags.plus_flag = -1;
@@ -331,7 +321,8 @@ void apply_unsigned_length(WriterFormat* writer, unsigned long long num,
 // const char* specifications = "cdieEfgGosuxXpn%";
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
-int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
+int build_base(char** formatted_string, WriterFormat* writer, int* bad_return,
+               va_list vars) {
   if (s21_strchr("di", writer->specification)) {
     long long num = va_arg(vars, long long);
 
@@ -354,10 +345,9 @@ int build_base(char** formatted_string, WriterFormat* writer, va_list vars) {
       safe_replace(formatted_string, &temp);
     }
 
-    if (s21_strlen(*formatted_string) == 1 && **formatted_string == '0' &&
-        s21_strchr("uxX", writer->specification) && num != 0) {
+    if (**formatted_string == '0' && s21_strchr("xX", writer->specification)) {
       writer->flags.lattice_flag = 0;
-      **formatted_string = '\0';
+      *bad_return = 0;
     }
   } else if (writer->specification == 'c' || writer->specification == '%') {
     int num = '%';
@@ -432,21 +422,28 @@ size_t apply_width(char** formatted_string, WriterFormat* writer) {
   return res;
 }
 
-void apply_precision(char** formatted_string, WriterFormat* writer) {
-  if (writer->precision != UNKNOWN && writer->precision != EMPTY) {
+void apply_precision(char** formatted_string, WriterFormat* writer,
+                     int* bad_return) {
+  if (writer->precision != UNKNOWN) {
     if (s21_strchr("iduoxX", writer->specification)) {
-      size_t len = s21_strlen(*formatted_string);
-      if (writer->precision >= (int)len) {
-        char* trimmed = s21_trim(*formatted_string, " ");
-        safe_replace(formatted_string, &trimmed);
+      if ((writer->precision != EMPTY && writer->precision != 0) ||
+          **formatted_string != '0') {
+        size_t len = s21_strlen(*formatted_string);
+        if (writer->precision >= (int)len) {
+          char* trimmed = s21_trim(*formatted_string, " ");
+          safe_replace(formatted_string, &trimmed);
 
-        int diff = writer->precision - (int)s21_strlen(*formatted_string);
-        char* null_spacer = (char*)calloc(sizeof(char), diff + 1);
-        s21_memset(null_spacer, '0', diff);
+          int diff = writer->precision - (int)s21_strlen(*formatted_string);
+          char* null_spacer = (char*)calloc(sizeof(char), diff + 1);
+          s21_memset(null_spacer, '0', diff);
 
-        char* result = s21_insert(*formatted_string, null_spacer, 0);
-        safe_replace(formatted_string, &result);
-        free(null_spacer);
+          char* result = s21_insert(*formatted_string, null_spacer, 0);
+          safe_replace(formatted_string, &result);
+          free(null_spacer);
+        }
+      } else {
+        **formatted_string = '\0';
+        *bad_return = 0;
       }
     }
   }
@@ -536,19 +533,20 @@ void apply_flags(char** formatted_string, WriterFormat* writer,
 }
 
 void build_format_string(char** formatted_string, WriterFormat* writer,
-                         va_list vars) {
-  if (build_base(formatted_string, writer, vars) != FAIL) {
-    apply_precision(formatted_string, writer);
+                         int* bad_return, va_list vars) {
+  if (build_base(formatted_string, writer, bad_return, vars) != FAIL) {
+    apply_precision(formatted_string, writer, bad_return);
     size_t left_space = apply_width(formatted_string, writer);
     apply_flags(formatted_string, writer, left_space);
   }
 }
 
 int s21_sprintf(char* str, const char* format, ...) {
-  int result = 0;
   va_list vars;
   va_start(vars, format);
   s21_memset(str, '\0', 100);
+  int bad_return = -1;
+  char* start = str;
 
   while (*format != '\0') {
     for (; *format != '%' && *format; ++str, ++format) {
@@ -561,7 +559,6 @@ int s21_sprintf(char* str, const char* format, ...) {
       validate_writer(&writer);
       if (skip == 0 && writer.specification != UNKNOWN) {
         format += writer.parsed_length + 1;
-        ++result;
 
         if (writer.width == ASTERISK) {
           writer.width = va_arg(vars, int);
@@ -571,7 +568,7 @@ int s21_sprintf(char* str, const char* format, ...) {
         }
 
         char* formatted_arg = NULL;
-        build_format_string(&formatted_arg, &writer, vars);
+        build_format_string(&formatted_arg, &writer, &bad_return, vars);
 
         size_t size_before = s21_strlen(str);
         s21_strcat(str, formatted_arg);
@@ -614,5 +611,5 @@ int s21_sprintf(char* str, const char* format, ...) {
   *(str + 1) = '\0';
 
   va_end(vars);
-  return result;
+  return (int)s21_strlen(start) ? (int)s21_strlen(start) : bad_return;
 }
