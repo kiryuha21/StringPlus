@@ -234,8 +234,7 @@ int get_digits_amount(unsigned long long num, int number_system) {
   return (int)floorl(log2l((num)) / log2l(number_system)) + 1;
 }
 
-void convert_ll_to_string(unsigned long long num, int number_system,
-                          char** str) {
+void convert_ll_to_string(ull num, int number_system, char** str) {
   int len = get_digits_amount(num, number_system);
 
   *str = (char*)calloc(sizeof(char), len + 4);
@@ -298,6 +297,7 @@ void apply_signed_length(WriterFormat* writer, long long num, int number_system,
     convert_ll_to_string(res, number_system, formatted_string);
   }
 }
+
 void apply_unsigned_length(WriterFormat* writer, unsigned long long num,
                            int number_system, char** formatted_string) {
   if (writer->length.l == 1 || writer->length.L == 1) {
@@ -391,6 +391,20 @@ int build_base(char** formatted_string, WriterFormat* writer, int* bad_return,
     for (int i = decimal_len - 1; i >= 0; --i, decimal_part /= 10) {
       (*formatted_string)[i] = (char)(decimal_part % 10 + '0');
     }
+  } else if (writer->specification == 's') {
+    char* string = va_arg(vars, char*);
+    *formatted_string = (char*)calloc(s21_strlen(string) + 1, sizeof(char));
+    s21_strcpy(*formatted_string, string);
+  } else if (writer->specification == 'p') {
+    writer->length.l = 1;
+    void* pointer = va_arg(vars, void*);
+    apply_unsigned_length(writer, (ull)pointer, 16, formatted_string);
+
+    char* lowered = s21_to_lower(*formatted_string);
+    safe_replace(formatted_string, &lowered);
+
+    char* with_prefix = s21_insert(*formatted_string, "0x", 0);
+    safe_replace(formatted_string, &with_prefix);
   }
   return OK;
 }
@@ -444,6 +458,12 @@ void apply_precision(char** formatted_string, WriterFormat* writer,
       } else {
         **formatted_string = '\0';
         *bad_return = 0;
+      }
+    } else if (writer->specification == 's') {  // TODO: or maybe smth else too
+      if (writer->precision < (int)s21_strlen(*formatted_string)) {
+        char* cutted = (char*)calloc(writer->precision + 1, sizeof(char));
+        s21_strncpy(cutted, *formatted_string, writer->precision);
+        safe_replace(formatted_string, &cutted);
       }
     }
   }

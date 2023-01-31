@@ -40,7 +40,7 @@ START_TEST(sprintf_basic) {
   sprintf_test_common("%+ 0#.73c", (void*)(&c), CHAR, assert);
 }
 
-int random_test(int assert) {
+int random_test(int with_assert) {
   // TODO: test for all flags
   char specification = specifications_test[rand() % 8];
   char format[100] = {0};
@@ -74,42 +74,42 @@ int random_test(int assert) {
   printf("%s\n", format);
   if (specification == 'c') {
     char res = rand() % 100 + '0';
-    cmp = sprintf_test_common(format, (void*)(&res), CHAR, assert);
+    cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
   } else if (specification == 'd') {
     int res = rand() % 4294967295 - rand() % 4294967295;
-    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'i') {
     int res = rand() % 4294967295 - rand() % 4294967295;
-    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'o') {
     int res = rand() % 4294967295 - rand() % 4294967295;
-    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'x' || specification == 'X') {
     int res = rand() % 4294967295 - rand() % 4294967295;
-    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'f') {
     double res = rand() % 10000 +
                  (double)(rand() % 10000000) / (double)(rand() % 10000000);
     cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, 1);
   } else if (specification == 'u') {
     int res = rand() % 10000;
-    cmp = sprintf_test_common(format, (void*)(&res), INT, assert);
+    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == '%') {
     char res = '%';
-    cmp = sprintf_test_common(format, (void*)(&res), CHAR, assert);
+    cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
   }
 
   return cmp;
 }
 
-void random_tests(int assert, int count) {
+void random_tests(int with_assert, int count) {
   int cmp = 0;
   srand(time(NULL));
   for (int i = 0; i < count && cmp == 0; ++i) {
 #ifdef DEBUG
     printf("%d | ", i + 1);
 #endif
-    cmp = random_test(assert);
+    cmp = random_test(with_assert);
   }
 
   printf(cmp ? "ERROR" : "SUCCESS");
@@ -428,16 +428,16 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%-#-.hho";
-  int num = -345701376;
-  int my_res = s21_sprintf(a, f, num);
-  int std_res = sprintf(b, f, num);
+  char* f = "%p";
+  int num = 12;
+  int my_res = s21_sprintf(a, f, &num);
+  int std_res = sprintf(b, f, &num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
   }
 
-  random_tests(0, 10000000);
+  // random_tests(0, 10000000);
 
   return 0;
 }

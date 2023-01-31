@@ -9,6 +9,8 @@
 
 #define DEFAULT_PRECISION 6
 
+typedef unsigned long long ull;
+
 typedef struct Flags {
   int minus_flag;
   int plus_flag;

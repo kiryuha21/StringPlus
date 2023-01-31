@@ -34,7 +34,8 @@ void print_debug(char* format, void* values, Types type, char* my_res,
   }
 }
 
-int sprintf_test_common(char* format, void* values, Types type, int assert) {
+int sprintf_test_common(char* format, void* values, Types type,
+                        int with_assert) {
   char my_res[10000], std_res[10000];
   int my_ret = 0, std_ret = 1;
 
@@ -62,7 +63,7 @@ int sprintf_test_common(char* format, void* values, Types type, int assert) {
     print_debug(format, values, type, my_res, std_res, 0);
   }
 #endif
-  if (assert) {
+  if (with_assert) {
     ck_assert_str_eq(my_res, std_res);
   }
   return (s21_strcmp(my_res, std_res) || my_ret != std_ret) ? 1 : 0;
