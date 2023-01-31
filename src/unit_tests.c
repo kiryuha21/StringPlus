@@ -8,7 +8,7 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdioxXu%fefgGspn";
+const char* specifications_test = "cdioxXu%spnfeEgG";
 // TODO : - flag
 const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
@@ -42,7 +42,7 @@ START_TEST(sprintf_basic) {
 
 int random_test(int with_assert) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 8];
+  char specification = specifications_test[rand() % 11];
   char format[100] = {0};
   format[0] = '%';
   int index = 1;
@@ -112,7 +112,7 @@ void random_tests(int with_assert, int count) {
     cmp = random_test(with_assert);
   }
 
-  printf(cmp ? "ERROR" : "SUCCESS");
+  printf(cmp ? "ERROR\n" : "SUCCESS\n");
 }
 
 START_TEST(sprintf_random_int) { random_tests(1, 1); }
@@ -428,16 +428,19 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%20.2s";
-  char* str = "abc";
-  int my_res = s21_sprintf(a, f, str);
-  int std_res = sprintf(b, f, str);
+  char* f = "aaaa%20.2n";
+  int num;
+  int my_res = s21_sprintf(a, f, &num);
+  printf("\n my num - %d\n", num);
+  int std_res = sprintf(b, f, &num);
+  printf("std num - %d\n\n", num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
   }
 
-  // TODO: should be less output but always with assert(guess after functions will be debugged and finished)
+  // TODO: should be less output but always with assert(guess after functions
+  // will be debugged and finished)
   random_tests(0, 10000000);
 
   return 0;

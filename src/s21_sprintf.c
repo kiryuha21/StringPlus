@@ -268,8 +268,8 @@ void apply_unsigned_length(WriterFormat* writer, unsigned long long num,
 // const char* specifications = "cdieEfgGosuxXpn%";
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
-int build_base(char** formatted_string, WriterFormat* writer, int* bad_return,
-               va_list vars) {
+int build_base(char** formatted_string, WriterFormat* writer,
+               size_t written_bytes, int* bad_return, va_list vars) {
   if (s21_strchr("di", writer->specification)) {
     long long num = va_arg(vars, long long);
 
@@ -344,21 +344,23 @@ int build_base(char** formatted_string, WriterFormat* writer, int* bad_return,
     s21_strcpy(*formatted_string, string);
   } else if (writer->specification == 'p') {
     writer->length.l = 1;
+    writer->flags.lattice_flag = 1;
+
     void* pointer = va_arg(vars, void*);
     apply_unsigned_length(writer, (ull)pointer, 16, formatted_string);
 
     char* lowered = s21_to_lower(*formatted_string);
     safe_replace(formatted_string, &lowered);
-
-    char* with_prefix = s21_insert(*formatted_string, "0x", 0);
-    safe_replace(formatted_string, &with_prefix);
+  } else if (writer->specification == 'n') {
+    int* num = va_arg(vars, int*);
+    *num = (int)written_bytes;
   }
   return OK;
 }
 
 size_t apply_width(char** formatted_string, WriterFormat* writer) {
   size_t res = 0;
-  if (writer->width != UNKNOWN) {
+  if (writer->width != UNKNOWN && writer->specification != 'n') {
     int len = (int)s21_strlen(*formatted_string);
     if (writer->width > len) {
       size_t diff = writer->width - len;
@@ -491,7 +493,7 @@ void apply_flags(char** formatted_string, WriterFormat* writer,
       if (!first) {
         add_to_num(formatted_string, "0", writer->flags.minus_flag, left_space);
       }
-    } else if (writer->specification == 'x') {
+    } else if (writer->specification == 'x' || writer->specification == 'p') {
       add_to_num(formatted_string, "0x", writer->flags.minus_flag, left_space);
     } else if (writer->specification == 'X') {
       add_to_num(formatted_string, "0X", writer->flags.minus_flag, left_space);
@@ -500,8 +502,9 @@ void apply_flags(char** formatted_string, WriterFormat* writer,
 }
 
 void build_format_string(char** formatted_string, WriterFormat* writer,
-                         int* bad_return, va_list vars) {
-  if (build_base(formatted_string, writer, bad_return, vars) != FAIL) {
+                         size_t written_bytes, int* bad_return, va_list vars) {
+  if (build_base(formatted_string, writer, written_bytes, bad_return, vars) !=
+      FAIL) {
     apply_precision(formatted_string, writer, bad_return);
     size_t left_space = apply_width(formatted_string, writer);
     apply_flags(formatted_string, writer, left_space);
@@ -511,7 +514,7 @@ void build_format_string(char** formatted_string, WriterFormat* writer,
 int s21_sprintf(char* str, const char* format, ...) {
   va_list vars;
   va_start(vars, format);
-  s21_memset(str, '\0', 100);
+  s21_memset(str, '\0', 100);  // TODO: hey wtf this should be removed
   int bad_return = -1;
   char* start = str;
 
@@ -535,7 +538,8 @@ int s21_sprintf(char* str, const char* format, ...) {
         }
 
         char* formatted_arg = NULL;
-        build_format_string(&formatted_arg, &writer, &bad_return, vars);
+        build_format_string(&formatted_arg, &writer, s21_strlen(start),
+                            &bad_return, vars);
 
         size_t size_before = s21_strlen(str);
         s21_strcat(str, formatted_arg);
@@ -578,5 +582,6 @@ int s21_sprintf(char* str, const char* format, ...) {
   *(str + 1) = '\0';
 
   va_end(vars);
+  // TODO: orig sprintf returns 0 with raw %n, our func returns -1
   return (int)s21_strlen(start) ? (int)s21_strlen(start) : bad_return;
 }
