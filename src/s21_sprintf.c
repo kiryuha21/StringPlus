@@ -160,6 +160,8 @@ int parse_into_writer(WriterFormat* writer, const char* src) {
         return writer->parsed_length;
       }
       ++writer->length.h;
+    } else {
+      return writer->parsed_length;
     }
 
     ++writer->parsed_length;
@@ -169,6 +171,8 @@ int parse_into_writer(WriterFormat* writer, const char* src) {
   if (s21_strchr(specifications, src[writer->parsed_length]) != NULL) {
     writer->specification = src[writer->parsed_length];
     ++writer->parsed_length;
+  } else {
+    return -1;
   }
 
   return 0;
@@ -588,6 +592,7 @@ int s21_sprintf(char* str, const char* format, ...) {
         ++str;
         ++format;
       } else {
+        const char* char_to_skip = format + skip;
         char* add_flags = get_writer_flags(&writer);
         for (char* ptr = add_flags; *ptr; ++ptr, ++str) {
           *str = *ptr;
@@ -596,8 +601,8 @@ int s21_sprintf(char* str, const char* format, ...) {
         ++format;                                            // skip %
         for (; s21_strchr(writer_flags, *format); ++format)  // skip flags
           ;
-        for (; !s21_strchr(lengths, *format);
-             ++str, ++format) {  // copy until lengths
+        for (; *format != *char_to_skip;
+             ++str, ++format) {  // copy until skip
           *str = *format;
           if (*str == '.') {
             for (; *(format + 1) == '0'; ++format)
@@ -608,9 +613,11 @@ int s21_sprintf(char* str, const char* format, ...) {
             }
           }
         }
-        ++format;  // skip lengths
-        if (*format == *(format - 1) && *format != 'L') {
-          ++format;
+        if (skip != -1) {
+          ++format;  // skip lengths
+          if (*format == *(format - 1) && *format != 'L') {
+            ++format;
+          }
         }
       }
     }

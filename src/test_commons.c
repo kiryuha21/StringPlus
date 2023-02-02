@@ -18,7 +18,7 @@ void print_debug(char* format, void* values, Types type, char* my_res,
     } else if (type == DOUBLE) {
       printf("val:\n%f\n", *((double*)values));
     } else if (type == VOID_PTR) {
-        printf("val:\n%p\n", values);
+      printf("val:\n%p\n", values);
     }
     printf("results(my - std):\n\"%s\"\n\"%s\"\n---------\n", my_res, std_res);
   } else {
@@ -32,7 +32,7 @@ void print_debug(char* format, void* values, Types type, char* my_res,
     } else if (type == DOUBLE) {
       printf("%f", *((double*)values));
     } else if (type == VOID_PTR) {
-        printf("%p", values);
+      printf("%p", values);
     }
     printf(" | \"%s\" | \"%s\"\n", my_res, std_res);
   }
