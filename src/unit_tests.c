@@ -119,12 +119,16 @@ int random_test(int with_assert) {
       free(res);
     }
   } else if (specification == 'p') {
-    int size;
-    char* res = generate_random_size_string(&size);
-    if (res != NULL) {
-      char* ptr = res + (rand() % size);
-      cmp = sprintf_test_common(format, (void*)(ptr), VOID_PTR, with_assert);
-      free(res);
+    if (rand() % 1 != 0) {
+      int size;
+      char* res = generate_random_size_string(&size);
+      if (res != NULL) {
+        char* ptr = res + (rand() % size);
+        cmp = sprintf_test_common(format, (void*)(ptr), VOID_PTR, with_assert);
+        free(res);
+      }
+    } else {
+      cmp = sprintf_test_common(format, (void*)(NULL), VOID_PTR, with_assert);
     }
   }
 
@@ -457,12 +461,12 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%+0504llp";
-  int num;
-  int my_res = s21_sprintf(a, f, &num);
-  printf("\n my num - %d\n", num);
-  int std_res = sprintf(b, f, &num);
-  printf("std num - %d\n\n", num);
+  char* f = "%#++.1268hp";
+  int num = 1;
+  int my_res = s21_sprintf(a, f, NULL);
+  printf(" my num - %d\n", num);
+  int std_res = sprintf(b, f, NULL);
+  printf("std num - %d\n", num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
@@ -470,7 +474,7 @@ int main(void) {
 
   // TODO: should be less output but always with assert(guess after functions
   // TODO: will be debugged and finished)
-  // random_tests(0, 10000000);
+  random_tests(0, 10000000);
 
   return 0;
 }

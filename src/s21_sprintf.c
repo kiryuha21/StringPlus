@@ -57,11 +57,12 @@ void validate_writer_flags(WriterFormat* writer) {
     }
 
     // TODO: should be determined
-    if ((writer->flags.zero_flag || writer->flags.space_flag) && s21_strchr("cs%", writer->specification)) {
+    if ((writer->flags.zero_flag || writer->flags.space_flag) &&
+        s21_strchr("cs%", writer->specification)) {
       writer->flags.zero_flag = 0;
     }
 
-    if (s21_strchr("oxXcu%", writer->specification)) {
+    if (s21_strchr("oxXcuo%", writer->specification)) {
       writer->flags.plus_flag = 0;
       writer->flags.space_flag = 0;
     }
@@ -347,6 +348,17 @@ int build_base(char** formatted_string, WriterFormat* writer,
     writer->flags.lattice_flag = 1;
 
     void* pointer = va_arg(vars, void*);
+    if (pointer == NULL) {
+      *formatted_string = (char*)calloc(6, sizeof(char));
+      char* temp = s21_insert(*formatted_string, "(nil)", 0);
+      safe_replace(formatted_string, &temp);
+      writer->flags.lattice_flag = 0;
+      writer->flags.plus_flag = 0;
+      writer->flags.zero_flag = 0;
+      writer->flags.space_flag = 0;
+      writer->precision = UNKNOWN;
+      return OK;
+    }
     apply_unsigned_length(writer, (ull)pointer, 16, formatted_string);
 
     char* lowered = s21_to_lower(*formatted_string);
@@ -499,14 +511,23 @@ void apply_flags(char** formatted_string, WriterFormat* writer,
         add_to_num(formatted_string, "0", writer->flags.minus_flag, left_space);
       }
     } else if (writer->specification == 'x' || writer->specification == 'p') {
-      add_to_num(formatted_string, "0x", writer->flags.minus_flag, left_space);
+      if (writer->flags.plus_flag == 1) {
+        add_to_num(formatted_string, "+0x", writer->flags.minus_flag,
+                   left_space);
+      } else if (writer->flags.space_flag) {
+        add_to_num(formatted_string, " 0x", writer->flags.minus_flag,
+                   left_space);
+      } else {
+        add_to_num(formatted_string, "0x", writer->flags.minus_flag,
+                   left_space);
+      }
     } else if (writer->specification == 'X') {
       add_to_num(formatted_string, "0X", writer->flags.minus_flag, left_space);
     }
   }
 
   // TODO: check for specifications inapplicable with these flags
-  if (writer->specification != 'n') {
+  if (writer->specification != 'n' && writer->specification != 'p') {
     if (writer->flags.plus_flag == 1) {
       add_to_num(formatted_string, "+", writer->flags.minus_flag, left_space);
     } else if (writer->flags.plus_flag == -1) {
