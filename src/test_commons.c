@@ -9,7 +9,7 @@ void print_debug(char* format, void* values, Types type, char* my_res,
                  char* std_res, int full) {
   if (full) {
     printf("---------\nformat:\n%s\n", format);
-    if (type == INT) {
+    if (type == INT || type == INT_PTR) {
       printf("val:\n%d\n", *((int*)values));
     } else if (type == STRING) {
       printf("val:\n%s\n", (char*)values);
@@ -21,7 +21,7 @@ void print_debug(char* format, void* values, Types type, char* my_res,
     printf("results(my - std):\n\"%s\"\n\"%s\"\n---------\n", my_res, std_res);
   } else {
     printf("%s | ", format);
-    if (type == INT) {
+    if (type == INT || type == INT_PTR) {
       printf("%d", *((int*)values));
     } else if (type == STRING) {
       printf("%s", (char*)values);
@@ -54,10 +54,10 @@ int sprintf_test_common(char* format, void* values, Types type,
     std_ret = sprintf(std_res, format, *((double*)values));
     my_ret = s21_sprintf(my_res, format, *((double*)values));
   } else if (type == INT_PTR) {  // only for %n specifier
-    std_ret = sprintf(std_res, format, (int*)values);
+    std_ret = s21_sprintf(std_res, format, (int*)values);
     int my_num = *(int*)values;
 
-    my_ret = s21_sprintf(my_res, format, (int*)values);
+    my_ret = sprintf(my_res, format, (int*)values);
     int std_num = *(int*)values;
 
     if (my_num != std_num) {
