@@ -43,7 +43,6 @@ void validate_writer_flags(WriterFormat* writer) {
     writer->flags.zero_flag = 0;
   }
 
-  // TODO: should it actually be so?
   if (writer->flags.plus_flag && writer->specification != 'p') {
     writer->flags.space_flag = 0;
   }
@@ -57,9 +56,8 @@ void validate_writer_flags(WriterFormat* writer) {
       writer->flags.lattice_flag = 0;
     }
 
-    // TODO: should it actually be so??
-    if ((writer->flags.zero_flag || writer->flags.space_flag) &&
-        s21_strchr("csp%", writer->specification)) {
+    // TODO: should be determined
+    if ((writer->flags.zero_flag || writer->flags.space_flag) && s21_strchr("cs%", writer->specification)) {
       writer->flags.zero_flag = 0;
     }
 
