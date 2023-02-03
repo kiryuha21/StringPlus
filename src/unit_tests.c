@@ -46,7 +46,7 @@ char* generate_random_size_string(int* size) {
   char* res = (char*)calloc(*size + 1, sizeof(char));
   if (res != NULL) {
     for (int i = 0; i < *size; ++i) {
-      res[i] = (char)(rand() % 127);
+      res[i] = (char)((rand() % 97) + 30);
     }
   }
   return res;
@@ -64,7 +64,7 @@ void add_random_chars(char* format, int* index, int max) {
 
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 10];
+  char specification = specifications_test[rand() % 11];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -494,11 +494,11 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%##0 72Lx";
-  int num = 1156378869;
-  int my_res = s21_sprintf(a, f, num);
-  printf("format - \"%s\" \nnum - %d\n", f, num);
-  int std_res = sprintf(b, f, num);
+  char* f = "%1hs";
+  char* str = "aaa";
+  int my_res = s21_sprintf(a, f, str);
+  printf("format - \"%s\" \nstr - %s\n", f, str);
+  int std_res = sprintf(b, f, str);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
@@ -506,7 +506,7 @@ int main(void) {
 
   // TODO: should be less output but always with assert(guess after functions
   // TODO: will be debugged and finished)
-  random_tests(0, 10000000);
+  // random_tests(0, 10000000);
 
   return 0;
 }
