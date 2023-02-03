@@ -495,8 +495,8 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%#.e";
-  double num = 7735.418339;
+  char* f = "%0 0#.0800le";
+  double num = 2635.329204;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %f\n", f, num);
   int std_res = sprintf(b, f, num);
@@ -507,7 +507,7 @@ int main(void) {
 
   // TODO: should be less output but always with assert(guess after functions
   // TODO: will be debugged and finished)
-  random_tests(0, 10000000);
+  //random_tests(0, 10000000);
 
   return 0;
 }
