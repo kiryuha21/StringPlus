@@ -326,11 +326,22 @@ int build_base(char** formatted_string, WriterFormat* writer,
                            : writer->width - 1);
     }
     (*formatted_string)[0] = (char)num;
-  } else if (writer->specification == 'f') {
+  } else if (s21_strchr("eEf", writer->specification)) {
     double num = va_arg(vars, double);
     int precision = writer->precision == UNKNOWN || writer->precision == EMPTY
                         ? DEFAULT_PRECISION
                         : writer->precision;
+    int pow = 0;
+    if (s21_strchr("eE", writer->specification)) {
+        while (num > 10) {
+            num /= 10;
+            ++pow;
+        }
+        while (num <= 1) {
+            num *= 10;
+            --pow;
+        }
+    }
     num = custom_round(num, precision);
     int len = get_digits_amount((int)num, 10) + 1 + precision;
 
@@ -338,7 +349,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
     double float_part = modf(num, &d);
     int decimal_part = abs((int)d);
 
-    *formatted_string = (char*)calloc(sizeof(char), len + 4);
+    *formatted_string = (char*)calloc(sizeof(char), len + 6);
     if (*formatted_string == NULL) {
       return FAIL;
     }
@@ -353,6 +364,27 @@ int build_base(char** formatted_string, WriterFormat* writer,
     (*formatted_string)[decimal_len] = '.';
     for (int i = decimal_len - 1; i >= 0; --i, decimal_part /= 10) {
       (*formatted_string)[i] = (char)(decimal_part % 10 + '0');
+    }
+    if (s21_strchr("eE", writer->specification)) {
+        int power = pow;
+        int add_len = pow >= 100 ? 4 : 3;
+        if (pow < 0) {
+            add_len = pow <= -100 ? 5 : 4;
+        }
+        size_t strlen = s21_strlen(*formatted_string) + 1;
+        size_t endlen = strlen + add_len - (pow < 0 ? 2 : 1);
+        for (;endlen > strlen; --endlen) {
+            (*formatted_string)[endlen] = (char)('0' + abs(pow % 10));
+            pow /= 10;
+        }
+        if (power < 0) {
+            (*formatted_string)[endlen--] = '-';
+        }
+        (*formatted_string)[endlen] = 'e';
+    }
+    if (writer->specification == 'E') {
+        char* temp = s21_to_upper(*formatted_string);
+        safe_replace(formatted_string, &temp);
     }
   } else if (writer->specification == 's') {
     char* string = va_arg(vars, char*);

@@ -8,9 +8,9 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdioxXu%pnsfeEgG";
+const char* specifications_test = "cdioxXu%pneEsfgG";
 // TODO: remove from additional unrealized
-const char* additional_specs = "bSjFsfeEgG";
+const char* additional_specs = "bSjF";
 const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
 
@@ -64,7 +64,7 @@ void add_random_chars(char* format, int* index, int max) {
 
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 10];
+  char specification = specifications_test[rand() % 12];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -494,10 +494,10 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "% 0#0672.u";
-  int num = 1848;
+  char* f = "%.e";
+  double num = 0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001;
   int my_res = s21_sprintf(a, f, num);
-  printf("format - \"%s\" \nnum - %d\n", f, num);
+  printf("format - \"%s\" \nnum - %f\n", f, num);
   int std_res = sprintf(b, f, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
