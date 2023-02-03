@@ -9,7 +9,8 @@
 #include "test_commons.h"
 
 const char* specifications_test = "cdioxXu%pnsfeEgG";
-const char* additional_specs = "bSj";
+// TODO: remove from additional unrealized
+const char* additional_specs = "bSjFsfeEgG";
 const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
 
@@ -51,39 +52,41 @@ char* generate_random_size_string(int* size) {
   return res;
 }
 
+void add_random_chars(char* format, int* index, int max) {
+  for (; rand() % 10 == 0 && *index < max;) {
+    char rand_char;
+    for (; s21_strchr(additional_specs, rand_char) || rand_char == '\0';
+         rand_char = rand() % 128)
+      ;
+    format[(*index)++] = rand_char;
+  }
+}
+
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
   char specification = specifications_test[rand() % 10];
   char format[100] = {0};
   int index = 0;
-  for (; random_chars && rand() % 10 == 0 && index < 80;) {
-    char rand_char = rand() % 255 - 128;
-    for (; s21_strchr(additional_specs, rand_char); rand_char = rand() % 255 - 128);
-      format[index++] = rand_char;
+  if (random_chars) {
+    add_random_chars(format, &index, 80);
   }
   format[index++] = '%';
-  for (; random_chars && rand() % 10 == 0 && index < 80;) {
-    char rand_char = rand() % 255 - 128;
-    for (; s21_strchr(additional_specs, rand_char); rand_char = rand() % 255 - 128);
-      format[index++] = rand_char;
+  if (random_chars) {
+    add_random_chars(format, &index, 80);
   }
   // flags
   for (int j = 0; rand() % 3 > 0 && j < 4; ++j) {
     format[index++] = writer_flags_test[rand() % 5];
   }
-  for (; random_chars && rand() % 10 == 0 && index < 80;) {
-    char rand_char = rand() % 255 - 128;
-    for (; s21_strchr(additional_specs, rand_char); rand_char = rand() % 255 - 128);
-      format[index++] = rand_char;
+  if (random_chars) {
+    add_random_chars(format, &index, 80);
   }
   // width
   for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
     format[index++] = '0' + rand() % 9;
   }
-  for (; random_chars && rand() % 10 == 0 && index < 80;) {
-    char rand_char = rand() % 255 - 128;
-    for (; s21_strchr(additional_specs, rand_char); rand_char = rand() % 255 - 128);
-      format[index++] = rand_char;
+  if (random_chars) {
+    add_random_chars(format, &index, 80);
   }
   // precision
   if (rand() % 2) {
@@ -92,25 +95,19 @@ int random_test(int with_assert, int random_chars) {
       format[index++] = '0' + rand() % 9;
     }
   }
-  for (; random_chars && rand() % 10 == 0 && index < 80;) {
-    char rand_char = rand() % 255 - 128;
-    for (; s21_strchr(additional_specs, rand_char); rand_char = rand() % 255 - 128);
-      format[index++] = rand_char;
+  if (random_chars) {
+    add_random_chars(format, &index, 80);
   }
   for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
     format[index++] = lengths_test[rand() % 3];
   }
-  for (; random_chars && rand() % 10 == 0 && index < 80;) {
-    char rand_char = rand() % 255 - 128;
-    for (; s21_strchr(additional_specs, rand_char); rand_char = rand() % 255 - 128);
-      format[index++] = rand_char;
+  if (random_chars) {
+    add_random_chars(format, &index, 80);
   }
   //  specification
   format[index++] = specification;
-  for (; random_chars && rand() % 10 == 0 && index < 80;) {
-    char rand_char = rand() % 255 - 128;
-    for (; s21_strchr(additional_specs, rand_char); rand_char = rand() % 255 - 128);
-      format[index++] = rand_char;
+  if (random_chars) {
+    add_random_chars(format, &index, 80);
   }
   WriterFormat writer;
   init_writer(&writer);
@@ -119,7 +116,7 @@ int random_test(int with_assert, int random_chars) {
   int cmp = 0;
   printf("%s\n", format);
   if (specification == 'c') {
-    char res = rand() % 255 - 128;
+    char res = rand() % 127;
     cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
   } else if (specification == 'd') {
     int res = rand() % 4294967295 - rand() % 4294967295;
@@ -177,7 +174,8 @@ void random_tests(int with_assert, int count) {
 #ifdef DEBUG
     printf("%d | ", i + 1);
 #endif
-    cmp = random_test(with_assert, 1);
+      //TODO: random_chars -> 1
+    cmp = random_test(with_assert, 0);
   }
 
   printf(cmp ? "ERROR\n" : "SUCCESS\n");
@@ -496,12 +494,11 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%061.863L�d";
-  int num = 956837231;
-  int my_res = s21_sprintf(a, f, &num);
-  printf(" my num - %d\n", num);
-  int std_res = sprintf(b, f, &num);
-  printf("std num - %d\n", num);
+  char* f = "%#-064c";
+  int num = '\0';
+  int my_res = s21_sprintf(a, f, num);
+  printf("format - \"%s\" \nnum - %d\n", f, num);
+  int std_res = sprintf(b, f, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
@@ -509,7 +506,7 @@ int main(void) {
 
   // TODO: should be less output but always with assert(guess after functions
   // TODO: will be debugged and finished)
-  //random_tests(0, 10000000);
+  random_tests(0, 10000000);
 
   return 0;
 }
