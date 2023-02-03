@@ -64,7 +64,7 @@ void add_random_chars(char* format, int* index, int max) {
 
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = 'f';  // specifications_test[rand() % 12];
+  char specification = specifications_test[rand() % 12];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -92,14 +92,15 @@ int random_test(int with_assert, int random_chars) {
   if (rand() % 2) {
     format[index++] = '.';
     for (int j = 0; rand() % 2 == 0 && j < 1; ++j) {
-      format[index++] = '0' + rand() % 9;
+      format[index++] = (char)('0' + rand() % 10);
     }
   }
   if (random_chars) {
     add_random_chars(format, &index, 80);
   }
+  // length
   for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
-    format[index++] = lengths_test[rand() % 3];
+    format[index++] = s21_strchr("eEfgG", specification) ? 'L' : lengths_test[rand() % 2];
   }
   if (random_chars) {
     add_random_chars(format, &index, 80);
@@ -484,8 +485,6 @@ Suite* string_suite(void) {
   return s;
 }
 
-#include <limits.h>
-
 int main(void) {
   Suite* s = string_suite();
   SRunner* sr = srunner_create(s);
@@ -496,10 +495,10 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%Le";
-  long double num = 9513.093064;
+  char* f = "%-+# .e";
+  double num = 9682.490461;
   int my_res = s21_sprintf(a, f, num);
-  printf("format - \"%s\" \nnum - %Lf\n", f, num);
+  printf("format - \"%s\" \nnum - %f\n", f, num);
   int std_res = sprintf(b, f, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
@@ -508,7 +507,7 @@ int main(void) {
 
   // TODO: should be less output but always with assert(guess after functions
   // TODO: will be debugged and finished)
-  random_tests(0, 10000000);
+  // random_tests(0, 10000000);
 
   return 0;
 }

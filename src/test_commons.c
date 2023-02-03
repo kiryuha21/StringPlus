@@ -40,10 +40,8 @@ void print_debug(char* format, void* values, Types type, char* my_res,
 
 int sprintf_test_common(char* format, void* values, Types type,
                         int with_assert) {
-  char my_res[10000], std_res[10000];
+  char my_res[10000] = {0}, std_res[10000] = {0};
   int my_ret = 0, std_ret = 1;
-
-  s21_memset(my_res, '\0', 10000);
 
   if (type == INT) {
     std_ret = sprintf(std_res, format, *((int*)values));

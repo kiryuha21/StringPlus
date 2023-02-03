@@ -327,25 +327,36 @@ int build_base(char** formatted_string, WriterFormat* writer,
     }
     (*formatted_string)[0] = (char)num;
   } else if (s21_strchr("eEf", writer->specification)) {
-    long double num =
-        writer->length.L > 0 ? va_arg(vars, long double) : va_arg(vars, double);
+    long double num;
+    if (writer->length.L > 0) {
+      num = va_arg(vars, long double);
+    } else {
+      num = va_arg(vars, double);
+    }
+
     int precision =
         writer->precision == UNKNOWN ? DEFAULT_PRECISION : writer->precision;
     if (writer->precision == EMPTY) {
       precision = 0;
     }
+
     int pow = 0;
     if (s21_strchr("eE", writer->specification)) {
       while (num > 10) {
         num /= 10;
         ++pow;
       }
-      while (num <= 1) {
+      while (num <= 1 && num != 0) {
         num *= 10;
         --pow;
       }
     }
     num = custom_round(num, precision);
+    if (s21_strchr("eE", writer->specification) && num >= 10) {
+        num /= 10;
+        ++pow;
+    }
+
     int len = get_digits_amount((int)num, 10) + 1 + precision;
 
     double d;
@@ -383,11 +394,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
         pow /= 10;
       }
       (*formatted_string)[endlen--] = (char)(power < 0 ? '-' : '+');
-      (*formatted_string)[endlen] = 'e';
-    }
-    if (writer->specification == 'E') {
-      char* temp = s21_to_upper(*formatted_string);
-      safe_replace(formatted_string, &temp);
+      (*formatted_string)[endlen] = writer->specification == 'e' ? 'e' : 'E';
     }
   } else if (writer->specification == 's') {
     char* string = va_arg(vars, char*);
@@ -533,7 +540,7 @@ void add_to_num(char** formatted_string, const char* str, int reverse,
 
 void apply_flags(char** formatted_string, WriterFormat* writer,
                  size_t left_space) {
-  if (s21_strchr("fpuoXxid", writer->specification)) {
+  if (s21_strchr("eEfpuoXxid", writer->specification)) {
     if (writer->flags.zero_flag) {
       char* str = *formatted_string;
       for (; *str == ' '; ++str) {
@@ -600,7 +607,6 @@ void build_format_string(char** formatted_string, WriterFormat* writer,
 int s21_sprintf(char* str, const char* format, ...) {
   va_list vars;
   va_start(vars, format);
-  s21_memset(str, '\0', 100);  // TODO: hey wtf this should be removed
   int bad_return = -1, null_chars = 0;
   char* start = str;
 
