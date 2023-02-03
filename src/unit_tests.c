@@ -100,7 +100,8 @@ int random_test(int with_assert, int random_chars) {
   }
   // length
   for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
-    format[index++] = s21_strchr("eEfgG", specification) ? 'L' : lengths_test[rand() % 2];
+    format[index++] =
+        s21_strchr("eEfgG", specification) ? 'L' : lengths_test[rand() % 2];
   }
   if (random_chars) {
     add_random_chars(format, &index, 80);
@@ -495,8 +496,8 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%-+# .e";
-  double num = 9682.490461;
+  char* f = "%00.E";
+  double num = -98.213920;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %f\n", f, num);
   int std_res = sprintf(b, f, num);
@@ -507,7 +508,7 @@ int main(void) {
 
   // TODO: should be less output but always with assert(guess after functions
   // TODO: will be debugged and finished)
-  // random_tests(0, 10000000);
+  random_tests(0, 10000000);
 
   return 0;
 }

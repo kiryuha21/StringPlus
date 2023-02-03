@@ -216,8 +216,8 @@ void safe_replace(char** dst, char** replacer) {
   *dst = *replacer;
 }
 
-double custom_round(double num, int precision) {
-  return (double)(roundl(num * powl(10, precision)) * powl(0.1, precision));
+long double custom_round(long double num, int precision) {
+  return (roundl(num * powl(10, precision)) * powl(0.1, precision));
 }
 
 long long handle_overflow(long long int num, WriterFormat* writer) {
@@ -333,6 +333,9 @@ int build_base(char** formatted_string, WriterFormat* writer,
     } else {
       num = va_arg(vars, double);
     }
+    if (num < 0) {
+      writer->flags.plus_flag = -1;
+    }
 
     int precision =
         writer->precision == UNKNOWN ? DEFAULT_PRECISION : writer->precision;
@@ -342,25 +345,25 @@ int build_base(char** formatted_string, WriterFormat* writer,
 
     int pow = 0;
     if (s21_strchr("eE", writer->specification)) {
-      while (num > 10) {
+      while (fabsl(num) > 10) {
         num /= 10;
         ++pow;
       }
-      while (num <= 1 && num != 0) {
+      while (fabsl(num) <= 1 && num != 0) {
         num *= 10;
         --pow;
       }
     }
     num = custom_round(num, precision);
-    if (s21_strchr("eE", writer->specification) && num >= 10) {
-        num /= 10;
-        ++pow;
+    if (s21_strchr("eE", writer->specification) && fabsl(num) >= 10) {
+      num /= 10;
+      ++pow;
     }
 
     int len = get_digits_amount((int)num, 10) + 1 + precision;
 
-    double d;
-    double float_part = modf(num, &d);
+    long double d;
+    long double float_part = modfl(num, &d);
     int decimal_part = abs((int)d);
 
     *formatted_string = (char*)calloc(sizeof(char), len + 6);
@@ -374,7 +377,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
         writer->flags.lattice_flag) {
       for (int i = decimal_len + 1; precision > 0; ++i, --precision) {
         float_part *= 10;
-        (*formatted_string)[i] = (char)((int)float_part % 10 + '0');
+        (*formatted_string)[i] = (char)(abs((int)float_part % 10) + '0');
         float_part -= (int)float_part;
       }
 
