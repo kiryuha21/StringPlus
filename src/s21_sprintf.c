@@ -49,7 +49,7 @@ void validate_writer_flags(WriterFormat* writer) {
 
   if (writer->specification != UNKNOWN) {
     if (writer->precision != UNKNOWN &&
-        s21_strchr("uoid", writer->specification)) {
+        s21_strchr("puoxXid", writer->specification)) {
       writer->flags.zero_flag = 0;
     }
 
@@ -328,19 +328,21 @@ int build_base(char** formatted_string, WriterFormat* writer,
     (*formatted_string)[0] = (char)num;
   } else if (s21_strchr("eEf", writer->specification)) {
     double num = va_arg(vars, double);
-    int precision = writer->precision == UNKNOWN || writer->precision == EMPTY
-                        ? DEFAULT_PRECISION
-                        : writer->precision;
+    int precision =
+        writer->precision == UNKNOWN ? DEFAULT_PRECISION : writer->precision;
+    if (writer->precision == EMPTY) {
+      precision = 0;
+    }
     int pow = 0;
     if (s21_strchr("eE", writer->specification)) {
-        while (num > 10) {
-            num /= 10;
-            ++pow;
-        }
-        while (num <= 1) {
-            num *= 10;
-            --pow;
-        }
+      while (num > 10) {
+        num /= 10;
+        ++pow;
+      }
+      while (num <= 1) {
+        num *= 10;
+        --pow;
+      }
     }
     num = custom_round(num, precision);
     int len = get_digits_amount((int)num, 10) + 1 + precision;
@@ -356,35 +358,38 @@ int build_base(char** formatted_string, WriterFormat* writer,
 
     // TODO: (?) another floating part in original sprintf...
     int decimal_len = get_digits_amount(decimal_part, 10);
-    for (int i = decimal_len + 1; precision > 0; ++i, --precision) {
-      float_part *= 10;
-      (*formatted_string)[i] = (char)((int)float_part % 10 + '0');
-      float_part -= (int)float_part;
+    if (writer->precision != EMPTY || writer->specification == 'f') {
+      for (int i = decimal_len + 1; precision > 0; ++i, --precision) {
+        float_part *= 10;
+        (*formatted_string)[i] = (char)((int)float_part % 10 + '0');
+        float_part -= (int)float_part;
+      }
+
+      (*formatted_string)[decimal_len] = '.';
     }
-    (*formatted_string)[decimal_len] = '.';
     for (int i = decimal_len - 1; i >= 0; --i, decimal_part /= 10) {
       (*formatted_string)[i] = (char)(decimal_part % 10 + '0');
     }
     if (s21_strchr("eE", writer->specification)) {
-        int power = pow;
-        int add_len = pow >= 100 ? 4 : 3;
-        if (pow < 0) {
-            add_len = pow <= -100 ? 5 : 4;
-        }
-        size_t strlen = s21_strlen(*formatted_string) + 1;
-        size_t endlen = strlen + add_len - (pow < 0 ? 2 : 1);
-        for (;endlen > strlen; --endlen) {
-            (*formatted_string)[endlen] = (char)('0' + abs(pow % 10));
-            pow /= 10;
-        }
-        if (power < 0) {
-            (*formatted_string)[endlen--] = '-';
-        }
-        (*formatted_string)[endlen] = 'e';
+      int power = pow;
+      int add_len = pow >= 100 ? 4 : 3;
+      if (pow < 0) {
+        add_len = pow <= -100 ? 5 : 4;
+      }
+      size_t strlen = s21_strlen(*formatted_string) + 1;
+      size_t endlen = strlen + add_len - (pow < 0 ? 2 : 1);
+      for (; endlen > strlen; --endlen) {
+        (*formatted_string)[endlen] = (char)('0' + abs(pow % 10));
+        pow /= 10;
+      }
+      if (power < 0) {
+        (*formatted_string)[endlen--] = '-';
+      }
+      (*formatted_string)[endlen] = 'e';
     }
     if (writer->specification == 'E') {
-        char* temp = s21_to_upper(*formatted_string);
-        safe_replace(formatted_string, &temp);
+      char* temp = s21_to_upper(*formatted_string);
+      safe_replace(formatted_string, &temp);
     }
   } else if (writer->specification == 's') {
     char* string = va_arg(vars, char*);
@@ -528,7 +533,7 @@ void add_to_num(char** formatted_string, const char* str, int reverse,
 
 void apply_flags(char** formatted_string, WriterFormat* writer,
                  size_t left_space) {
-  if (s21_strchr("uid", writer->specification)) {
+  if (s21_strchr("puoXxid", writer->specification)) {
     if (writer->flags.zero_flag) {
       char* str = *formatted_string;
       for (; *str == ' '; ++str) {

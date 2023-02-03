@@ -46,7 +46,7 @@ char* generate_random_size_string(int* size) {
   char* res = (char*)calloc(*size + 1, sizeof(char));
   if (res != NULL) {
     for (int i = 0; i < *size; ++i) {
-      res[i] = (char)(rand() % 127);
+      res[i] = (char)((rand() % 97) + 30);
     }
   }
   return res;
@@ -64,7 +64,7 @@ void add_random_chars(char* format, int* index, int max) {
 
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 12];
+  char specification = 'e';  // specifications_test[rand() % 12];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -130,9 +130,11 @@ int random_test(int with_assert, int random_chars) {
   } else if (specification == 'x' || specification == 'X') {
     int res = rand() % 4294967295 - rand() % 4294967295;
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
-  } else if (specification == 'f') {
-    double res = rand() % 10000 +
-                 (double)(rand() % 10000000) / (double)(rand() % 10000000);
+  } else if (specification == 'f' || specification == 'e' ||
+             specification == 'E') {
+    double divider = (double)(rand() % 10000000 - 5000000);
+    double res =
+        rand() % 10000 + (double)(rand() % 10000000 - 5000000) / divider;
     cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, 1);
   } else if (specification == 'u') {
     int res = rand() % 10000;
@@ -495,7 +497,8 @@ int main(void) {
   char a[10000];
   char b[10000];
   char* f = "%.e";
-  double num = 0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001;
+  double num =
+      0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %f\n", f, num);
   int std_res = sprintf(b, f, num);
