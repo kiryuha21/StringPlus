@@ -358,7 +358,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
 
     // TODO: (?) another floating part in original sprintf...
     int decimal_len = get_digits_amount(decimal_part, 10);
-    if (writer->precision != EMPTY || writer->specification == 'f') {
+    if (writer->precision != EMPTY || writer->flags.lattice_flag) {
       for (int i = decimal_len + 1; precision > 0; ++i, --precision) {
         float_part *= 10;
         (*formatted_string)[i] = (char)((int)float_part % 10 + '0');
@@ -372,19 +372,15 @@ int build_base(char** formatted_string, WriterFormat* writer,
     }
     if (s21_strchr("eE", writer->specification)) {
       int power = pow;
-      int add_len = pow >= 100 ? 4 : 3;
-      if (pow < 0) {
-        add_len = pow <= -100 ? 5 : 4;
-      }
+      int add_len = (pow <= -100 || pow >= 100) ? 3 : 2;
+
       size_t strlen = s21_strlen(*formatted_string) + 1;
-      size_t endlen = strlen + add_len - (pow < 0 ? 2 : 1);
+      size_t endlen = strlen + add_len;
       for (; endlen > strlen; --endlen) {
         (*formatted_string)[endlen] = (char)('0' + abs(pow % 10));
         pow /= 10;
       }
-      if (power < 0) {
-        (*formatted_string)[endlen--] = '-';
-      }
+      (*formatted_string)[endlen--] = (char)(power < 0 ? '-' : '+');
       (*formatted_string)[endlen] = 'e';
     }
     if (writer->specification == 'E') {
