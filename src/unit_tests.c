@@ -135,7 +135,7 @@ int random_test(int with_assert, int random_chars) {
     double divider = (double)(rand() % 10000000 - 5000000);
     double res =
         rand() % 10000 + (double)(rand() % 10000000 - 5000000) / divider;
-    cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, 1);
+    cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, with_assert);
   } else if (specification == 'u') {
     int res = rand() % 10000;
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
@@ -184,7 +184,6 @@ void random_tests(int with_assert, int count) {
 }
 
 START_TEST(sprintf_random_int) { random_tests(1, 1); }
-//}
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
 
@@ -496,9 +495,8 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%.e";
-  double num =
-      0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001;
+  char* f = "%#.e";
+  double num = 7735.418339;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %f\n", f, num);
   int std_res = sprintf(b, f, num);
