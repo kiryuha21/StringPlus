@@ -494,8 +494,8 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "% 0#0672.u";
-  int num = 1848;
+  char* f = "%##0 72Lx";
+  int num = 1156378869;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %d\n", f, num);
   int std_res = sprintf(b, f, num);

@@ -49,7 +49,7 @@ void validate_writer_flags(WriterFormat* writer) {
 
   if (writer->specification != UNKNOWN) {
     if (writer->precision != UNKNOWN &&
-        s21_strchr("uoid", writer->specification)) {
+        s21_strchr("puoxXid", writer->specification)) {
       writer->flags.zero_flag = 0;
     }
 
@@ -496,7 +496,7 @@ void add_to_num(char** formatted_string, const char* str, int reverse,
 
 void apply_flags(char** formatted_string, WriterFormat* writer,
                  size_t left_space) {
-  if (s21_strchr("uid", writer->specification)) {
+  if (s21_strchr("puoXxid", writer->specification)) {
     if (writer->flags.zero_flag) {
       char* str = *formatted_string;
       for (; *str == ' '; ++str) {
