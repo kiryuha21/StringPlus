@@ -48,7 +48,8 @@ void validate_writer_flags(WriterFormat* writer) {
   }
 
   if (writer->specification != UNKNOWN) {
-    if (writer->precision != UNKNOWN) {
+    if (writer->precision != UNKNOWN &&
+        s21_strchr("uoid", writer->specification)) {
       writer->flags.zero_flag = 0;
     }
 
@@ -393,10 +394,7 @@ size_t apply_width(char** formatted_string, WriterFormat* writer) {
       size_t diff = writer->width - len;
 
       char* spacer = (char*)calloc(sizeof(char), diff + 1);
-      s21_memset(
-          spacer,
-          writer->flags.zero_flag && !writer->flags.minus_flag ? '0' : ' ',
-          diff);
+      s21_memset(spacer, ' ', diff);
 
       char* with_spacer;
       if (writer->flags.minus_flag) {
@@ -446,8 +444,7 @@ void apply_precision(char** formatted_string, WriterFormat* writer,
         safe_replace(formatted_string, &cutted);
       }
     } else if (writer->specification == 'p') {
-      if (writer->precision >
-          (int)s21_strlen(*formatted_string) + 2) {  // 0x is added later
+      if (writer->precision > (int)s21_strlen(*formatted_string)) {
         int diff = writer->precision - (int)s21_strlen(*formatted_string);
         insert_null_spacer_at_index(formatted_string, 0, diff);
       }
@@ -499,7 +496,7 @@ void add_to_num(char** formatted_string, const char* str, int reverse,
 
 void apply_flags(char** formatted_string, WriterFormat* writer,
                  size_t left_space) {
-  if (s21_strchr("id", writer->specification)) {
+  if (s21_strchr("uid", writer->specification)) {
     if (writer->flags.zero_flag) {
       char* str = *formatted_string;
       for (; *str == ' '; ++str) {

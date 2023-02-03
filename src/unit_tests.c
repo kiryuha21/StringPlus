@@ -42,7 +42,7 @@ START_TEST(sprintf_basic) {
 }
 
 char* generate_random_size_string(int* size) {
-  *size = rand() % 20;
+  *size = rand() % 20 + 5;
   char* res = (char*)calloc(*size + 1, sizeof(char));
   if (res != NULL) {
     for (int i = 0; i < *size; ++i) {
@@ -151,7 +151,7 @@ int random_test(int with_assert, int random_chars) {
       free(res);
     }
   } else if (specification == 'p') {
-    if (rand() % 1 != 0) {
+    if (rand() % 100 != 0) {
       int size;
       char* res = generate_random_size_string(&size);
       if (res != NULL) {
@@ -174,7 +174,7 @@ void random_tests(int with_assert, int count) {
 #ifdef DEBUG
     printf("%d | ", i + 1);
 #endif
-      //TODO: random_chars -> 1
+    // TODO: random_chars -> 1
     cmp = random_test(with_assert, 0);
   }
 
@@ -494,8 +494,8 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%#-064c";
-  int num = '\0';
+  char* f = "% 0#0672.u";
+  int num = 1848;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %d\n", f, num);
   int std_res = sprintf(b, f, num);
