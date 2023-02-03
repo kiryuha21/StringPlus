@@ -217,7 +217,7 @@ void safe_replace(char** dst, char** replacer) {
 }
 
 double custom_round(double num, int precision) {
-  return round(num * pow(10, precision)) * pow(0.1, precision);
+  return (double)(roundl(num * powl(10, precision)) * powl(0.1, precision));
 }
 
 long long handle_overflow(long long int num, WriterFormat* writer) {
@@ -327,7 +327,8 @@ int build_base(char** formatted_string, WriterFormat* writer,
     }
     (*formatted_string)[0] = (char)num;
   } else if (s21_strchr("eEf", writer->specification)) {
-    double num = va_arg(vars, double);
+    long double num =
+        writer->length.L > 0 ? va_arg(vars, long double) : va_arg(vars, double);
     int precision =
         writer->precision == UNKNOWN ? DEFAULT_PRECISION : writer->precision;
     if (writer->precision == EMPTY) {
@@ -358,7 +359,8 @@ int build_base(char** formatted_string, WriterFormat* writer,
 
     // TODO: (?) another floating part in original sprintf...
     int decimal_len = get_digits_amount(decimal_part, 10);
-    if (writer->precision != EMPTY || writer->flags.lattice_flag) {
+    if ((writer->precision != EMPTY && writer->precision != 0) ||
+        writer->flags.lattice_flag) {
       for (int i = decimal_len + 1; precision > 0; ++i, --precision) {
         float_part *= 10;
         (*formatted_string)[i] = (char)((int)float_part % 10 + '0');
@@ -497,6 +499,7 @@ void add_to_num(char** formatted_string, const char* str, int reverse,
       for (size_t i = 0; i < len; ++i) {
         (*formatted_string)[i] = str[i];
       }
+      free(null_spaces);
     } else {
       size_t start = 0;
       for (; (*formatted_string)[start + len] == ' '; ++start) {
@@ -513,6 +516,7 @@ void add_to_num(char** formatted_string, const char* str, int reverse,
       char* additional_space = s21_insert(*formatted_string, null_spaces,
                                           s21_strlen(*formatted_string));
       safe_replace(formatted_string, &additional_space);
+      free(null_spaces);
     }
     size_t i = 0;
     for (; (*formatted_string)[i] != ' ' && (*formatted_string); ++i)
@@ -529,7 +533,7 @@ void add_to_num(char** formatted_string, const char* str, int reverse,
 
 void apply_flags(char** formatted_string, WriterFormat* writer,
                  size_t left_space) {
-  if (s21_strchr("puoXxid", writer->specification)) {
+  if (s21_strchr("fpuoXxid", writer->specification)) {
     if (writer->flags.zero_flag) {
       char* str = *formatted_string;
       for (; *str == ' '; ++str) {
