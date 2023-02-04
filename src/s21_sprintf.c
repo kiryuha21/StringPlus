@@ -63,7 +63,7 @@ void validate_writer_flags(WriterFormat* writer) {
       writer->flags.zero_flag = 0;
     }
 
-    if (s21_strchr("oxXcuo%", writer->specification)) {
+    if (s21_strchr("oxXcus%", writer->specification)) {
       writer->flags.plus_flag = 0;
       writer->flags.space_flag = 0;
     }
@@ -335,6 +335,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
     }
     if (num < 0) {
       writer->flags.plus_flag = -1;
+      num = fabs((double)num);
     }
 
     int precision =
@@ -345,17 +346,17 @@ int build_base(char** formatted_string, WriterFormat* writer,
 
     int pow = 0;
     if (s21_strchr("eE", writer->specification)) {
-      while (fabsl(num) > 10) {
+      while (num > 10) {
         num /= 10;
         ++pow;
       }
-      while (fabsl(num) <= 1 && num != 0) {
+      while (num <= 1 && num != 0) {
         num *= 10;
         --pow;
       }
     }
     num = custom_round(num, precision);
-    if (s21_strchr("eE", writer->specification) && fabsl(num) >= 10) {
+    if (s21_strchr("eE", writer->specification) && num >= 10) {
       num /= 10;
       ++pow;
     }

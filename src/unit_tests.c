@@ -8,7 +8,7 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-const char* specifications_test = "cdioxXu%pneEsfgG";
+const char* specifications_test = "cdioxXu%pneEfgGs";
 // TODO: remove from additional unrealized
 const char* additional_specs = "bSjF";
 const char* writer_flags_test = "+- #0";
@@ -64,7 +64,7 @@ void add_random_chars(char* format, int* index, int max) {
 
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 12];
+  char specification = specifications_test[rand() % 13];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -134,9 +134,12 @@ int random_test(int with_assert, int random_chars) {
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'f' || specification == 'e' ||
              specification == 'E') {
-    double divider = (double)(rand() % 10000000 - 5000000);
-    double res =
-        rand() % 10000 + (double)(rand() % 10000000 - 5000000) / divider;
+    double divider = (double)(rand() % (int)pow(10, rand() % 10));
+    double divisor = (double)(rand() % (int)pow(10, rand() % 10));
+    double res = divisor / divider;
+    if (rand() % 2) {
+      res *= -1;
+    }
     cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, with_assert);
   } else if (specification == 'u') {
     int res = rand() % 10000;
@@ -496,7 +499,7 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%00.E";
+  char* f = "%00.f";
   double num = -98.213920;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %f\n", f, num);
