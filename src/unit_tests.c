@@ -134,6 +134,7 @@ int random_test(int with_assert, int random_chars) {
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'f' || specification == 'e' ||
              specification == 'E') {
+      // TODO: correct to avoid inf values
     double divider = (double)(rand() % (int)pow(10, rand() % 10));
     double divisor = (double)(rand() % (int)pow(10, rand() % 10));
     double res = divisor / divider;

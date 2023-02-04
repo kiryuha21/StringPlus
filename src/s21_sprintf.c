@@ -335,7 +335,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
     }
     if (num < 0) {
       writer->flags.plus_flag = -1;
-      num = fabs((double)num);
+      num = fabsl(num);
     }
 
     int precision =
