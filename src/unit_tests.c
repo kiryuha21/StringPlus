@@ -134,7 +134,6 @@ int random_test(int with_assert, int random_chars) {
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'f' || specification == 'e' ||
              specification == 'E') {
-      // TODO: correct to avoid inf values
     double divider = (double)(rand() % (int)pow(10, rand() % 10));
     double divisor = (double)(rand() % (int)pow(10, rand() % 10));
     double res = divisor / divider;
@@ -500,8 +499,8 @@ int main(void) {
   // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%00.f";
-  double num = -98.213920;
+  char* f = "%#.e";
+  double num = -6.500000;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %f\n", f, num);
   int std_res = sprintf(b, f, num);
@@ -512,7 +511,7 @@ int main(void) {
 
   // TODO: should be less output but always with assert(guess after functions
   // TODO: will be debugged and finished)
-  random_tests(0, 10000000);
+  // random_tests(0, 10000000);
 
   return 0;
 }

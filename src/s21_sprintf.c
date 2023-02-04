@@ -4,12 +4,19 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#include "s21_string.h"
-
 extern const char* specifications;
 extern const char* writer_flags;
 extern const char* lengths;
 extern const char* decimal_places;
+
+void init_extra_info(ExtraInfo* info, size_t written_bytes, int* bad_return,
+                     int* null_chars) {
+  info->written_bytes = written_bytes;
+  info->bad_return = bad_return;
+  info->null_chars = null_chars;
+  info->flags_applicable = 1;
+  info->left_space = UNKNOWN;
+}
 
 void init_flags(Flags* flags) {
   flags->lattice_flag = 0;
@@ -275,8 +282,7 @@ void apply_unsigned_length(WriterFormat* writer, unsigned long long num,
 // const char* specifications = "cdieEfgGosuxXpn%";
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
-int build_base(char** formatted_string, WriterFormat* writer,
-               size_t written_bytes, int* bad_return, int* null_chars,
+int build_base(char** formatted_string, WriterFormat* writer, ExtraInfo* info,
                va_list vars) {
   if (s21_strchr("di", writer->specification)) {
     long long num = va_arg(vars, long long);
@@ -302,11 +308,11 @@ int build_base(char** formatted_string, WriterFormat* writer,
 
     if (**formatted_string == '0' && s21_strchr("xX", writer->specification)) {
       writer->flags.lattice_flag = 0;
-      *bad_return = 0;
+      *(info->bad_return) = 0;
     }
   } else if (writer->specification == 'c' || writer->specification == '%') {
     int num = '%';
-    if (writer->specification == 'c') {
+    if (writer->specification == 'c') {  // TODO: don't forget wchar!!
       num = va_arg(vars, int);
     } else {
       writer->width = UNKNOWN;
@@ -318,7 +324,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
       return FAIL;
     }
     if (num == '\0') {
-      (*null_chars) +=
+      *(info->null_chars) +=
           (writer->flags.minus_flag && writer->width != UNKNOWN ? writer->width
                                                                 : 1);
       writer->width = (writer->width == UNKNOWN || writer->flags.minus_flag
@@ -333,9 +339,24 @@ int build_base(char** formatted_string, WriterFormat* writer,
     } else {
       num = va_arg(vars, double);
     }
-    if (num < 0) {
+
+    if (signbit(num) != 0) {  // better than "if (num < 0)"
       writer->flags.plus_flag = -1;
       num = fabsl(num);
+    }
+    if (isinf(num)) {
+      *formatted_string = (char*)calloc(4, sizeof(char));
+      s21_strcpy(*formatted_string,
+                 writer->specification == 'E' ? "INF" : "inf");
+      info->flags_applicable = 0;
+      return OK;
+    }
+    if (isnan(num)) {
+      *formatted_string = (char*)calloc(4, sizeof(char));
+      s21_strcpy(*formatted_string,
+                 writer->specification == 'E' ? "NAN" : "nan");
+      info->flags_applicable = 0;
+      return OK;
     }
 
     int precision =
@@ -400,7 +421,7 @@ int build_base(char** formatted_string, WriterFormat* writer,
       (*formatted_string)[endlen--] = (char)(power < 0 ? '-' : '+');
       (*formatted_string)[endlen] = writer->specification == 'e' ? 'e' : 'E';
     }
-  } else if (writer->specification == 's') {
+  } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
     char* string = va_arg(vars, char*);
     *formatted_string = (char*)calloc(s21_strlen(string) + 1, sizeof(char));
     s21_strcpy(*formatted_string, string);
@@ -426,8 +447,8 @@ int build_base(char** formatted_string, WriterFormat* writer,
     safe_replace(formatted_string, &lowered);
   } else if (writer->specification == 'n') {
     int* num = va_arg(vars, int*);
-    *num = (int)written_bytes;
-    *bad_return = 0;
+    *num = (int)info->written_bytes;
+    *(info->bad_return) = 0;
   }
   return OK;
 }
@@ -543,8 +564,9 @@ void add_to_num(char** formatted_string, const char* str, int reverse,
 }
 
 void apply_flags(char** formatted_string, WriterFormat* writer,
-                 size_t left_space) {
-  if (s21_strchr("eEfpuoXxid", writer->specification)) {
+                 ExtraInfo* info) {
+  if (s21_strchr("eEfpuoXxid", writer->specification) &&
+      info->flags_applicable) {
     if (writer->flags.zero_flag) {
       char* str = *formatted_string;
       for (; *str == ' '; ++str) {
@@ -567,44 +589,47 @@ void apply_flags(char** formatted_string, WriterFormat* writer,
       }
       // if it's not
       if (!first) {
-        add_to_num(formatted_string, "0", writer->flags.minus_flag, left_space);
+        add_to_num(formatted_string, "0", writer->flags.minus_flag,
+                   info->left_space);
       }
     } else if (writer->specification == 'x' || writer->specification == 'p') {
       if (writer->flags.plus_flag == 1) {
         add_to_num(formatted_string, "+0x", writer->flags.minus_flag,
-                   left_space);
+                   info->left_space);
       } else if (writer->flags.space_flag) {
         add_to_num(formatted_string, " 0x", writer->flags.minus_flag,
-                   left_space);
+                   info->left_space);
       } else {
         add_to_num(formatted_string, "0x", writer->flags.minus_flag,
-                   left_space);
+                   info->left_space);
       }
     } else if (writer->specification == 'X') {
-      add_to_num(formatted_string, "0X", writer->flags.minus_flag, left_space);
+      add_to_num(formatted_string, "0X", writer->flags.minus_flag,
+                 info->left_space);
     }
   }
 
   // TODO: check for specifications inapplicable with these flags
   if (writer->specification != 'n' && writer->specification != 'p') {
     if (writer->flags.plus_flag == 1) {
-      add_to_num(formatted_string, "+", writer->flags.minus_flag, left_space);
+      add_to_num(formatted_string, "+", writer->flags.minus_flag,
+                 info->left_space);
     } else if (writer->flags.plus_flag == -1) {
-      add_to_num(formatted_string, "-", writer->flags.minus_flag, left_space);
+      add_to_num(formatted_string, "-", writer->flags.minus_flag,
+                 info->left_space);
     } else if (writer->flags.space_flag) {
-      add_to_num(formatted_string, " ", writer->flags.minus_flag, left_space);
+      add_to_num(formatted_string, " ", writer->flags.minus_flag,
+                 info->left_space);
     }
   }
 }
 
 void build_format_string(char** formatted_string, WriterFormat* writer,
-                         size_t written_bytes, int* bad_return, int* null_chars,
-                         va_list vars) {
-  if (build_base(formatted_string, writer, written_bytes, bad_return,
-                 null_chars, vars) != FAIL) {
-    apply_precision(formatted_string, writer, bad_return);
-    size_t left_space = apply_width(formatted_string, writer);
-    apply_flags(formatted_string, writer, left_space);
+                         ExtraInfo* info, va_list vars) {
+  if (build_base(formatted_string, writer, info, vars) != FAIL) {
+    apply_precision(formatted_string, writer, info->bad_return);
+    info->left_space = apply_width(formatted_string, writer);
+    apply_flags(formatted_string, writer, info);
   }
 }
 
@@ -633,9 +658,11 @@ int s21_sprintf(char* str, const char* format, ...) {
           writer.precision = va_arg(vars, int);
         }
 
+        ExtraInfo info;
+        init_extra_info(&info, s21_strlen(start), &bad_return, &null_chars);
+
         char* formatted_arg = NULL;
-        build_format_string(&formatted_arg, &writer, s21_strlen(start),
-                            &bad_return, &null_chars, vars);
+        build_format_string(&formatted_arg, &writer, &info, vars);
 
         size_t size_before = s21_strlen(str);
         s21_strcat(str, formatted_arg);

@@ -1,6 +1,8 @@
 #ifndef C2_S21_STRINGPLUS_0_S21_SPRINTF_H
 #define C2_S21_STRINGPLUS_0_S21_SPRINTF_H
 
+#include "s21_string.h"
+
 typedef struct Flags {
   int minus_flag;
   int plus_flag;
@@ -23,6 +25,17 @@ typedef struct WriterFormat {
   int precision;  // could be ASTERISK
   int parsed_length;
 } WriterFormat;
+
+typedef struct ExtraInfo {
+  size_t written_bytes;
+  size_t left_space;
+  int* bad_return;
+  int* null_chars;
+  int flags_applicable;
+} ExtraInfo;
+
+void init_extra_info(ExtraInfo* info, size_t written_bytes, int* bad_return,
+                     int* null_chars);
 
 void init_writer(WriterFormat* writer);
 int parse_into_writer(WriterFormat* writer,
