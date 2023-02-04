@@ -39,6 +39,13 @@ START_TEST(sprintf_basic) {
   sprintf_test_common("%023c", (void*)(&c), CHAR, assert);
   sprintf_test_common("% 0- c", (void*)(&c), CHAR, assert);
   sprintf_test_common("%+ 0#.73c", (void*)(&c), CHAR, assert);
+  // TODO: uncomment
+  /*
+  double f = 4.5;
+    sprintf_test_common("%.e", (void*)(&f), DOUBLE, assert);
+    f = 5.5;
+    sprintf_test_common("%.f", (void*)(&f), DOUBLE, assert);
+    */
 }
 
 char* generate_random_size_string(int* size) {
@@ -496,22 +503,21 @@ int main(void) {
   srunner_run_all(sr, CK_NORMAL);
 
   srunner_free(sr);
-  // TODO: remove (debug)
   char a[10000];
   char b[10000];
-  char* f = "%#.e";
-  double num = -6.500000;
+  char* f = "%#22.8e";
+  double num = -31178155.518519;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %f\n", f, num);
   int std_res = sprintf(b, f, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
   if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
-  }
 
-  // TODO: should be less output but always with assert(guess after functions
-  // TODO: will be debugged and finished)
-  // random_tests(0, 10000000);
+    // TODO: should be less output but always with assert(guess after functions
+    // TODO: will be debugged and finished)
+    random_tests(0, 10000000);
+  }
 
   return 0;
 }

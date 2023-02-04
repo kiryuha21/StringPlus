@@ -279,6 +279,19 @@ void apply_unsigned_length(WriterFormat* writer, unsigned long long num,
   }
 }
 
+int get_pow(long double* num) {
+  int pow = 0;
+  while (*num > 10) {
+    (*num) /= 10;
+    ++pow;
+  }
+  while (*num <= 1 && *num != 0) {
+    (*num) *= 10;
+    --pow;
+  }
+  return pow;
+}
+
 // const char* specifications = "cdieEfgGosuxXpn%";
 // const char* writer_flags = "-+ #0";
 // const char* lengths = "hlL";
@@ -332,7 +345,7 @@ int build_base(char** formatted_string, WriterFormat* writer, ExtraInfo* info,
                            : writer->width - 1);
     }
     (*formatted_string)[0] = (char)num;
-  } else if (s21_strchr("eEf", writer->specification)) {
+  } else if (s21_strchr("eEfgG", writer->specification)) {
     long double num;
     if (writer->length.L > 0) {
       num = va_arg(vars, long double);
@@ -366,15 +379,18 @@ int build_base(char** formatted_string, WriterFormat* writer, ExtraInfo* info,
     }
 
     int pow = 0;
+    long double cp_num = num;
+    if (s21_strchr("gG", writer->specification)) {
+      int cp_pow = get_pow(&cp_num);
+      if (cp_pow < -4 ||
+          (cp_pow >= writer->precision && writer->precision != UNKNOWN)) {
+        writer->specification = (char)('g' - 'e' + writer->specification);
+      } else {
+        writer->specification = 'f';
+      }
+    }
     if (s21_strchr("eE", writer->specification)) {
-      while (num > 10) {
-        num /= 10;
-        ++pow;
-      }
-      while (num <= 1 && num != 0) {
-        num *= 10;
-        --pow;
-      }
+      pow = get_pow(&num);
     }
     num = custom_round(num, precision);
     if (s21_strchr("eE", writer->specification) && num >= 10) {
