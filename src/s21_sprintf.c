@@ -223,8 +223,49 @@ void safe_replace(char** dst, char** replacer) {
   *dst = *replacer;
 }
 
+long double change_ldouble_depth(long double num, int pow) {
+  int pos_pow = abs(pow);
+  for (int i = 0; i < pos_pow; ++i) {
+    if (pow > 0) {
+      num *= 10;
+    } else {
+      num *= 0.1;
+    }
+  }
+  return num;
+}
+
+long double safe_low_depth(long long num, int depth) {
+  int len = get_digits_amount(num, 10);
+
+  char* temp = calloc(len + 1, sizeof(char));
+  for (int i = len - 1; i >= 0; --i, num /= 10) {
+    temp[i] = (char)('0' + num % 10);
+  }
+
+  if (depth != 0) {
+    char* replacer = len - depth == 0 ? "0." : ".";
+    char* divided = s21_insert(temp, replacer, len - depth);
+    safe_replace(&temp, &divided);
+  }
+
+  long double res = strtold(temp, NULL);
+  free(temp);
+
+  return res;
+}
+
 long double custom_round(long double num, int precision) {
-  return (roundl(num * powl(10, precision)) * powl(0.1, precision));
+  // long double enlarged = change_ldouble_depth(num, precision);
+  long double enlarged = num * powl(10.0, precision);
+  long long banker_rounded = llrintl(enlarged);
+
+  // TODO: help pls to chose right one(none of ones below i guess)
+  // long double res = (long double)change_double_depth((double)banker_rounded, -precision);
+  // long double res = banker_rounded * powl(0.1, precision);
+  long double res = safe_low_depth(banker_rounded, precision);
+
+  return res;
 }
 
 long long handle_overflow(long long int num, WriterFormat* writer) {
@@ -382,32 +423,32 @@ int build_base(char** formatted_string, WriterFormat* writer, ExtraInfo* info,
     long double cp_num = num;
     if (s21_strchr("gG", writer->specification)) {
       int cp_pow = get_pow(&cp_num);
-      if (cp_pow < -4 ||
-          (cp_pow >= writer->precision && writer->precision != UNKNOWN)) {
-        writer->specification = (char)('g' - 'e' + writer->specification);
-      } else {
+      if (cp_pow >= -4 && cp_pow < precision) {
         writer->specification = 'f';
+      } else {
+        writer->specification = writer->specification == 'g' ? 'e' : 'E';
       }
     }
+
     if (s21_strchr("eE", writer->specification)) {
       pow = get_pow(&num);
     }
     num = custom_round(num, precision);
+
     if (s21_strchr("eE", writer->specification) && num >= 10) {
       num /= 10;
       ++pow;
     }
 
     int len = get_digits_amount((int)num, 10) + 1 + precision;
-
-    long double d;
-    long double float_part = modfl(num, &d);
-    int decimal_part = abs((int)d);
-
     *formatted_string = (char*)calloc(sizeof(char), len + 6);
     if (*formatted_string == NULL) {
       return FAIL;
     }
+
+    long double d;
+    long double float_part = modfl(num, &d);
+    int decimal_part = abs((int)d);
 
     // TODO: (?) another floating part in original sprintf...
     int decimal_len = get_digits_amount(decimal_part, 10);

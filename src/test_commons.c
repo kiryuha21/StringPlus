@@ -53,7 +53,7 @@ int sprintf_test_common(char* format, void* values, Types type,
     std_ret = sprintf(std_res, format, *((char*)values));
     my_ret = s21_sprintf(my_res, format, *((char*)values));
   } else if (type == DOUBLE) {
-    printf("VALUE: %f\n", *((double*)values));
+    printf("VALUE: %.100f\nFORMAT: %s\n", *((double*)values), format);
     std_ret = sprintf(std_res, format, *((double*)values));
     my_ret = s21_sprintf(my_res, format, *((double*)values));
   } else if (type == INT_PTR) {  // only for %n specifier
