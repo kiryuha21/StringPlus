@@ -261,7 +261,7 @@ long double custom_round(long double num, int precision) {
   long long banker_rounded = llrintl(enlarged);
 
   // TODO: help pls to chose right one(none of ones below i guess)
-  // long double res = (long double)change_double_depth((double)banker_rounded, -precision);
+  // long double res = (long double)change_ldouble_depth(banker_rounded, -precision);
   // long double res = banker_rounded * powl(0.1, precision);
   long double res = safe_low_depth(banker_rounded, precision);
 
