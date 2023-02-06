@@ -212,10 +212,6 @@ void convert_ll_to_string(ull num, int number_system, char** str) {
   }
 }
 
-// int s21_sscanf(const char *str, const char *format, ...) {
-//
-// }
-
 void safe_replace(char** dst, char** replacer) {
   if (*dst != NULL) {
     free(*dst);
@@ -229,13 +225,13 @@ long double change_ldouble_depth(long double num, int pow) {
     if (pow > 0) {
       num *= 10;
     } else {
-      num *= 0.1;
+      num /= 10;
     }
   }
   return num;
 }
 
-long double safe_low_depth(long long num, int depth) {
+long double safe_low_depth(long long num, int depth, int is_long) {
   int len = get_digits_amount(num, 10);
 
   char* temp = calloc(len + 1, sizeof(char));
@@ -244,26 +240,43 @@ long double safe_low_depth(long long num, int depth) {
   }
 
   if (depth != 0) {
-    char* replacer = len - depth == 0 ? "0." : ".";
-    char* divided = s21_insert(temp, replacer, len - depth);
+    char* replacer = NULL;
+    int diff = len - depth;
+    if (diff <= 0) {
+      int pos_len = abs(len - depth);
+      replacer = calloc(pos_len + 2, sizeof(char));
+      replacer[0] = '0';
+      replacer[1] = '.';
+      if (pos_len > 0) {
+        s21_memset(replacer + 2, '0', pos_len);
+      }
+    } else {
+      replacer = ".";
+    }
+    char* divided =
+        s21_insert(temp, replacer, len - depth < 0 ? 0 : len - depth);
     safe_replace(&temp, &divided);
+    if (diff <= 0) {
+      free(replacer);
+    }
   }
 
-  long double res = strtold(temp, NULL);
+  long double res = is_long ? strtold(temp, NULL) : strtod(temp, NULL);
   free(temp);
 
   return res;
 }
 
-long double custom_round(long double num, int precision) {
+long double custom_round(long double num, int precision, int is_long) {
   // long double enlarged = change_ldouble_depth(num, precision);
   long double enlarged = num * powl(10.0, precision);
-  long long banker_rounded = llrintl(enlarged);
+  long long banker_rounded =
+      is_long ? llrintl(enlarged) : llrint((double)enlarged);
 
   // TODO: help pls to chose right one(none of ones below i guess)
-  // long double res = (long double)change_ldouble_depth(banker_rounded, -precision);
-  // long double res = banker_rounded * powl(0.1, precision);
-  long double res = safe_low_depth(banker_rounded, precision);
+  // long double res = change_ldouble_depth(banker_rounded, -precision);
+  // long double res = banker_rounded / powl(10, precision);
+  long double res = safe_low_depth(banker_rounded, precision, is_long);
 
   return res;
 }
@@ -433,7 +446,7 @@ int build_base(char** formatted_string, WriterFormat* writer, ExtraInfo* info,
     if (s21_strchr("eE", writer->specification)) {
       pow = get_pow(&num);
     }
-    num = custom_round(num, precision);
+    num = custom_round(num, precision, writer->length.L > 0);
 
     if (s21_strchr("eE", writer->specification) && num >= 10) {
       num /= 10;
