@@ -141,13 +141,23 @@ int random_test(int with_assert, int random_chars) {
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'f' || specification == 'e' ||
              specification == 'E') {
-    double divider = (double)(rand() % (int)pow(10, rand() % 10));
-    double divisor = (double)(rand() % (int)pow(10, rand() % 10));
-    double res = divisor / divider;
-    if (rand() % 2) {
-      res *= -1;
+    if (strchr(format, 'L')) {
+      long double divider = (long double)(rand() % (int)pow(10, rand() % 10));
+      long double divisor = (long double)(rand() % (int)pow(10, rand() % 10));
+      long double res = divisor / divider;
+      if (rand() % 2) {
+        res *= -1;
+      }
+      cmp = sprintf_test_common(format, (void*)(&res), LDOUBLE, with_assert);
+    } else {
+      double divider = (double)(rand() % (int)pow(10, rand() % 10));
+      double divisor = (double)(rand() % (int)pow(10, rand() % 10));
+      double res = divisor / divider;
+      if (rand() % 2) {
+        res *= -1;
+      }
+      cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, with_assert);
     }
-    cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, with_assert);
   } else if (specification == 'u') {
     int res = rand() % 10000;
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);

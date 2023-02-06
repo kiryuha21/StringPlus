@@ -56,6 +56,10 @@ int sprintf_test_common(char* format, void* values, Types type,
     printf("VALUE: %.100f\nFORMAT: %s\n", *((double*)values), format);
     std_ret = sprintf(std_res, format, *((double*)values));
     my_ret = s21_sprintf(my_res, format, *((double*)values));
+  } else if (type == LDOUBLE) {
+    printf("VALUE: %.100Lf\nFORMAT: %s\n", *((long double*)values), format);
+    std_ret = sprintf(std_res, format, *((long double*)values));
+    my_ret = s21_sprintf(my_res, format, *((long double*)values));
   } else if (type == INT_PTR) {  // only for %n specifier
     std_ret = s21_sprintf(std_res, format, (int*)values);
     int my_num = *(int*)values;
