@@ -6,8 +6,7 @@
 
 typedef enum { INT, DOUBLE, LDOUBLE, STRING, CHAR, INT_PTR, VOID_PTR } Types;
 
-int sprintf_test_common(char* format, void* values, Types type,
-                        int with_assert);
+int sprintf_test_common(char* format, void* val, Types type, int with_assert);
 
 void strtok_test_common(char s21_haystack[], char str_haystack[], char delim[]);
 void strlen_test_common(char* str);

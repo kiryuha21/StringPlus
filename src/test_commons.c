@@ -38,51 +38,50 @@ void print_debug(char* format, void* values, Types type, char* my_res,
   }
 }
 
-int sprintf_test_common(char* format, void* values, Types type,
-                        int with_assert) {
+int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
   char my_res[10000] = {0}, std_res[10000] = {0};
   int my_ret = 0, std_ret = 1;
 
   if (type == INT) {
-    std_ret = sprintf(std_res, format, *((int*)values));
-    my_ret = s21_sprintf(my_res, format, *((int*)values));
+    std_ret = sprintf(std_res, format, *((int*)val));
+    my_ret = s21_sprintf(my_res, format, *((int*)val));
   } else if (type == STRING) {
-    std_ret = sprintf(std_res, format, (char*)values);
-    my_ret = s21_sprintf(my_res, format, (char*)values);
+    std_ret = sprintf(std_res, format, (char*)val);
+    my_ret = s21_sprintf(my_res, format, (char*)val);
   } else if (type == CHAR) {
-    std_ret = sprintf(std_res, format, *((char*)values));
-    my_ret = s21_sprintf(my_res, format, *((char*)values));
+    std_ret = sprintf(std_res, format, *((char*)val));
+    my_ret = s21_sprintf(my_res, format, *((char*)val));
   } else if (type == DOUBLE) {
-    printf("VALUE: %.100f\nFORMAT: %s\n", *((double*)values), format);
-    std_ret = sprintf(std_res, format, *((double*)values));
-    my_ret = s21_sprintf(my_res, format, *((double*)values));
+    printf("VALUE: %.100f\nFORMAT: %s\n", *((double*)val), format);
+    std_ret = sprintf(std_res, format, *((double*)val));
+    my_ret = s21_sprintf(my_res, format, *((double*)val));
   } else if (type == LDOUBLE) {
-    printf("VALUE: %.100Lf\nFORMAT: %s\n", *((long double*)values), format);
-    std_ret = sprintf(std_res, format, *((long double*)values));
-    my_ret = s21_sprintf(my_res, format, *((long double*)values));
+    printf("VALUE: %.100Lf\nFORMAT: %s\n", *((long double*)val), format);
+    std_ret = sprintf(std_res, format, *((long double*)val));
+    my_ret = s21_sprintf(my_res, format, *((long double*)val));
   } else if (type == INT_PTR) {  // only for %n specifier
-    std_ret = s21_sprintf(std_res, format, (int*)values);
-    int my_num = *(int*)values;
+    std_ret = s21_sprintf(std_res, format, (int*)val);
+    int my_num = *(int*)val;
 
-    my_ret = sprintf(my_res, format, (int*)values);
-    int std_num = *(int*)values;
+    my_ret = sprintf(my_res, format, (int*)val);
+    int std_num = *(int*)val;
 
     if (my_num != std_num) {
       printf("\nmy num - %d, std num - %d\n", my_num, std_num);
-      print_debug(format, values, type, my_res, std_res, 0);
+      print_debug(format, val, type, my_res, std_res, 0);
       return 1;
     }
   } else if (type == VOID_PTR) {
-    std_ret = sprintf(std_res, format, values);
-    my_ret = s21_sprintf(my_res, format, values);
+    std_ret = sprintf(std_res, format, val);
+    my_ret = s21_sprintf(my_res, format, val);
   }
 
   if (s21_strcmp(my_res, std_res) || my_ret != std_ret) {
-    print_debug(format, values, type, my_res, std_res, 1);
+    print_debug(format, val, type, my_res, std_res, 1);
   }
 #ifdef DEBUG
   else {
-    print_debug(format, values, type, my_res, std_res, 0);
+    print_debug(format, val, type, my_res, std_res, 0);
   }
 #endif
   if (with_assert) {
