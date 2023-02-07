@@ -1,5 +1,6 @@
 #include "s21_sprintf.h"
 
+#include <fenv.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -267,18 +268,10 @@ long double safe_low_depth(long long num, int depth, int is_long) {
   return res;
 }
 
-long double custom_round(long double num, int precision, int is_long) {
+long long custom_round(long double num, int precision, int is_long) {
   // long double enlarged = change_ldouble_depth(num, precision);
-  long double enlarged = num * powl(10.0, precision);
-  long long banker_rounded =
-      is_long ? llrintl(enlarged) : llrint((double)enlarged);
-
-  // TODO: help pls to chose right one(none of ones below i guess)
-  // long double res = change_ldouble_depth(banker_rounded, -precision);
-  // long double res = banker_rounded / powl(10, precision);
-  long double res = safe_low_depth(banker_rounded, precision, is_long);
-
-  return res;
+  long double enlarged = (num * powl(10.0, precision));
+  return is_long ? llrintl(enlarged) : llrint((double)enlarged);
 }
 
 long long handle_overflow(long long int num, WriterFormat* writer) {
@@ -432,7 +425,7 @@ int build_base(char** formatted_string, WriterFormat* writer, ExtraInfo* info,
       precision = 0;
     }
 
-    int pow = 0;
+    int rounded_pow = 0;
     long double cp_num = num;
     if (s21_strchr("gG", writer->specification)) {
       int cp_pow = get_pow(&cp_num);
@@ -444,49 +437,42 @@ int build_base(char** formatted_string, WriterFormat* writer, ExtraInfo* info,
     }
 
     if (s21_strchr("eE", writer->specification)) {
-      pow = get_pow(&num);
+      rounded_pow = get_pow(&num);
     }
-    num = custom_round(num, precision, writer->length.L > 0);
-
-    if (s21_strchr("eE", writer->specification) && num >= 10) {
-      num /= 10;
-      ++pow;
+    long int rounded = custom_round(num, precision, writer->length.L);
+    int len = get_digits_amount(rounded, 10);
+    if (s21_strchr("eE", writer->specification) &&
+        rounded >= (long long)pow(10, precision + 1)) {
+      --len;
+      ++rounded_pow;
+      rounded /= 10;
+    }
+    if (precision + 1 > len) {
+      len = precision + 1;
     }
 
-    int len = get_digits_amount((int)num, 10) + 1 + precision;
-    *formatted_string = (char*)calloc(sizeof(char), len + 6);
-    if (*formatted_string == NULL) {
-      return FAIL;
-    }
+    *formatted_string = (char*)calloc(len + 6, sizeof(char));
 
-    long double d;
-    long double float_part = modfl(num, &d);
-    int decimal_part = abs((int)d);
-
-    // TODO: (?) another floating part in original sprintf...
-    int decimal_len = get_digits_amount(decimal_part, 10);
-    if ((writer->precision != EMPTY && writer->precision != 0) ||
-        writer->flags.lattice_flag) {
-      for (int i = decimal_len + 1; precision > 0; ++i, --precision) {
-        float_part *= 10;
-        (*formatted_string)[i] = (char)(abs((int)float_part % 10) + '0');
-        float_part -= (int)float_part;
+    for (int i = len; i >= 0; --i) {
+      if (i == len - precision) {
+        if (precision != 0 || writer->flags.lattice_flag) {
+          (*formatted_string)[i] = '.';
+        }
+      } else {
+        (*formatted_string)[i] = (char)('0' + rounded % 10);
+        rounded /= 10;
       }
+    }
 
-      (*formatted_string)[decimal_len] = '.';
-    }
-    for (int i = decimal_len - 1; i >= 0; --i, decimal_part /= 10) {
-      (*formatted_string)[i] = (char)(decimal_part % 10 + '0');
-    }
     if (s21_strchr("eE", writer->specification)) {
-      int power = pow;
-      int add_len = (pow <= -100 || pow >= 100) ? 3 : 2;
+      int power = rounded_pow;
+      int add_len = (rounded_pow <= -100 || rounded_pow >= 100) ? 3 : 2;
 
       size_t strlen = s21_strlen(*formatted_string) + 1;
       size_t endlen = strlen + add_len;
       for (; endlen > strlen; --endlen) {
-        (*formatted_string)[endlen] = (char)('0' + abs(pow % 10));
-        pow /= 10;
+        (*formatted_string)[endlen] = (char)('0' + abs(rounded_pow % 10));
+        rounded_pow /= 10;
       }
       (*formatted_string)[endlen--] = (char)(power < 0 ? '-' : '+');
       (*formatted_string)[endlen] = writer->specification == 'e' ? 'e' : 'E';

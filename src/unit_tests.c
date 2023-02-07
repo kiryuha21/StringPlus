@@ -106,7 +106,7 @@ int random_test(int with_assert, int random_chars) {
     add_random_chars(format, &index, 80);
   }
   // length
-  for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
+  for (int j = 0; rand() % 2 == 3 && j < 4; ++j) {
     format[index++] =
         s21_strchr("eEfgG", specification) ? 'L' : lengths_test[rand() % 2];
   }
@@ -515,8 +515,8 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%10e";
-  double num = 326.58426966292137194614042527973651885986328125;
+  char* f = "%.E";
+  double num = 0.451000;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %.100f\n", f, num);
   int std_res = sprintf(b, f, num);
