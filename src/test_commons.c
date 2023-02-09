@@ -87,6 +87,16 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
   if (with_assert) {
     ck_assert_str_eq(my_res, std_res);
   }
+  if (type == DOUBLE) {
+    double my_num = strtod(my_res, NULL);
+    double std_num = strtod(std_res, NULL);
+    return fabs(my_num - std_num) < DELTA;
+  }
+  if (type == LDOUBLE) {
+    long double my_num = strtold(my_res, NULL);
+    long double std_num = strtold(std_res, NULL);
+    return fabsl(my_num - std_num) < DELTA;
+  }
   return (s21_strcmp(my_res, std_res) || my_ret != std_ret) ? 1 : 0;
 }
 
