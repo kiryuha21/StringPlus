@@ -41,6 +41,7 @@ void init_writer(WriterFormat* writer);
 int parse_into_writer(WriterFormat* writer,
                       const char* src);  // src = pointer to '%'
 int validate_writer(WriterFormat* writer);
+int define_precision(int precision);
 
 int s21_sprintf(char* str, const char* format, ...);
 

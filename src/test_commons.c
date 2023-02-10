@@ -38,6 +38,37 @@ void print_debug(char* format, void* values, Types type, char* my_res,
   }
 }
 
+int test_float_types(char* format, char* my_res, char* std_res, Types type) {
+  if (strcmp(my_res, std_res) == 0) {
+    return 0;
+  }
+
+  WriterFormat writer;
+  init_writer(&writer);
+  parse_into_writer(&writer, format + 1);
+
+  if (type == DOUBLE) {
+    double my_num = strtod(my_res, NULL);
+    double std_num = strtod(std_res, NULL);
+    double delta = pow(0.1, define_precision(writer.precision));
+    if (fabs(my_num - std_num) >= delta) {
+      printf("\ndelta - %.*f num1 - %.*f num2 - %.*f num2 - num1 = %.*f\n",
+             writer.precision, delta, writer.precision, my_num,
+             writer.precision, std_num, writer.precision,
+             fabs(std_num - my_num));
+    }
+    return fabs(my_num - std_num) < delta ? 0 : 1;
+  }
+  long double my_num = strtold(my_res, NULL);
+  long double std_num = strtold(std_res, NULL);
+  long double delta = powl(0.1, define_precision(writer.precision));
+  if (fabsl(my_num - std_num) >= delta) {
+    printf("\ndelta - %.*Lf num1 - %.*Lf num2 - %.*Lf\n", writer.precision,
+           delta, writer.precision, my_num, writer.precision, std_num);
+  }
+  return fabsl(my_num - std_num) < delta ? 0 : 1;
+}
+
 int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
   char my_res[10000] = {0}, std_res[10000] = {0};
   int my_ret = 0, std_ret = 1;
@@ -87,15 +118,8 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
   if (with_assert) {
     ck_assert_str_eq(my_res, std_res);
   }
-  if (type == DOUBLE) {
-    double my_num = strtod(my_res, NULL);
-    double std_num = strtod(std_res, NULL);
-    return fabs(my_num - std_num) < DELTA;
-  }
-  if (type == LDOUBLE) {
-    long double my_num = strtold(my_res, NULL);
-    long double std_num = strtold(std_res, NULL);
-    return fabsl(my_num - std_num) < DELTA;
+  if (type == DOUBLE || type == LDOUBLE) {
+    return test_float_types(format, my_res, std_res, type);
   }
   return (s21_strcmp(my_res, std_res) || my_ret != std_ret) ? 1 : 0;
 }

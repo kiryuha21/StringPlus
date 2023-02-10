@@ -521,7 +521,7 @@ int main(void) {
   printf("format - \"%s\" \nnum - %.100f\n", f, num);
   int std_res = sprintf(b, f, num);
   printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
-  if (strcmp(a, b) == 0 && my_res == std_res) {
+  if (test_float_types(f, a, b, DOUBLE) == 0 && my_res == std_res) {
     puts("Equal\n");
 
     // TODO: should be less output but always with assert(guess after functions

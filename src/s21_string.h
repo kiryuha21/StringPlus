@@ -11,8 +11,6 @@
 #define FAIL (-1)
 #define OK 0
 
-#define DELTA 1e-6
-
 #define DEFAULT_PRECISION 6
 
 typedef unsigned long long ull;
