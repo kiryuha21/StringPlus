@@ -515,8 +515,8 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%#0 -.1f";
-  double num = 23041.54999999999927240423858165740966796875;
+  char* f = "%0  -.7e";
+  double num = 825343.6250;
   int my_res = s21_sprintf(a, f, num);
   printf("format - \"%s\" \nnum - %.100f\n", f, num);
   int std_res = sprintf(b, f, num);

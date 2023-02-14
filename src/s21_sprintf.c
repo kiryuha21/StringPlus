@@ -343,9 +343,6 @@ int define_precision(int precision) {
   return result;
 }
 
-// const char* specifications = "cdieEfgGosuxXpn%";
-// const char* writer_flags = "-+ #0";
-// const char* lengths = "hlL";
 int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
                va_list vars) {
   if (s21_strchr("di", writer->specification)) {

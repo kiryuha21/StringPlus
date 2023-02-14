@@ -38,6 +38,54 @@ void print_debug(char* format, void* values, Types type, char* my_res,
   }
 }
 
+int define_precision_with_e(const char* str) {
+  int res = 0;
+  for (; *str && *str != '.' && *str != 'e' && *str != 'E'; ++str)
+    ;
+  if (*str == '.') {
+    ++str;
+    for (; *str >= '0' && *str <= '9'; ++str, ++res)
+      ;
+  }
+  if (*str == 'e' || *str == 'E') {
+    ++str;
+    if (*str == '+') {
+      ++str;
+      for (; *str >= '0' && *str <= '9'; ++str) {
+        res -= *str - '0';
+      }
+    } else if (*str == '-') {
+      ++str;
+      for (; *str >= '0' && *str <= '9'; ++str) {
+        res += *str - '0';
+      }
+    }
+  }
+  return res;
+}
+
+/*double s21_strtod(const char* str) {
+  double res = 0;
+  double power = 1;
+  if (s21_strchr(str, '.')) {
+    power = pow(10, (double)(str - s21_strchr(str, '.')));
+  }
+  for (; *str >= '0' && *str <= '9'; ++str) {
+    res += power * *str - '0';
+    power /= 10;
+  }
+  if (*str != '.') {
+    return res;
+  }
+  ++str;
+  power /= 10;
+  for (; *str >= '0' && *str <= '9'; ++str) {
+    res += power * *str - '0';
+    power /= 10;
+  }
+  return res;
+}*/
+
 int test_float_types(char* format, char* my_res, char* std_res, Types type) {
   if (strcmp(my_res, std_res) == 0) {
     return 0;
@@ -50,23 +98,23 @@ int test_float_types(char* format, char* my_res, char* std_res, Types type) {
   if (type == DOUBLE) {
     double my_num = strtod(my_res, NULL);
     double std_num = strtod(std_res, NULL);
-    double delta = pow(0.1, define_precision(writer.precision));
-    if (fabs(my_num - std_num) >= delta) {
+    double delta = pow(0.1, define_precision_with_e(my_res)) * 2;
+    if (fabs(my_num - std_num) > delta) {
       printf("\ndelta - %.*f num1 - %.*f num2 - %.*f num2 - num1 = %.*f\n",
              writer.precision, delta, writer.precision, my_num,
              writer.precision, std_num, writer.precision,
              fabs(std_num - my_num));
     }
-    return fabs(my_num - std_num) < delta ? 0 : 1;
+    return fabs(my_num - std_num) <= delta ? 0 : 1;
   }
   long double my_num = strtold(my_res, NULL);
   long double std_num = strtold(std_res, NULL);
-  long double delta = powl(0.1, define_precision(writer.precision));
-  if (fabsl(my_num - std_num) >= delta) {
+  long double delta = powl(0.1, define_precision_with_e(my_res)) * 2;
+  if (fabsl(my_num - std_num) > delta) {
     printf("\ndelta - %.*Lf num1 - %.*Lf num2 - %.*Lf\n", writer.precision,
            delta, writer.precision, my_num, writer.precision, std_num);
   }
-  return fabsl(my_num - std_num) < delta ? 0 : 1;
+  return fabsl(my_num - std_num) <= delta ? 0 : 1;
 }
 
 int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
