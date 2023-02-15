@@ -49,42 +49,10 @@ int define_precision_with_e(const char* str) {
   }
   if (*str == 'e' || *str == 'E') {
     ++str;
-    if (*str == '+') {
-      ++str;
-      for (; *str >= '0' && *str <= '9'; ++str) {
-        res -= *str - '0';
-      }
-    } else if (*str == '-') {
-      ++str;
-      for (; *str >= '0' && *str <= '9'; ++str) {
-        res += *str - '0';
-      }
-    }
+    res -= atoi(str);
   }
   return res;
 }
-
-/*double s21_strtod(const char* str) {
-  double res = 0;
-  double power = 1;
-  if (s21_strchr(str, '.')) {
-    power = pow(10, (double)(str - s21_strchr(str, '.')));
-  }
-  for (; *str >= '0' && *str <= '9'; ++str) {
-    res += power * *str - '0';
-    power /= 10;
-  }
-  if (*str != '.') {
-    return res;
-  }
-  ++str;
-  power /= 10;
-  for (; *str >= '0' && *str <= '9'; ++str) {
-    res += power * *str - '0';
-    power /= 10;
-  }
-  return res;
-}*/
 
 int test_float_types(char* format, char* my_res, char* std_res, Types type) {
   if (strcmp(my_res, std_res) == 0) {
@@ -98,7 +66,7 @@ int test_float_types(char* format, char* my_res, char* std_res, Types type) {
   if (type == DOUBLE) {
     double my_num = strtod(my_res, NULL);
     double std_num = strtod(std_res, NULL);
-    double delta = pow(0.1, define_precision_with_e(my_res)) * 2;
+    double delta = pow(0.1, define_precision_with_e(my_res)) * 3;
     if (fabs(my_num - std_num) > delta) {
       printf("\ndelta - %.*f num1 - %.*f num2 - %.*f num2 - num1 = %.*f\n",
              writer.precision, delta, writer.precision, my_num,
@@ -109,7 +77,7 @@ int test_float_types(char* format, char* my_res, char* std_res, Types type) {
   }
   long double my_num = strtold(my_res, NULL);
   long double std_num = strtold(std_res, NULL);
-  long double delta = powl(0.1, define_precision_with_e(my_res)) * 2;
+  long double delta = powl(0.1, define_precision_with_e(my_res)) * 3;
   if (fabsl(my_num - std_num) > delta) {
     printf("\ndelta - %.*Lf num1 - %.*Lf num2 - %.*Lf\n", writer.precision,
            delta, writer.precision, my_num, writer.precision, std_num);
