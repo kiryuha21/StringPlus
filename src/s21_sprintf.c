@@ -366,24 +366,24 @@ size_t wchar_strlen(const wchar_t *str) {
   return count;
 }
 
-int is_valid_string(char* str) {
-    size_t len = s21_strlen(str);
-    for (size_t i = 0; i < len; ++i) {
-        if (str[i] < 0 || str[i] > 127) {
-            return 0;
-        }
+int is_valid_string(char *str) {
+  size_t len = s21_strlen(str);
+  for (size_t i = 0; i < len; ++i) {
+    if (str[i] < 0 || str[i] > 127) {
+      return 0;
     }
-    return 1;
+  }
+  return 1;
 }
 
-int is_valid_wstring(wchar_t* str) {
-    size_t len = wchar_strlen(str);
-    for (size_t i = 0; i < len; ++i) {
-        if (str[i] < 0 || str[i] > 127) {
-            return 0;
-        }
+int is_valid_wstring(wchar_t *str) {
+  size_t len = wchar_strlen(str);
+  for (size_t i = 0; i < len; ++i) {
+    if (str[i] < 0 || str[i] > 127) {
+      return 0;
     }
-    return 1;
+  }
+  return 1;
 }
 
 void handle_null_char(ExtraInfo *info, WriterFormat *writer) {
@@ -534,7 +534,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     if (writer->length.L) {
       rounded = round_ldouble(lnum, precision);
     } else {
-      rounded = round_ldouble(num, precision);
+      rounded = round_double(num, precision);
     }
 
     int len = get_digits_amount(rounded, 10);
@@ -571,7 +571,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     if (writer->length.l) {
       wchar_t *string = va_arg(vars, wchar_t *);
       if (!is_valid_wstring(string)) {
-          return FAIL;
+        return FAIL;
       }
 
       size_t len = wchar_strlen(string);
@@ -580,7 +580,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     } else {
       char *string = va_arg(vars, char *);
       if (!is_valid_string(string)) {
-          return FAIL;
+        return FAIL;
       }
 
       *formatted_string = (char *)calloc(s21_strlen(string) + 1, sizeof(char));

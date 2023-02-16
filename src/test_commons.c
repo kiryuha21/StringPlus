@@ -1,10 +1,10 @@
 #include "test_commons.h"
 
 #include <check.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 
 void print_debug(char* format, void* values, Types type, char* my_res,
                  char* std_res, int my_ret, int std_ret, int full) {

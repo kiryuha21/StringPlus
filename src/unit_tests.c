@@ -57,15 +57,15 @@ char* generate_random_size_string(int* size) {
   return res;
 }
 
-wchar_t * generate_random_size_wstring(int* size) {
-    *size = rand() % 20 + 5;
-    wchar_t * res = (char*)calloc(*size + 1, sizeof(wchar_t));
-    if (res != NULL) {
-        for (int i = 0; i < *size; ++i) {
-            res[i] = rand() % 255 - rand() % 255;
-        }
+wchar_t* generate_random_size_wstring(int* size) {
+  *size = rand() % 20 + 5;
+  wchar_t* res = (char*)calloc(*size + 1, sizeof(wchar_t));
+  if (res != NULL) {
+    for (int i = 0; i < *size; ++i) {
+      res[i] = rand() % 255 - rand() % 255;
     }
-    return res;
+  }
+  return res;
 }
 
 void add_random_chars(char* format, int* index, int max) {
@@ -184,21 +184,21 @@ int random_test(int with_assert, int random_chars) {
     int res;
     cmp = sprintf_test_common(format, (void*)(&res), INT_PTR, with_assert);
   } else if (specification == 's') {
-      if (strchr(format, 'l')) {
-          int size;
-          wchar_t * res = generate_random_size_wstring(&size);
-          if (res != NULL) {
-              cmp = sprintf_test_common(format, (void *) (res), WSTRING, with_assert);
-              free(res);
-          }
-      } else {
-          int size;
-          char *res = generate_random_size_string(&size);
-          if (res != NULL) {
-              cmp = sprintf_test_common(format, (void *) (res), STRING, with_assert);
-              free(res);
-          }
+    if (strchr(format, 'l')) {
+      int size;
+      wchar_t* res = generate_random_size_wstring(&size);
+      if (res != NULL) {
+        cmp = sprintf_test_common(format, (void*)(res), WSTRING, with_assert);
+        free(res);
       }
+    } else {
+      int size;
+      char* res = generate_random_size_string(&size);
+      if (res != NULL) {
+        cmp = sprintf_test_common(format, (void*)(res), STRING, with_assert);
+        free(res);
+      }
+    }
   } else if (specification == 'p') {
     if (rand() % 100 != 0) {
       int size;
