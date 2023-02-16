@@ -366,6 +366,15 @@ size_t wchar_strlen(const wchar_t *str) {
   return count;
 }
 
+void handle_null_char(ExtraInfo* info, WriterFormat* writer) {
+    *(info->null_chars) +=
+            (writer->flags.minus_flag && writer->width != UNKNOWN ? writer->width
+                                                                  : 1);
+    writer->width = (writer->width == UNKNOWN || writer->flags.minus_flag
+                     ? UNKNOWN
+                     : writer->width - 1);
+}
+
 int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
                va_list vars) {
   if (s21_strchr("di", writer->specification)) {
@@ -400,28 +409,43 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       }
       *(info->bad_return) = 0;
     }
-  } else if (writer->specification == 'c' || writer->specification == '%') {
-    int num = '%';
-    if (writer->specification == 'c') {  // TODO: don't forget wchar!!
-      num = va_arg(vars, int);
-    } else {
-      writer->width = UNKNOWN;
-    }
+  } else if (writer->specification == '%') {
+    writer->width = UNKNOWN;
     writer->specification = 'c';
     *formatted_string = (char *)calloc(sizeof(char), 2);
-    if (*formatted_string == NULL ||
-        ((writer->length.l || writer->length.L) && !(num >= 0 && num <= 255))) {
+    if (*formatted_string == NULL) {
       return FAIL;
     }
-    if (num == '\0') {
-      *(info->null_chars) +=
-          (writer->flags.minus_flag && writer->width != UNKNOWN ? writer->width
-                                                                : 1);
-      writer->width = (writer->width == UNKNOWN || writer->flags.minus_flag
-                           ? UNKNOWN
-                           : writer->width - 1);
-    }
-    (*formatted_string)[0] = (char)num;
+
+    *formatted_string[0] = '%';
+  } else if (writer->specification == 'c') {
+      if (writer->length.l) {
+          wchar_t num = va_arg(vars, wchar_t);
+          *formatted_string = (char*) calloc(sizeof(wchar_t), 2);
+          if (*formatted_string == NULL) {
+              return FAIL;
+          }
+
+          if (num == L'\0') {
+              handle_null_char(info, writer);
+          }
+
+          wchar_t temp[2] = {0};
+          temp[0] = num;
+          wcstombs(*formatted_string, temp, 2);
+      } else {
+          int num = va_arg(vars, int);
+          *formatted_string = (char *) calloc(sizeof(char), 2);
+          if (*formatted_string == NULL) {
+              return FAIL;
+          }
+
+          if (num == '\0') {
+              handle_null_char(info, writer);
+          }
+
+          (*formatted_string)[0] = (char)num;
+      }
   } else if (s21_strchr("eEfgG", writer->specification)) {
     if (writer->length.L) {
       long double num = va_arg(vars, long double);
