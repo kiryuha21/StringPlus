@@ -386,7 +386,9 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     }
 
     if (**formatted_string == '0') {
-      writer->flags.lattice_flag = 0;
+      if (writer->specification != 'o') {
+        writer->flags.lattice_flag = 0;
+      }
       *(info->bad_return) = 0;
     }
   } else if (writer->specification == 'c' || writer->specification == '%') {

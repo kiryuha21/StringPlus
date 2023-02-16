@@ -512,8 +512,8 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%  071.hho";
-  int val = -1185559808;
+  char* f = "%#-0+.hhX";
+  int val = -372425216;
   int my_res = s21_sprintf(a, f, val);
   printf("format - \"%s\" \nval - %d\n", f, val);
   int std_res = sprintf(b, f, val);
