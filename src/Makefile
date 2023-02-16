@@ -1,6 +1,6 @@
 CC = gcc
 
-FLAGS = -Wall -Wextra -Werror --std=c11 -fanalyzer -pedantic
+FLAGS = -Wall -Wextra -Werror -std=c11 -fanalyzer -pedantic
 ADDITIONAL_FLAGS = -lcheck -lsubunit -lm
 
 SRC_C_FILES = s21_add.c \

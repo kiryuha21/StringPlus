@@ -445,8 +445,10 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
         int cp_pow = get_ldouble_pow(&cp_num);
         if (cp_pow >= -4 && cp_pow < precision) {
           writer->specification = 'f';
+          precision = precision - cp_pow - 1;
         } else {
           writer->specification = writer->specification == 'g' ? 'e' : 'E';
+          precision = precision > 1 ? precision - 1 : 0;
         }
       }
 
@@ -493,8 +495,10 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
         int cp_pow = get_double_pow(&cp_num);
         if (cp_pow >= -4 && cp_pow < precision) {
           writer->specification = 'f';
+            precision = precision - cp_pow - 1;
         } else {
           writer->specification = writer->specification == 'g' ? 'e' : 'E';
+          precision = precision > 1 ? precision - 1 : 0;
         }
       }
 
