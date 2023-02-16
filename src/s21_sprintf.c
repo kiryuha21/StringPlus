@@ -381,7 +381,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       safe_replace(formatted_string, &temp);
     }
 
-    if (**formatted_string == '0' && s21_strchr("xX", writer->specification)) {
+    if (**formatted_string == '0' && s21_strchr("uxX", writer->specification)) {
       writer->flags.lattice_flag = 0;
       *(info->bad_return) = 0;
     }
@@ -589,14 +589,13 @@ void apply_precision(char **formatted_string, WriterFormat *writer,
         info->bad_return = 0;
       }
     } else if (writer->specification == 's') {  // TODO: or maybe smth else too
-        int precision = define_precision(writer->precision);
+      int precision = define_precision(writer->precision);
       if (precision < (int)s21_strlen(*formatted_string)) {
-          if (precision == 0) {
-              *info->null_chars = 1;
-          }
+        if (precision == 0) {
+          *info->bad_return = 0;
+        }
         char *cutted = (char *)calloc(precision + 1, sizeof(char));
-        s21_strncpy(cutted, *formatted_string,
-                    precision);
+        s21_strncpy(cutted, *formatted_string, precision);
         safe_replace(formatted_string, &cutted);
       }
     } else if (writer->specification == 'p') {
@@ -797,7 +796,6 @@ int s21_sprintf(char *str, const char *format, ...) {
 
   va_end(vars);
   // TODO: orig sprintf returns 0 with raw %n, our func returns -1
-  return (int)s21_strlen(start) + null_chars
-             ? (int)s21_strlen(start) + null_chars
-             : bad_return;
+  int len = (int)s21_strlen(start);
+  return len + null_chars ? len + null_chars : bad_return;
 }

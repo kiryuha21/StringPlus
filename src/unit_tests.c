@@ -39,13 +39,10 @@ START_TEST(sprintf_basic) {
   sprintf_test_common("%023c", (void*)(&c), CHAR, assert);
   sprintf_test_common("% 0- c", (void*)(&c), CHAR, assert);
   sprintf_test_common("%+ 0#.73c", (void*)(&c), CHAR, assert);
-  // TODO: uncomment
-  /*
   double f = 4.5;
-    sprintf_test_common("%.e", (void*)(&f), DOUBLE, assert);
-    f = 5.5;
-    sprintf_test_common("%.f", (void*)(&f), DOUBLE, assert);
-    */
+  sprintf_test_common("%.e", (void*)(&f), DOUBLE, assert);
+  f = 5.5;
+  sprintf_test_common("%.f", (void*)(&f), DOUBLE, assert);
 }
 
 char* generate_random_size_string(int* size) {
@@ -72,7 +69,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 13];
+  char specification = specifications_test[rand() % 14];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -516,12 +513,13 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%.s";
-  char* str = "N}?>:?I7m`3vjb2{Y!2o";
-  int my_res = s21_sprintf(a, f, str);
-  printf("format - \"%s\" \nnum - %s\n", f, str);
-  int std_res = sprintf(b, f, str);
-  printf("my_res:\n\"%s\"\nreal_res:\n\"%s\"\n", a, b);
+  char* f = "%+#0.u";
+  int val = 0;
+  int my_res = s21_sprintf(a, f, val);
+  printf("format - \"%s\" \nval - %d\n", f, val);
+  int std_res = sprintf(b, f, val);
+  printf("my_res - std_res:\n\"%s\"\n\"%s\"\n", a, b);
+  printf("my_ret - std_ret:\n%d\n%d\n", my_res, std_res);
   if (strcmp(a, b) == 0 && my_res == std_res) {
     puts("Equal\n");
 
