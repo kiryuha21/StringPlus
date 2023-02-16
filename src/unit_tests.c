@@ -512,7 +512,7 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-      char* f = "%3.1Lg";
+  char* f = "%3.1Lg";
   long double val = 3;
   int my_res = s21_sprintf(a, f, val);
   printf("format - \"%s\" \nval - %Lf\n", f, val);

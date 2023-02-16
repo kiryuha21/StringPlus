@@ -55,7 +55,12 @@ int define_precision_with_e(const char* str) {
   return res;
 }
 
-int test_float_types(char* format, char* my_res, char* std_res, Types type) {
+int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
+                     int std_ret, Types type) {
+  if (my_ret != std_ret) {
+    return 1;
+  }
+
   if (strcmp(my_res, std_res) == 0) {
     return 0;
   }
@@ -63,6 +68,13 @@ int test_float_types(char* format, char* my_res, char* std_res, Types type) {
   WriterFormat writer;
   init_writer(&writer);
   parse_into_writer(&writer, format + 1);
+
+  if (strchr("gG", writer.specification)) {
+    if (type == DOUBLE) {
+      return (s21_strcmp(my_res, std_res)) ? 1 : 0;
+    }
+    return (s21_strcmp(my_res, std_res)) ? 1 : 0;
+  }
 
   if (type == DOUBLE) {
     double my_num = strtod(my_res, NULL);
@@ -134,7 +146,7 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
     ck_assert_str_eq(my_res, std_res);
   }
   if (type == DOUBLE || type == LDOUBLE) {
-    return test_float_types(format, my_res, std_res, type);
+    return test_float_types(format, my_res, std_res, my_ret, std_ret, type);
   }
   return (s21_strcmp(my_res, std_res) || my_ret != std_ret) ? 1 : 0;
 }

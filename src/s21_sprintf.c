@@ -366,13 +366,13 @@ size_t wchar_strlen(const wchar_t *str) {
   return count;
 }
 
-void handle_null_char(ExtraInfo* info, WriterFormat* writer) {
-    *(info->null_chars) +=
-            (writer->flags.minus_flag && writer->width != UNKNOWN ? writer->width
-                                                                  : 1);
-    writer->width = (writer->width == UNKNOWN || writer->flags.minus_flag
-                     ? UNKNOWN
-                     : writer->width - 1);
+void handle_null_char(ExtraInfo *info, WriterFormat *writer) {
+  *(info->null_chars) +=
+      (writer->flags.minus_flag && writer->width != UNKNOWN ? writer->width
+                                                            : 1);
+  writer->width = (writer->width == UNKNOWN || writer->flags.minus_flag
+                       ? UNKNOWN
+                       : writer->width - 1);
 }
 
 int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
@@ -419,33 +419,33 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
 
     *formatted_string[0] = '%';
   } else if (writer->specification == 'c') {
-      if (writer->length.l) {
-          wchar_t num = va_arg(vars, wchar_t);
-          *formatted_string = (char*) calloc(sizeof(wchar_t), 2);
-          if (*formatted_string == NULL) {
-              return FAIL;
-          }
-
-          if (num == L'\0') {
-              handle_null_char(info, writer);
-          }
-
-          wchar_t temp[2] = {0};
-          temp[0] = num;
-          wcstombs(*formatted_string, temp, 2);
-      } else {
-          int num = va_arg(vars, int);
-          *formatted_string = (char *) calloc(sizeof(char), 2);
-          if (*formatted_string == NULL) {
-              return FAIL;
-          }
-
-          if (num == '\0') {
-              handle_null_char(info, writer);
-          }
-
-          (*formatted_string)[0] = (char)num;
+    if (writer->length.l) {
+      wchar_t num = va_arg(vars, wchar_t);
+      *formatted_string = (char *)calloc(sizeof(wchar_t), 2);
+      if (*formatted_string == NULL) {
+        return FAIL;
       }
+
+      if (num == L'\0') {
+        handle_null_char(info, writer);
+      }
+
+      wchar_t temp[2] = {0};
+      temp[0] = num;
+      wcstombs(*formatted_string, temp, 2);
+    } else {
+      int num = va_arg(vars, int);
+      *formatted_string = (char *)calloc(sizeof(char), 2);
+      if (*formatted_string == NULL) {
+        return FAIL;
+      }
+
+      if (num == '\0') {
+        handle_null_char(info, writer);
+      }
+
+      (*formatted_string)[0] = (char)num;
+    }
   } else if (s21_strchr("eEfgG", writer->specification)) {
     if (writer->length.L) {
       long double num = va_arg(vars, long double);
@@ -519,7 +519,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
         int cp_pow = get_double_pow(&cp_num);
         if (cp_pow >= -4 && cp_pow < precision) {
           writer->specification = 'f';
-            precision = precision - cp_pow - 1;
+          precision = precision - cp_pow - 1;
         } else {
           writer->specification = writer->specification == 'g' ? 'e' : 'E';
           precision = precision > 1 ? precision - 1 : 0;
