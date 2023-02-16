@@ -6,7 +6,7 @@
 #include <string.h>
 
 void print_debug(char* format, void* values, Types type, char* my_res,
-                 char* std_res, int full) {
+                 char* std_res, int my_ret, int std_ret, int full) {
   if (full) {
     printf("---------\nformat:\n%s\n", format);
     if (type == INT || type == INT_PTR) {
@@ -14,13 +14,14 @@ void print_debug(char* format, void* values, Types type, char* my_res,
     } else if (type == STRING) {
       printf("val:\n%s\n", (char*)values);
     } else if (type == CHAR) {
-      printf("val:\n%c -(%d)\n", *((char*)values), (int)*((char*)values));
+      printf("val:\n\"%c\"\n", *((char*)values));
     } else if (type == DOUBLE) {
       printf("val:\n%f\n", *((double*)values));
     } else if (type == VOID_PTR) {
       printf("val:\n%p\n", values);
     }
-    printf("results(my - std):\n\"%s\"\n\"%s\"\n---------\n", my_res, std_res);
+    printf("results(my - std):\n\"%s\"\n\"%s\"\n", my_res, std_res);
+    printf("returns(my - std):\n%d\n%d\n---------\n", my_ret, std_ret);
   } else {
     printf("%s | ", format);
     if (type == INT || type == INT_PTR) {
@@ -115,7 +116,7 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
 
     if (my_num != std_num) {
       printf("\nmy num - %d, std num - %d\n", my_num, std_num);
-      print_debug(format, val, type, my_res, std_res, 0);
+      print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 0);
       return 1;
     }
   } else if (type == VOID_PTR) {
@@ -124,11 +125,11 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
   }
 
   if (s21_strcmp(my_res, std_res) || my_ret != std_ret) {
-    print_debug(format, val, type, my_res, std_res, 1);
+    print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 1);
   }
 #ifdef DEBUG
   else {
-    print_debug(format, val, type, my_res, std_res, 0);
+    print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 0);
   }
 #endif
   if (with_assert) {

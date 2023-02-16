@@ -72,7 +72,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 14];
+  char specification = specifications_test[rand() % 13];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
