@@ -100,11 +100,9 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
     std_ret = sprintf(std_res, format, *((char*)val));
     my_ret = s21_sprintf(my_res, format, *((char*)val));
   } else if (type == DOUBLE) {
-    printf("VALUE: %.100f\nFORMAT: %s\n", *((double*)val), format);
     std_ret = sprintf(std_res, format, *((double*)val));
     my_ret = s21_sprintf(my_res, format, *((double*)val));
   } else if (type == LDOUBLE) {
-    printf("VALUE: %.100Lf\nFORMAT: %s\n", *((long double*)val), format);
     std_ret = sprintf(std_res, format, *((long double*)val));
     my_ret = s21_sprintf(my_res, format, *((long double*)val));
   } else if (type == INT_PTR) {  // only for %n specifier

@@ -69,7 +69,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 14];
+  char specification = specifications_test[rand() % 16];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -137,8 +137,7 @@ int random_test(int with_assert, int random_chars) {
   } else if (specification == 'x' || specification == 'X') {
     int res = rand() % 4294967295 - rand() % 4294967295;
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
-  } else if (specification == 'f' || specification == 'e' ||
-             specification == 'E') {
+  } else if (s21_strchr("efEgG", specification)) {
     if (strchr(format, 'L')) {
       long double divider = (long double)(rand() % (int)pow(10, rand() % 10));
       long double divisor = (long double)(rand() % (int)pow(10, rand() % 10));
