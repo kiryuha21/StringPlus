@@ -60,7 +60,7 @@ void validate_writer_flags(WriterFormat *writer) {
       writer->flags.zero_flag = 0;
     }
 
-    if (!s21_strchr("oxXeEfu", writer->specification)) {
+    if (!s21_strchr("oxXeEfugG", writer->specification)) {
       writer->flags.lattice_flag = 0;
     }
 
@@ -464,9 +464,14 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
 
       int precision = define_precision(writer->precision);
 
+      int g_spec = 0;
       long double cp_num = num;
       if (s21_strchr("gG", writer->specification)) {
+          g_spec = 1;
         int cp_pow = get_ldouble_pow(&cp_num);
+        if (precision == 0) {
+            precision = 1;
+        }
         if (cp_pow >= -4 && cp_pow < precision) {
           writer->specification = 'f';
           precision = precision - cp_pow - 1;
@@ -497,6 +502,19 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       float_to_str(formatted_string, len, precision, writer->flags.lattice_flag,
                    rounded);
       handle_exp_part(formatted_string, writer->specification, rounded_pow);
+      if (g_spec) {
+          char *str = *formatted_string + s21_strlen(*formatted_string) - 1;
+          char *point = s21_strchr(*formatted_string, '.');
+          if (point == NULL) {
+              point = *formatted_string;
+          }
+          for (; *str == '0' && *(str - 1) && *(str - 1) != ' ' && (str != point + precision + 1 || writer->precision == UNKNOWN); --str) {
+              *str = '\0';
+          }
+          if (*str == '.' && writer->flags.lattice_flag == 0) {
+              *str = '\0';
+          }
+      }
     } else {
       double num = va_arg(vars, double);
       if (signbit(num) != 0) {  // better than "if (num < 0)"
@@ -514,10 +532,15 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
 
       int precision = define_precision(writer->precision);
 
+        int g_spec = 0;
       double cp_num = num;
       if (s21_strchr("gG", writer->specification)) {
+          g_spec = 1;
         int cp_pow = get_double_pow(&cp_num);
-        if (cp_pow >= -4 && cp_pow < precision) {
+          if (precision == 0) {
+              precision = 1;
+          }
+          if (cp_pow >= -4 && cp_pow < precision) {
           writer->specification = 'f';
           precision = precision - cp_pow - 1;
         } else {
@@ -547,6 +570,19 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       float_to_str(formatted_string, len, precision, writer->flags.lattice_flag,
                    rounded);
       handle_exp_part(formatted_string, writer->specification, rounded_pow);
+        if (g_spec) {
+            char *str = *formatted_string + s21_strlen(*formatted_string) - 1;
+            char *point = s21_strchr(*formatted_string, '.');
+            if (point == NULL) {
+                point = *formatted_string;
+            }
+            for (; *str == '0' && *(str - 1) && *(str - 1) != ' ' && (str != point + precision + 1 || writer->precision == UNKNOWN); --str) {
+                *str = '\0';
+            }
+            if (*str == '.' && writer->flags.lattice_flag == 0) {
+                *str = '\0';
+            }
+        }
     }
   } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
     if (writer->length.l) {
