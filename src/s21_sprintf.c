@@ -343,6 +343,20 @@ int define_precision(int precision) {
   return result;
 }
 
+void float_to_str(char **fstring, int len, int precision, int lattice_flag,
+                  long long rounded) {
+  for (int i = len; i >= 0; --i) {
+    if (i == len - precision) {
+      if (precision != 0 || lattice_flag) {
+        (*fstring)[i] = '.';
+      }
+    } else {
+      (*fstring)[i] = (char)('0' + rounded % 10);
+      rounded /= 10;
+    }
+  }
+}
+
 int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
                va_list vars) {
   if (s21_strchr("di", writer->specification)) {
@@ -439,17 +453,8 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       }
 
       *formatted_string = (char *)calloc(len + 6, sizeof(char));
-
-      for (int i = len; i >= 0; --i) {
-        if (i == len - precision) {
-          if (precision != 0 || writer->flags.lattice_flag) {
-            (*formatted_string)[i] = '.';
-          }
-        } else {
-          (*formatted_string)[i] = (char)('0' + rounded % 10);
-          rounded /= 10;
-        }
-      }
+      float_to_str(formatted_string, len, precision, writer->flags.lattice_flag,
+                   rounded);
       handle_exp_part(formatted_string, writer->specification, rounded_pow);
     } else {
       double num = va_arg(vars, double);
@@ -496,17 +501,8 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       }
 
       *formatted_string = (char *)calloc(len + 6, sizeof(char));
-
-      for (int i = len; i >= 0; --i) {
-        if (i == len - precision) {
-          if (precision != 0 || writer->flags.lattice_flag) {
-            (*formatted_string)[i] = '.';
-          }
-        } else {
-          (*formatted_string)[i] = (char)('0' + rounded % 10);
-          rounded /= 10;
-        }
-      }
+      float_to_str(formatted_string, len, precision, writer->flags.lattice_flag,
+                   rounded);
       handle_exp_part(formatted_string, writer->specification, rounded_pow);
     }
   } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
@@ -575,7 +571,7 @@ void insert_null_spacer_at_index(char **src, int index, int nsp_size) {
 }
 
 void apply_precision(char **formatted_string, WriterFormat *writer,
-                     int *bad_return) {
+                     ExtraInfo *info) {
   if (writer->precision != UNKNOWN) {
     if (s21_strchr("iduoxX", writer->specification)) {
       if ((writer->precision != EMPTY && writer->precision != 0) ||
@@ -590,12 +586,17 @@ void apply_precision(char **formatted_string, WriterFormat *writer,
         }
       } else {
         **formatted_string = '\0';
-        *bad_return = 0;
+        info->bad_return = 0;
       }
     } else if (writer->specification == 's') {  // TODO: or maybe smth else too
-      if (writer->precision < (int)s21_strlen(*formatted_string)) {
-        char *cutted = (char *)calloc(writer->precision + 1, sizeof(char));
-        s21_strncpy(cutted, *formatted_string, writer->precision);
+        int precision = define_precision(writer->precision);
+      if (precision < (int)s21_strlen(*formatted_string)) {
+          if (precision == 0) {
+              *info->null_chars = 1;
+          }
+        char *cutted = (char *)calloc(precision + 1, sizeof(char));
+        s21_strncpy(cutted, *formatted_string,
+                    precision);
         safe_replace(formatted_string, &cutted);
       }
     } else if (writer->specification == 'p') {
@@ -715,7 +716,7 @@ void apply_flags(char **formatted_string, WriterFormat *writer,
 void build_format_string(char **formatted_string, WriterFormat *writer,
                          ExtraInfo *info, va_list vars) {
   if (build_base(formatted_string, writer, info, vars) != FAIL) {
-    apply_precision(formatted_string, writer, info->bad_return);
+    apply_precision(formatted_string, writer, info);
     info->left_space = apply_width(formatted_string, writer);
     apply_flags(formatted_string, writer, info);
   }
