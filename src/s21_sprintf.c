@@ -310,11 +310,11 @@ void inf_nan_handle(char **fstring, char *str, ExtraInfo *info) {
 }
 
 void handle_inf(char **fstring, char spec, ExtraInfo *info) {
-  inf_nan_handle(fstring, spec == 'E' ? "INF" : "inf", info);
+  inf_nan_handle(fstring, s21_strchr("EG", spec) ? "INF" : "inf", info);
 }
 
 void handle_nan(char **fstring, char spec, ExtraInfo *info) {
-  inf_nan_handle(fstring, spec == 'E' ? "NAN" : "nan", info);
+  inf_nan_handle(fstring, s21_strchr("EG", spec) ? "NAN" : "nan", info);
 }
 
 void handle_exp_part(char **fstring, char spec, int rounded_pow) {
@@ -425,7 +425,6 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
 
       int precision = define_precision(writer->precision);
 
-      int rounded_pow = 0;
       long double cp_num = num;
       if (s21_strchr("gG", writer->specification)) {
         int cp_pow = get_ldouble_pow(&cp_num);
@@ -436,6 +435,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
         }
       }
 
+      int rounded_pow = 0;
       if (s21_strchr("eE", writer->specification)) {
         rounded_pow = get_ldouble_pow(&num);
       }
@@ -473,7 +473,6 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
 
       int precision = define_precision(writer->precision);
 
-      int rounded_pow = 0;
       double cp_num = num;
       if (s21_strchr("gG", writer->specification)) {
         int cp_pow = get_double_pow(&cp_num);
@@ -484,6 +483,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
         }
       }
 
+      int rounded_pow = 0;
       if (s21_strchr("eE", writer->specification)) {
         rounded_pow = get_double_pow(&num);
       }
@@ -588,7 +588,9 @@ void apply_precision(char **formatted_string, WriterFormat *writer,
         **formatted_string = '\0';
         info->bad_return = 0;
       }
-    } else if (writer->specification == 's') {  // TODO: or maybe smth else too
+    } else if (s21_strchr(
+                   "iduxXs",
+                   writer->specification)) {  // TODO: or maybe smth else too
       int precision = define_precision(writer->precision);
       if (precision < (int)s21_strlen(*formatted_string)) {
         if (precision == 0) {

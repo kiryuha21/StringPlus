@@ -104,7 +104,7 @@ int random_test(int with_assert, int random_chars) {
     add_random_chars(format, &index, 80);
   }
   // length
-  for (int j = 0; rand() % 2 == 3 && j < 4; ++j) {
+  for (int j = 0; rand() % 2 && j < 2; ++j) {
     format[index++] =
         s21_strchr("eEfgG", specification) ? 'L' : lengths_test[rand() % 2];
   }
