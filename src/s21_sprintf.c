@@ -364,6 +364,10 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
 
     apply_signed_length(writer, num, 10, formatted_string);
 
+    if (**formatted_string == '0') {
+      *(info->bad_return) = 0;
+    }
+
   } else if (s21_strchr("oxXu", writer->specification)) {
     unsigned long long num = va_arg(vars, unsigned long long);
 
@@ -381,7 +385,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       safe_replace(formatted_string, &temp);
     }
 
-    if (**formatted_string == '0' && s21_strchr("uxX", writer->specification)) {
+    if (**formatted_string == '0') {
       writer->flags.lattice_flag = 0;
       *(info->bad_return) = 0;
     }

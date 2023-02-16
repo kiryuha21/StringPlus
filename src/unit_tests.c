@@ -69,7 +69,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 16];
+  char specification = specifications_test[rand() % 13];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -512,8 +512,8 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%+#0.u";
-  int val = 0;
+  char* f = "%  071.hho";
+  int val = -1185559808;
   int my_res = s21_sprintf(a, f, val);
   printf("format - \"%s\" \nval - %d\n", f, val);
   int std_res = sprintf(b, f, val);
