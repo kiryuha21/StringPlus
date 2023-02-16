@@ -357,6 +357,15 @@ void float_to_str(char **fstring, int len, int precision, int lattice_flag,
   }
 }
 
+size_t wchar_strlen(const wchar_t *str) {
+  size_t count = 0;
+  if (str != NULL) {
+    for (const wchar_t *sym = str; *sym != '\0'; ++sym, ++count) {
+    }
+  }
+  return count;
+}
+
 int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
                va_list vars) {
   if (s21_strchr("di", writer->specification)) {
@@ -510,9 +519,16 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       handle_exp_part(formatted_string, writer->specification, rounded_pow);
     }
   } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
-    char *string = va_arg(vars, char *);
-    *formatted_string = (char *)calloc(s21_strlen(string) + 1, sizeof(char));
-    s21_strcpy(*formatted_string, string);
+    if (writer->length.l) {
+      wchar_t *string = va_arg(vars, wchar_t *);
+      size_t len = wchar_strlen(string);
+      *formatted_string = (char *)calloc(len + 1, sizeof(wchar_t));
+      wcstombs(*formatted_string, string, len);
+    } else {
+      char *string = va_arg(vars, char *);
+      *formatted_string = (char *)calloc(s21_strlen(string) + 1, sizeof(char));
+      s21_strcpy(*formatted_string, string);
+    }
   } else if (writer->specification == 'p') {
     writer->length.l = 1;
     writer->flags.lattice_flag = 1;
