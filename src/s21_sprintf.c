@@ -447,142 +447,105 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       (*formatted_string)[0] = (char)num;
     }
   } else if (s21_strchr("eEfgG", writer->specification)) {
+    long double lnum = 0;
+    double num = 0;
+
     if (writer->length.L) {
-      long double num = va_arg(vars, long double);
-      if (signbit(num) != 0) {  // better than "if (num < 0)"
-        writer->flags.plus_flag = -1;
-        num = fabsl(num);
-      }
-      if (isinf(num)) {
-        handle_inf(formatted_string, writer->specification, info);
-        return OK;
-      }
-      if (isnan(num)) {
-        handle_nan(formatted_string, writer->specification, info);
-        return OK;
-      }
-
-      int precision = define_precision(writer->precision);
-
-      int g_spec = 0;
-      long double cp_num = num;
-      if (s21_strchr("gG", writer->specification)) {
-          g_spec = 1;
-        int cp_pow = get_ldouble_pow(&cp_num);
-        if (precision == 0) {
-            precision = 1;
-        }
-        if (cp_pow >= -4 && cp_pow < precision) {
-          writer->specification = 'f';
-          precision = precision - cp_pow - 1;
-        } else {
-          writer->specification = writer->specification == 'g' ? 'e' : 'E';
-          precision = precision > 1 ? precision - 1 : 0;
-        }
-      }
-
-      int rounded_pow = 0;
-      if (s21_strchr("eE", writer->specification)) {
-        rounded_pow = get_ldouble_pow(&num);
-      }
-      long long rounded = round_ldouble(num, precision);
-
-      int len = get_digits_amount(rounded, 10);
-      if (s21_strchr("eE", writer->specification) &&
-          rounded >= (long long)pow(10, precision + 1)) {
-        --len;
-        ++rounded_pow;
-        rounded /= 10;
-      }
-      if (precision + 1 > len) {
-        len = precision + 1;
-      }
-
-      *formatted_string = (char *)calloc(len + 6, sizeof(char));
-      float_to_str(formatted_string, len, precision, writer->flags.lattice_flag,
-                   rounded);
-      handle_exp_part(formatted_string, writer->specification, rounded_pow);
-      if (g_spec) {
-          char *str = *formatted_string + s21_strlen(*formatted_string) - 1;
-          char *point = s21_strchr(*formatted_string, '.');
-          if (point == NULL) {
-              point = *formatted_string;
-          }
-          for (; *str == '0' && *(str - 1) && *(str - 1) != ' ' && (str != point + precision + 1 || writer->precision == UNKNOWN); --str) {
-              *str = '\0';
-          }
-          if (*str == '.' && writer->flags.lattice_flag == 0) {
-              *str = '\0';
-          }
-      }
+      lnum = va_arg(vars, long double);
     } else {
-      double num = va_arg(vars, double);
-      if (signbit(num) != 0) {  // better than "if (num < 0)"
-        writer->flags.plus_flag = -1;
+      num = va_arg(vars, double);
+    }
+
+    if (signbit(num) != 0 ||
+        signbit(lnum) != 0) {  // better than "if (num < 0)"
+      writer->flags.plus_flag = -1;
+      if (writer->length.L) {
+        lnum = fabsl(lnum);
+      } else {
         num = fabs(num);
       }
-      if (isinf(num)) {
-        handle_inf(formatted_string, writer->specification, info);
-        return OK;
-      }
-      if (isnan(num)) {
-        handle_nan(formatted_string, writer->specification, info);
-        return OK;
-      }
+    }
 
-      int precision = define_precision(writer->precision);
+    if (isinf(num) || isinf(lnum)) {
+      handle_inf(formatted_string, writer->specification, info);
+      return OK;
+    }
 
-        int g_spec = 0;
-      double cp_num = num;
-      if (s21_strchr("gG", writer->specification)) {
-          g_spec = 1;
-        int cp_pow = get_double_pow(&cp_num);
-          if (precision == 0) {
-              precision = 1;
-          }
-          if (cp_pow >= -4 && cp_pow < precision) {
-          writer->specification = 'f';
-          precision = precision - cp_pow - 1;
-        } else {
-          writer->specification = writer->specification == 'g' ? 'e' : 'E';
-          precision = precision > 1 ? precision - 1 : 0;
-        }
+    if (isnan(num) || isnan(lnum)) {
+      handle_nan(formatted_string, writer->specification, info);
+      return OK;
+    }
+
+    int precision = define_precision(writer->precision);
+
+    int g_spec = 0;
+    long double lcp_num = lnum;
+    double cp_num = num;
+    if (s21_strchr("gG", writer->specification)) {
+      g_spec = 1;
+      int cp_pow = 0;
+      if (writer->length.L) {
+        cp_pow = get_ldouble_pow(&lcp_num);
+      } else {
+        cp_pow = get_double_pow(&cp_num);
       }
+      if (precision == 0) {
+        precision = 1;
+      }
+      if (cp_pow >= -4 && cp_pow < precision) {
+        writer->specification = 'f';
+        precision = precision - cp_pow - 1;
+      } else {
+        writer->specification = writer->specification == 'g' ? 'e' : 'E';
+        precision = precision > 1 ? precision - 1 : 0;
+      }
+    }
 
-      int rounded_pow = 0;
-      if (s21_strchr("eE", writer->specification)) {
+    int rounded_pow = 0;
+    if (s21_strchr("eE", writer->specification)) {
+      if (writer->length.L) {
+        rounded_pow = get_ldouble_pow(&lnum);
+      } else {
         rounded_pow = get_double_pow(&num);
       }
-      long long rounded = round_double(num, precision);
+    }
 
-      int len = get_digits_amount(rounded, 10);
-      if (s21_strchr("eE", writer->specification) &&
-          rounded >= (long long)pow(10, precision + 1)) {
-        --len;
-        ++rounded_pow;
-        rounded /= 10;
-      }
-      if (precision + 1 > len) {
-        len = precision + 1;
-      }
+    long long rounded = 0;
+    if (writer->length.L) {
+      rounded = round_ldouble(lnum, precision);
+    } else {
+      rounded = round_ldouble(num, precision);
+    }
 
-      *formatted_string = (char *)calloc(len + 6, sizeof(char));
-      float_to_str(formatted_string, len, precision, writer->flags.lattice_flag,
-                   rounded);
-      handle_exp_part(formatted_string, writer->specification, rounded_pow);
-        if (g_spec) {
-            char *str = *formatted_string + s21_strlen(*formatted_string) - 1;
-            char *point = s21_strchr(*formatted_string, '.');
-            if (point == NULL) {
-                point = *formatted_string;
-            }
-            for (; *str == '0' && *(str - 1) && *(str - 1) != ' ' && (str != point + precision + 1 || writer->precision == UNKNOWN); --str) {
-                *str = '\0';
-            }
-            if (*str == '.' && writer->flags.lattice_flag == 0) {
-                *str = '\0';
-            }
-        }
+    int len = get_digits_amount(rounded, 10);
+    if (s21_strchr("eE", writer->specification) &&
+        rounded >= (long long)pow(10, precision + 1)) {
+      --len;
+      ++rounded_pow;
+      rounded /= 10;
+    }
+    if (precision + 1 > len) {
+      len = precision + 1;
+    }
+
+    *formatted_string = (char *)calloc(len + 6, sizeof(char));
+    float_to_str(formatted_string, len, precision, writer->flags.lattice_flag,
+                 rounded);
+    handle_exp_part(formatted_string, writer->specification, rounded_pow);
+    if (g_spec) {
+      char *str = *formatted_string + s21_strlen(*formatted_string) - 1;
+      char *point = s21_strchr(*formatted_string, '.');
+      if (point == NULL) {
+        point = *formatted_string;
+      }
+      for (; *str == '0' && *(str - 1) && *(str - 1) != ' ' &&
+             (str != point + precision + 1 || writer->precision == UNKNOWN);
+           --str) {
+        *str = '\0';
+      }
+      if (*str == '.' && writer->flags.lattice_flag == 0) {
+        *str = '\0';
+      }
     }
   } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
     if (writer->length.l) {
