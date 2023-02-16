@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <wchar.h>
 
 #include "s21_sprintf.h"
 #include "s21_string.h"
@@ -56,6 +57,17 @@ char* generate_random_size_string(int* size) {
   return res;
 }
 
+wchar_t * generate_random_size_wstring(int* size) {
+    *size = rand() % 20 + 5;
+    wchar_t * res = (char*)calloc(*size + 1, sizeof(wchar_t));
+    if (res != NULL) {
+        for (int i = 0; i < *size; ++i) {
+            res[i] = rand() % 255 - rand() % 255;
+        }
+    }
+    return res;
+}
+
 void add_random_chars(char* format, int* index, int max) {
   for (; rand() % 10 == 0 && *index < max;) {
     char rand_char;
@@ -69,7 +81,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[14 + rand() % 2];
+  char specification = 's';  // specifications_test[14 + rand() % 2];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -105,8 +117,13 @@ int random_test(int with_assert, int random_chars) {
   }
   // length
   for (int j = 0; rand() % 2 && j < 2; ++j) {
-    format[index++] =
-        s21_strchr("eEfgG", specification) ? 'L' : lengths_test[rand() % 2];
+    if (s21_strchr("eEfgG", specification)) {
+      format[index++] = 'L';
+    } else if (strchr("cs", specification)) {
+      format[index++] = 'l';
+    } else {
+      format[index++] = lengths_test[rand() % 2];
+    }
   }
   if (random_chars) {
     add_random_chars(format, &index, 80);
@@ -123,19 +140,21 @@ int random_test(int with_assert, int random_chars) {
   int cmp = 0;
   printf("%s\n", format);
   if (specification == 'c') {
-    char res = rand() % 127;
-    cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
-  } else if (specification == 'd') {
-    int res = rand() % 4294967295 - rand() % 4294967295;
-    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
-  } else if (specification == 'i') {
-    int res = rand() % 4294967295 - rand() % 4294967295;
+    if (strchr(format, 'l')) {
+      wchar_t res = rand() % 255 - rand() % 255;
+      cmp = sprintf_test_common(format, (void*)(&res), WCHAR, with_assert);
+    } else {
+      char res = rand() % 127;
+      cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
+    }
+  } else if (strchr("di", specification)) {
+    int res = rand() - rand();
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == 'o') {
-    int res = rand() % 4294967295 - rand() % 4294967295;
+    int res = rand() - rand();
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
-  } else if (specification == 'x' || specification == 'X') {
-    int res = rand() % 4294967295 - rand() % 4294967295;
+  } else if (strchr("xX", specification)) {
+    int res = rand() - rand();
     cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (s21_strchr("efEgG", specification)) {
     if (strchr(format, 'L')) {
@@ -165,12 +184,21 @@ int random_test(int with_assert, int random_chars) {
     int res;
     cmp = sprintf_test_common(format, (void*)(&res), INT_PTR, with_assert);
   } else if (specification == 's') {
-    int size;
-    char* res = generate_random_size_string(&size);
-    if (res != NULL) {
-      cmp = sprintf_test_common(format, (void*)(res), STRING, with_assert);
-      free(res);
-    }
+      if (strchr(format, 'l')) {
+          int size;
+          wchar_t * res = generate_random_size_wstring(&size);
+          if (res != NULL) {
+              cmp = sprintf_test_common(format, (void *) (res), WSTRING, with_assert);
+              free(res);
+          }
+      } else {
+          int size;
+          char *res = generate_random_size_string(&size);
+          if (res != NULL) {
+              cmp = sprintf_test_common(format, (void *) (res), STRING, with_assert);
+              free(res);
+          }
+      }
   } else if (specification == 'p') {
     if (rand() % 100 != 0) {
       int size;
