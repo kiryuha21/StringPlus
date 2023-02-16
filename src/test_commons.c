@@ -23,6 +23,8 @@ void print_debug(char* format, void* values, Types type, char* my_res,
       printf("val:\n\"%lc\"\n", *((wchar_t*)values));
     } else if (type == DOUBLE) {
       printf("val:\n%f\n", *((double*)values));
+    } else if (type == LDOUBLE) {
+      printf("val:\n%Lf\n", *((long double*)values));
     } else if (type == VOID_PTR) {
       printf("val:\n%p\n", values);
     }
@@ -42,6 +44,8 @@ void print_debug(char* format, void* values, Types type, char* my_res,
       printf("val:\n\"%lc\"\n", *((wchar_t*)values));
     } else if (type == DOUBLE) {
       printf("%f", *((double*)values));
+    } else if (type == LDOUBLE) {
+      printf("val:\n%Lf\n", *((long double*)values));
     } else if (type == VOID_PTR) {
       printf("%p", values);
     }
