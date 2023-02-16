@@ -4,7 +4,17 @@
 #include "s21_sprintf.h"
 #include "s21_string.h"
 
-typedef enum { INT, DOUBLE, LDOUBLE, STRING, CHAR, INT_PTR, VOID_PTR } Types;
+typedef enum {
+  INT,
+  DOUBLE,
+  LDOUBLE,
+  STRING,
+  CHAR,
+  WSTRING,
+  WCHAR,
+  INT_PTR,
+  VOID_PTR
+} Types;
 
 int sprintf_test_common(char* format, void* val, Types type, int with_assert);
 int test_float_types(char* format, char* my_res, char* std_res, int my_ret,

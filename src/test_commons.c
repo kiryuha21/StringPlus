@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 void print_debug(char* format, void* values, Types type, char* my_res,
                  char* std_res, int my_ret, int std_ret, int full) {
@@ -13,8 +14,13 @@ void print_debug(char* format, void* values, Types type, char* my_res,
       printf("val:\n%d\n", *((int*)values));
     } else if (type == STRING) {
       printf("val:\n%s\n", (char*)values);
+    } else if (type == WSTRING) {
+      printf("val:\n%ls\n", (wchar_t*)values);
+      printf("error description - %s\n", strerror(errno));
     } else if (type == CHAR) {
       printf("val:\n\"%c\"\n", *((char*)values));
+    } else if (type == WCHAR) {
+      printf("val:\n\"%lc\"\n", *((wchar_t*)values));
     } else if (type == DOUBLE) {
       printf("val:\n%f\n", *((double*)values));
     } else if (type == LDOUBLE) {
@@ -30,8 +36,12 @@ void print_debug(char* format, void* values, Types type, char* my_res,
       printf("%d", *((int*)values));
     } else if (type == STRING) {
       printf("%s", (char*)values);
+    } else if (type == WSTRING) {
+      printf("val:\n%ls\n", (wchar_t*)values);
     } else if (type == CHAR) {
       printf("%c", *((char*)values));
+    } else if (type == WCHAR) {
+      printf("val:\n\"%lc\"\n", *((wchar_t*)values));
     } else if (type == DOUBLE) {
       printf("%f", *((double*)values));
     } else if (type == LDOUBLE) {
@@ -112,9 +122,15 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
   } else if (type == STRING) {
     std_ret = sprintf(std_res, format, (char*)val);
     my_ret = s21_sprintf(my_res, format, (char*)val);
+  } else if (type == WSTRING) {
+    std_ret = sprintf(std_res, format, (wchar_t*)val);
+    my_ret = s21_sprintf(my_res, format, (wchar_t*)val);
   } else if (type == CHAR) {
     std_ret = sprintf(std_res, format, *((char*)val));
     my_ret = s21_sprintf(my_res, format, *((char*)val));
+  } else if (type == WCHAR) {
+    std_ret = sprintf(std_res, format, *((wchar_t*)val));
+    my_ret = s21_sprintf(my_res, format, *((wchar_t*)val));
   } else if (type == DOUBLE) {
     std_ret = sprintf(std_res, format, *((double*)val));
     my_ret = s21_sprintf(my_res, format, *((double*)val));

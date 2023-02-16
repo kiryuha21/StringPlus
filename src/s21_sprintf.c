@@ -366,6 +366,26 @@ size_t wchar_strlen(const wchar_t *str) {
   return count;
 }
 
+int is_valid_string(char* str) {
+    size_t len = s21_strlen(str);
+    for (size_t i = 0; i < len; ++i) {
+        if (str[i] < 0 || str[i] > 127) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int is_valid_wstring(wchar_t* str) {
+    size_t len = wchar_strlen(str);
+    for (size_t i = 0; i < len; ++i) {
+        if (str[i] < 0 || str[i] > 127) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 void handle_null_char(ExtraInfo *info, WriterFormat *writer) {
   *(info->null_chars) +=
       (writer->flags.minus_flag && writer->width != UNKNOWN ? writer->width
@@ -422,7 +442,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     if (writer->length.l) {
       wchar_t num = va_arg(vars, wchar_t);
       *formatted_string = (char *)calloc(sizeof(wchar_t), 2);
-      if (*formatted_string == NULL) {
+      if (*formatted_string == NULL || num < 0 || num > 127) {
         return FAIL;
       }
 
@@ -436,7 +456,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     } else {
       int num = va_arg(vars, int);
       *formatted_string = (char *)calloc(sizeof(char), 2);
-      if (*formatted_string == NULL) {
+      if (*formatted_string == NULL || num < 0 || num > 127) {
         return FAIL;
       }
 
@@ -550,11 +570,19 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
   } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
     if (writer->length.l) {
       wchar_t *string = va_arg(vars, wchar_t *);
+      if (!is_valid_wstring(string)) {
+          return FAIL;
+      }
+
       size_t len = wchar_strlen(string);
       *formatted_string = (char *)calloc(len + 1, sizeof(wchar_t));
       wcstombs(*formatted_string, string, len);
     } else {
       char *string = va_arg(vars, char *);
+      if (!is_valid_string(string)) {
+          return FAIL;
+      }
+
       *formatted_string = (char *)calloc(s21_strlen(string) + 1, sizeof(char));
       s21_strcpy(*formatted_string, string);
     }
