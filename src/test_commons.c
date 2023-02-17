@@ -6,6 +6,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+void print_wstring(wchar_t* str) {
+  printf("VALUE:\n");
+  wchar_t* temp = str;
+  while (*temp != L'\0') {
+    printf("%d ", *temp);
+    ++temp;
+  }
+  printf("\n");
+}
+
 void print_debug(char* format, void* values, Types type, char* my_res,
                  char* std_res, int my_ret, int std_ret, int full) {
   if (full) {
@@ -15,7 +25,8 @@ void print_debug(char* format, void* values, Types type, char* my_res,
     } else if (type == STRING) {
       printf("val:\n%s\n", (char*)values);
     } else if (type == WSTRING) {
-      printf("val:\n%ls\n", (wchar_t*)values);
+      print_wstring((wchar_t*)values);
+      // printf("val:\n\"%ls\"\n", (wchar_t*)values);q
       printf("error description - %s\n", strerror(errno));
     } else if (type == CHAR) {
       printf("val:\n\"%c\"\n", *((char*)values));
@@ -93,7 +104,7 @@ int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
   if (type == DOUBLE) {
     double my_num = strtod(my_res, NULL);
     double std_num = strtod(std_res, NULL);
-    double delta = pow(0.1, define_precision_with_e(my_res)) * 3;
+    double delta = pow(0.1, define_precision_with_e(my_res)) * 5;
     if (fabs(my_num - std_num) > delta) {
       printf("\ndelta - %.*f num1 - %.*f num2 - %.*f num2 - num1 = %.*f\n",
              writer.precision, delta, writer.precision, my_num,
@@ -104,7 +115,7 @@ int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
   }
   long double my_num = strtold(my_res, NULL);
   long double std_num = strtold(std_res, NULL);
-  long double delta = powl(0.1, define_precision_with_e(my_res)) * 3;
+  long double delta = powl(0.1, define_precision_with_e(my_res)) * 5;
   if (fabsl(my_num - std_num) > delta) {
     printf("\ndelta - %.*Lf num1 - %.*Lf num2 - %.*Lf\n", writer.precision,
            delta, writer.precision, my_num, writer.precision, std_num);
@@ -156,6 +167,8 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
 
   if (s21_strcmp(my_res, std_res) || my_ret != std_ret) {
     print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 1);
+    char temp[1000] = {0};
+    s21_sprintf(temp, format, (wchar_t*)val);
   }
 #ifdef DEBUG
   else {

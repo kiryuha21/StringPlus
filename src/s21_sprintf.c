@@ -360,7 +360,7 @@ void float_to_str(char **fstring, int len, int precision, int lattice_flag,
 size_t wchar_strlen(const wchar_t *str) {
   size_t count = 0;
   if (str != NULL) {
-    for (const wchar_t *sym = str; *sym != '\0'; ++sym, ++count) {
+    for (const wchar_t *sym = str; *sym != L'\0'; ++sym, ++count) {
     }
   }
   return count;
@@ -369,7 +369,7 @@ size_t wchar_strlen(const wchar_t *str) {
 int is_valid_string(char *str) {
   size_t len = s21_strlen(str);
   for (size_t i = 0; i < len; ++i) {
-    if (str[i] < 0 || str[i] > 127) {
+    if (str[i] < 0) {
       return 0;
     }
   }

@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <wchar.h>
 
 #include "s21_sprintf.h"
 #include "s21_string.h"
@@ -59,12 +58,13 @@ char* generate_random_size_string(int* size) {
 
 wchar_t* generate_random_size_wstring(int* size) {
   *size = rand() % 20 + 5;
-  wchar_t* res = (char*)calloc(*size + 1, sizeof(wchar_t));
+  wchar_t* res = (wchar_t*)calloc(*size + 1, sizeof(wchar_t));
   if (res != NULL) {
     for (int i = 0; i < *size; ++i) {
       res[i] = rand() % 255 - rand() % 255;
     }
   }
+  res[*size] = L'\0';
   return res;
 }
 
@@ -81,7 +81,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 13];
+  char specification = specifications_test[rand() % 14];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
