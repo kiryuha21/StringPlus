@@ -496,13 +496,14 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       return OK;
     }
 
-    int precision = define_precision(writer->precision);
 
-    int g_spec = 0;
+    int g_spec = s21_strchr("gG", writer->specification) ? 1 : 0;
+
+    int precision = define_precision(writer->precision);
     long double lcp_num = lnum;
     double cp_num = num;
+
     if (s21_strchr("gG", writer->specification)) {
-      g_spec = 1;
       int cp_pow = 0;
       if (writer->length.L) {
         cp_pow = get_ldouble_pow(&lcp_num);
@@ -517,7 +518,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
         precision = precision - cp_pow - 1;
       } else {
         writer->specification = writer->specification == 'g' ? 'e' : 'E';
-        precision = precision > 1 ? precision - 1 : 0;
+        precision = precision - 1;
       }
     }
 
@@ -552,20 +553,28 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     float_to_str(formatted_string, len, precision, writer->flags.lattice_flag,
                  rounded);
     handle_exp_part(formatted_string, writer->specification, rounded_pow);
-    if (g_spec) {
-      char *str = *formatted_string + s21_strlen(*formatted_string) - 1;
-      char *point = s21_strchr(*formatted_string, '.');
-      if (point == NULL) {
-        point = *formatted_string;
+
+    if (g_spec == 1) {
+      char* num_end = *formatted_string + s21_strlen(*formatted_string);
+      if (s21_strpbrk(*formatted_string, "eE")) {
+        for (; *(num_end - 1) && *num_end != 'e' && *num_end != 'E'; --num_end);
       }
-      for (; *str == '0' && *(str - 1) && *(str - 1) != ' ' &&
-             (str != point + precision + 1 || writer->precision == UNKNOWN);
-           --str) {
-        *str = '\0';
-      }
-      if (*str == '.' && writer->flags.lattice_flag == 0) {
-        *str = '\0';
-      }
+        char* skip_zeros = num_end;
+        for (; *(skip_zeros - 1) && *(skip_zeros - 1) == '0'; --skip_zeros);
+        if (*(skip_zeros - 1) == '.') {
+            if (writer->flags.lattice_flag == 0 && *skip_zeros == '0') {
+                --skip_zeros;
+            }
+        }
+        if (s21_strchr(*formatted_string, '.') && s21_strchr(*formatted_string, '.') <= skip_zeros) {
+            size_t diff = num_end - skip_zeros;
+            for (; *(skip_zeros + diff); ++skip_zeros) {
+                *skip_zeros = *(skip_zeros + diff);
+            }
+            for (; *skip_zeros; ++skip_zeros) {
+                *skip_zeros = '\0';
+            }
+        }
     }
   } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
     if (writer->length.l) {
