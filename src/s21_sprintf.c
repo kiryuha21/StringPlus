@@ -450,7 +450,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
         handle_null_char(info, writer);
       }
 
-      wchar_t temp[2] = {0};
+      wchar_t temp[2] = {L'\0'};
       temp[0] = num;
       wcstombs(*formatted_string, temp, 2);
     } else {
@@ -579,13 +579,13 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
   } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
     if (writer->length.l) {
       wchar_t *string = va_arg(vars, wchar_t *);
-      if (!is_valid_wstring(string)) {
-        return FAIL;
-      }
-
       size_t len = wchar_strlen(string);
       *formatted_string = (char *)calloc(len + 1, sizeof(wchar_t));
-      wcstombs(*formatted_string, string, len);
+      size_t convertion_res = wcstombs(*formatted_string, string, len);
+      if (convertion_res == (size_t)(-1)) {
+          s21_memset(*formatted_string, '\0', len);
+          return FAIL;
+      }
     } else {
       char *string = va_arg(vars, char *);
       if (!is_valid_string(string)) {

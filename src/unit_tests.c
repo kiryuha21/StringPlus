@@ -61,7 +61,7 @@ wchar_t* generate_random_size_wstring(int* size) {
   wchar_t* res = (wchar_t*)calloc(*size + 1, sizeof(wchar_t));
   if (res != NULL) {
     for (int i = 0; i < *size; ++i) {
-      res[i] = rand() % 255 - rand() % 255;
+      res[i] = (wchar_t)(rand() % 255 - rand() % 255);
     }
   }
   res[*size] = L'\0';
