@@ -283,10 +283,10 @@ void apply_unsigned_length(WriterFormat *writer, ull num, int number_system,
 
 int get_ldouble_pow(long double *num) {
   int pow = 0;
-  for (; *num > 10; ++pow) {
+  for (; *num >= 10; ++pow) {
     (*num) /= 10;
   }
-  for (; *num <= 1 && *num != 0; --pow) {
+  for (; *num < 1 && *num != 0; --pow) {
     (*num) *= 10;
   }
   return pow;
@@ -294,10 +294,10 @@ int get_ldouble_pow(long double *num) {
 
 int get_double_pow(double *num) {
   int pow = 0;
-  for (; *num > 10; ++pow) {
+  for (; *num >= 10; ++pow) {
     (*num) /= 10;
   }
-  for (; *num <= 1 && *num != 0; --pow) {
+  for (; *num < 1 && *num != 0; --pow) {
     (*num) *= 10;
   }
   return pow;
@@ -393,6 +393,50 @@ void handle_null_char(ExtraInfo *info, WriterFormat *writer) {
   writer->width = (writer->width == UNKNOWN || writer->flags.minus_flag
                        ? UNKNOWN
                        : writer->width - 1);
+}
+
+char *rfind_ch(char *str, char ch) {
+    char *res = *str == ch ? str : NULL;
+    int not_found = 1;
+    for (char *str_end = str + s21_strlen(str); str != str_end && not_found; --str_end) {
+        if (*str_end == ch) {
+            res = str_end;
+            not_found = 0;
+        }
+    }
+
+    return res;
+}
+
+char *rfind_str(char *str, const char* chars) {
+    char *res = rfind_ch(str, *chars);
+    for (const char* ch = chars + 1; *ch; ++ch) {
+        char *new_find = rfind_ch(str, *ch);
+        if (new_find && new_find > res) {
+            res = new_find;
+        }
+    }
+    return res;
+}
+
+char *rfind_str_before_sym(char *str, const char* chars, const char* before_chars) {
+    char *end = rfind_str(str, before_chars);
+    char end_ch = '\0';
+    if (end) {
+        end_ch = *end;
+        *end = '\0';
+    }
+    char *res = NULL;
+    for (const char* ch = chars; *ch; ++ch) {
+        char *new_find = rfind_ch(str, *ch);
+        if (new_find && new_find > res) {
+            res = new_find;
+        }
+    }
+    if (end) {
+        *end = end_ch;
+    }
+    return res;
 }
 
 int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
@@ -554,25 +598,33 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
                  rounded);
     handle_exp_part(formatted_string, writer->specification, rounded_pow);
 
-    if (g_spec == 1) {
+    if (g_spec == 1 && writer->flags.lattice_flag == 0) {
       char* num_end = *formatted_string + s21_strlen(*formatted_string);
       if (s21_strpbrk(*formatted_string, "eE")) {
         for (; *(num_end - 1) && *num_end != 'e' && *num_end != 'E'; --num_end);
       }
-        char* skip_zeros = num_end;
-        for (; *(skip_zeros - 1) && *(skip_zeros - 1) == '0'; --skip_zeros);
-        if (*(skip_zeros - 1) == '.') {
-            if (writer->flags.lattice_flag == 0 && *skip_zeros == '0') {
-                --skip_zeros;
-            }
-        }
-        if (s21_strchr(*formatted_string, '.') && s21_strchr(*formatted_string, '.') <= skip_zeros) {
-            size_t diff = num_end - skip_zeros;
-            for (; *(skip_zeros + diff); ++skip_zeros) {
-                *skip_zeros = *(skip_zeros + diff);
-            }
-            for (; *skip_zeros; ++skip_zeros) {
-                *skip_zeros = '\0';
+        char *point = rfind_ch(*formatted_string, '.');
+        char *last_digit = rfind_str_before_sym(*formatted_string, "123456789", "eE");
+        if (point) {
+            if (last_digit && point < last_digit) {
+                char *str = last_digit + 1;
+                for (; *num_end; ++str, ++num_end) {
+                    *str = *num_end;
+                }
+                for (;*str; ++str) {
+                    *str = '\0';
+                }
+            } else {
+                char *str = point;
+                if (writer->flags.lattice_flag) {
+                    ++str;
+                }
+                for (; *num_end; ++str, ++num_end) {
+                    *str = *num_end;
+                }
+                for (;*str; ++str) {
+                    *str = '\0';
+                }
             }
         }
     }

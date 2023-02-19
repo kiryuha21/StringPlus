@@ -94,13 +94,6 @@ int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
   init_writer(&writer);
   parse_into_writer(&writer, format + 1);
 
-  if (strchr("gG", writer.specification)) {
-    if (type == DOUBLE) {
-      return (s21_strcmp(my_res, std_res)) ? 1 : 0;
-    }
-    return (s21_strcmp(my_res, std_res)) ? 1 : 0;
-  }
-
   if (type == DOUBLE) {
     double my_num = strtod(my_res, NULL);
     double std_num = strtod(std_res, NULL);

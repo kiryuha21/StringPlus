@@ -81,7 +81,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[rand() % 14];
+  char specification = specifications_test[14 + rand() % 2];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -540,10 +540,10 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%G";
-  double val = 0.000000116899;
+  char* f = "%0G";
+   double val = -2581458.000000;
   int my_res = s21_sprintf(a, f, val);
-  printf("format - \"%s\" \nval - %f\n", f, val);
+  printf("format - \"%s\" \nval - %30f\n", f, val);
   int std_res = sprintf(b, f, val);
   printf("my_res - std_res:\n\"%s\"\n\"%s\"\n", a, b);
   printf("my_ret - std_ret:\n%d\n%d\n", my_res, std_res);
