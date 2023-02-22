@@ -27,7 +27,7 @@ void print_debug(char* format, void* values, Types type, char* my_res,
     } else if (type == WSTRING) {
       print_wstring((wchar_t*)values);
       // printf("val:\n\"%ls\"\n", (wchar_t*)values);q
-      printf("error description - %s (%d)\n", strerror(errno),errno);
+      printf("error description - %s (%d)\n", strerror(errno), errno);
     } else if (type == CHAR) {
       printf("val:\n\"%c\"\n", *((char*)values));
     } else if (type == WCHAR) {

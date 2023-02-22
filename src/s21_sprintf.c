@@ -386,61 +386,49 @@ void handle_null_char(ExtraInfo *info, WriterFormat *writer) {
 }
 
 char *rfind_ch(char *str, char ch) {
-    char *res = *str == ch ? str : NULL;
-    int not_found = 1;
-    for (char *str_end = str + s21_strlen(str); str != str_end && not_found; --str_end) {
-        if (*str_end == ch) {
-            res = str_end;
-            not_found = 0;
-        }
+  char *res = *str == ch ? str : NULL;
+  int not_found = 1;
+  for (char *str_end = str + s21_strlen(str); str != str_end && not_found;
+       --str_end) {
+    if (*str_end == ch) {
+      res = str_end;
+      not_found = 0;
     }
+  }
 
-    return res;
+  return res;
 }
 
-char *rfind_str(char *str, const char* chars) {
-    char *res = rfind_ch(str, *chars);
-    for (const char* ch = chars + 1; *ch; ++ch) {
-        char *new_find = rfind_ch(str, *ch);
-        if (new_find && new_find > res) {
-            res = new_find;
-        }
+char *rfind_str(char *str, const char *chars) {
+  char *res = rfind_ch(str, *chars);
+  for (const char *ch = chars + 1; *ch; ++ch) {
+    char *new_find = rfind_ch(str, *ch);
+    if (new_find && new_find > res) {
+      res = new_find;
     }
-    return res;
+  }
+  return res;
 }
 
-char *rfind_str_before_sym(char *str, const char* chars, const char* before_chars) {
-    char *end = rfind_str(str, before_chars);
-    char end_ch = '\0';
-    if (end) {
-        end_ch = *end;
-        *end = '\0';
+char *rfind_str_before_sym(char *str, const char *chars,
+                           const char *before_chars) {
+  char *end = rfind_str(str, before_chars);
+  char end_ch = '\0';
+  if (end) {
+    end_ch = *end;
+    *end = '\0';
+  }
+  char *res = NULL;
+  for (const char *ch = chars; *ch; ++ch) {
+    char *new_find = rfind_ch(str, *ch);
+    if (new_find && new_find > res) {
+      res = new_find;
     }
-    char *res = NULL;
-    for (const char* ch = chars; *ch; ++ch) {
-        char *new_find = rfind_ch(str, *ch);
-        if (new_find && new_find > res) {
-            res = new_find;
-        }
-    }
-    if (end) {
-        *end = end_ch;
-    }
-    return res;
-}
-
-int wstring_to_string(wchar_t* wstring, char* string) {
-    size_t wlen = wchar_strlen(wstring);
-    int shift = 0;
-    for (size_t i = 0; i < wlen + 1; ++i) {
-        int res = wctomb(string + shift, wstring[i]);
-        if (res == -1) {
-            s21_memset(string, '\0', s21_strlen(string));
-            return FAIL;
-        }
-        shift += res;
-    }
-    return OK;
+  }
+  if (end) {
+    *end = end_ch;
+  }
+  return res;
 }
 
 int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
@@ -544,7 +532,6 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       return OK;
     }
 
-
     int g_spec = s21_strchr("gG", writer->specification) ? 1 : 0;
 
     int precision = define_precision(writer->precision);
@@ -603,42 +590,44 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     handle_exp_part(formatted_string, writer->specification, rounded_pow);
 
     if (g_spec == 1 && writer->flags.lattice_flag == 0) {
-      char* num_end = *formatted_string + s21_strlen(*formatted_string);
+      char *num_end = *formatted_string + s21_strlen(*formatted_string);
       if (s21_strpbrk(*formatted_string, "eE")) {
-        for (; *(num_end - 1) && *num_end != 'e' && *num_end != 'E'; --num_end);
+        for (; *(num_end - 1) && *num_end != 'e' && *num_end != 'E'; --num_end)
+          ;
       }
-        char *point = rfind_ch(*formatted_string, '.');
-        char *last_digit = rfind_str_before_sym(*formatted_string, "123456789", "eE");
-        if (point) {
-            if (last_digit && point < last_digit) {
-                char *str = last_digit + 1;
-                for (; *num_end; ++str, ++num_end) {
-                    *str = *num_end;
-                }
-                for (;*str; ++str) {
-                    *str = '\0';
-                }
-            } else {
-                char *str = point;
-                if (writer->flags.lattice_flag) {
-                    ++str;
-                }
-                for (; *num_end; ++str, ++num_end) {
-                    *str = *num_end;
-                }
-                for (;*str; ++str) {
-                    *str = '\0';
-                }
-            }
+      char *point = rfind_ch(*formatted_string, '.');
+      char *last_digit =
+          rfind_str_before_sym(*formatted_string, "123456789", "eE");
+      if (point) {
+        if (last_digit && point < last_digit) {
+          char *str = last_digit + 1;
+          for (; *num_end; ++str, ++num_end) {
+            *str = *num_end;
+          }
+          for (; *str; ++str) {
+            *str = '\0';
+          }
+        } else {
+          char *str = point;
+          if (writer->flags.lattice_flag) {
+            ++str;
+          }
+          for (; *num_end; ++str, ++num_end) {
+            *str = *num_end;
+          }
+          for (; *str; ++str) {
+            *str = '\0';
+          }
         }
+      }
     }
   } else if (writer->specification == 's') {
     if (writer->length.l) {
       wchar_t *wstring = va_arg(vars, wchar_t *);
       size_t len = wchar_strlen(wstring);
       *formatted_string = (char *)calloc(len + 1, sizeof(wchar_t));
-      if (wstring_to_string(wstring, *formatted_string) != OK) {
-          return FAIL;
+      if (wcstombs(*formatted_string, wstring, len + 1) == (size_t)(-1)) {
+        return FAIL;
       }
     } else {
       char *string = va_arg(vars, char *);

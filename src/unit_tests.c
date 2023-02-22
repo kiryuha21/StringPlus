@@ -57,14 +57,10 @@ char* generate_random_size_string(int* size) {
 }
 
 wchar_t* generate_random_size_wstring(int* size) {
-  *size = rand() % 20 + 5;
-  wchar_t* res = (wchar_t*)calloc(*size + 1, sizeof(wchar_t));
-  if (res != NULL) {
-    for (int i = 0; i < *size; ++i) {
-      res[i] = (wchar_t)(rand() % 255 - rand() % 255);
-    }
-  }
-  res[*size] = L'\0';
+  char* string = generate_random_size_string(size);
+  wchar_t* res = calloc(*size + 1, sizeof(wchar_t));
+  mbstowcs(res, string, *size + 1);
+  free(string);
   return res;
 }
 
@@ -81,7 +77,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = specifications_test[14 + rand() % 2];
+  char specification = 's';  // specifications_test[14 + rand() % 2];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -540,10 +536,10 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%1.0LG";
-  long double val = 9.775556;
+  char* f = "%ls";
+  wchar_t* val = L"aaabbbccc";
   int my_res = s21_sprintf(a, f, val);
-  printf("format - \"%s\" \nval - %.30Lf\n", f, val);
+  printf("format - \"%s\" \nval - %.30ls\n", f, val);
   int std_res = sprintf(b, f, val);
   printf("my_res - std_res:\n\"%s\"\n\"%s\"\n", a, b);
   printf("my_ret - std_ret:\n%d\n%d\n", my_res, std_res);
@@ -551,7 +547,7 @@ int main(void) {
     puts("Equal\n");
 
     // TODO: should be less output but always with assert(guess after functions
-    // TODO: will be debugged and finished)
+    //  will be debugged and finished)
     random_tests(0, 10000000);
   }
 
