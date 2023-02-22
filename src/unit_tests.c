@@ -540,10 +540,10 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%0G";
-   double val = -2581458.000000;
+  char* f = "%1.0LG";
+  long double val = 9.775556;
   int my_res = s21_sprintf(a, f, val);
-  printf("format - \"%s\" \nval - %30f\n", f, val);
+  printf("format - \"%s\" \nval - %.30Lf\n", f, val);
   int std_res = sprintf(b, f, val);
   printf("my_res - std_res:\n\"%s\"\n\"%s\"\n", a, b);
   printf("my_ret - std_ret:\n%d\n%d\n", my_res, std_res);
