@@ -376,16 +376,6 @@ int is_valid_string(char *str) {
   return 1;
 }
 
-int is_valid_wstring(wchar_t *str) {
-  size_t len = wchar_strlen(str);
-  for (size_t i = 0; i < len; ++i) {
-    if (str[i] < 0 || str[i] > 127) {
-      return 0;
-    }
-  }
-  return 1;
-}
-
 void handle_null_char(ExtraInfo *info, WriterFormat *writer) {
   *(info->null_chars) +=
       (writer->flags.minus_flag && writer->width != UNKNOWN ? writer->width
@@ -437,6 +427,20 @@ char *rfind_str_before_sym(char *str, const char* chars, const char* before_char
         *end = end_ch;
     }
     return res;
+}
+
+int wstring_to_string(wchar_t* wstring, char* string) {
+    size_t wlen = wchar_strlen(wstring);
+    int shift = 0;
+    for (size_t i = 0; i < wlen + 1; ++i) {
+        int res = wctomb(string + shift, wstring[i]);
+        if (res == -1) {
+            s21_memset(string, '\0', s21_strlen(string));
+            return FAIL;
+        }
+        shift += res;
+    }
+    return OK;
 }
 
 int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
@@ -628,14 +632,12 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
             }
         }
     }
-  } else if (writer->specification == 's') {  // TODO: don't forget wchar!!
+  } else if (writer->specification == 's') {
     if (writer->length.l) {
-      wchar_t *string = va_arg(vars, wchar_t *);
-      size_t len = wchar_strlen(string);
+      wchar_t *wstring = va_arg(vars, wchar_t *);
+      size_t len = wchar_strlen(wstring);
       *formatted_string = (char *)calloc(len + 1, sizeof(wchar_t));
-      size_t convertion_res = wcstombs(*formatted_string, string, len);
-      if (convertion_res == (size_t)(-1)) {
-          s21_memset(*formatted_string, '\0', len);
+      if (wstring_to_string(wstring, *formatted_string) != OK) {
           return FAIL;
       }
     } else {
