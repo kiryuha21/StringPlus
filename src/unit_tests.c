@@ -9,8 +9,6 @@
 #include "test_commons.h"
 
 const char* specifications_test = "cdioxXu%pneEfsgG";
-// TODO: remove from additional unrealized
-const char* additional_specs = "bSjF";
 const char* writer_flags_test = "+- #0";
 const char* lengths_test = "hlL";
 
@@ -515,10 +513,10 @@ int main(void) {
     return -1;
   }
 
-  char* f = "%6207Le";
-  long double val = -3584423.500000;
+  char* f = "%0 #g";
+  double val = 0.0418671;
   int my_res = s21_sprintf(a, f, val);
-  printf("format - \"%s\" \nval - %.30Lf\n", f, val);
+  printf("format - \"%s\" \nval - %.30f\n", f, val);
   int std_res = sprintf(b, f, val);
   printf("my_res - std_res:\n\"%s\"\n\"%s\"\n", a, b);
   printf("my_ret - std_ret:\n%d\n%d\n", my_res, std_res);

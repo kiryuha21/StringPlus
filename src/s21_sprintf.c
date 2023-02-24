@@ -589,7 +589,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
                  rounded);
     handle_exp_part(formatted_string, writer->specification, rounded_pow);
 
-    if (g_spec == 1 && writer->flags.lattice_flag == 0) {
+    if (g_spec == 1) {
       char *num_end = *formatted_string + s21_strlen(*formatted_string);
       if (s21_strpbrk(*formatted_string, "eE")) {
         for (; *(num_end - 1) && *num_end != 'e' && *num_end != 'E'; --num_end)
