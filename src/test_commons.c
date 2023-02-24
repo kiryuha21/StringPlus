@@ -82,11 +82,12 @@ int define_precision_with_e(const char* str) {
 
 int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
                      int std_ret, Types type) {
-  if (my_ret != std_ret) {
-    return 1;
-  }
-
-  if (strcmp(my_res, std_res) == 0) {
+  if (my_ret != std_ret || strcmp(my_res, std_res) == 0) {
+    free(my_res);
+    free(std_res);
+    if (my_ret != std_ret) {
+      return 1;
+    }
     return 0;
   }
 
@@ -104,6 +105,8 @@ int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
              writer.precision, std_num, writer.precision,
              fabs(std_num - my_num));
     }
+    free(my_res);
+    free(std_res);
     return fabs(my_num - std_num) <= delta ? 0 : 1;
   }
   long double my_num = strtold(my_res, NULL);
@@ -113,13 +116,28 @@ int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
     printf("\ndelta - %.*Lf num1 - %.*Lf num2 - %.*Lf\n", writer.precision,
            delta, writer.precision, my_num, writer.precision, std_num);
   }
+  free(my_res);
+  free(std_res);
   return fabsl(my_num - std_num) <= delta ? 0 : 1;
 }
 
 int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
-  char my_res[10000] = {0}, std_res[10000] = {0};
-  int my_ret = 0, std_ret = 1;
+  char* my_res = calloc(10000, sizeof(char));
+  char* std_res = calloc(10000, sizeof(char));
+  if (my_res == NULL) {
+    if (std_res != NULL) {
+      free(std_res);
+    }
+    puts("Bad allocation");
+    return 1;
+  }
+  if (std_res == NULL) {
+    free(my_res);
+    puts("Bad allocation");
+    return 1;
+  }
 
+  int my_ret = 0, std_ret = 0;
   if (type == INT) {
     std_ret = sprintf(std_res, format, *((int*)val));
     my_ret = s21_sprintf(my_res, format, *((int*)val));
@@ -151,6 +169,8 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
     if (my_num != std_num) {
       printf("\nmy num - %d, std num - %d\n", my_num, std_num);
       print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 0);
+      free(my_res);
+      free(std_res);
       return 1;
     }
   } else if (type == VOID_PTR) {
@@ -160,8 +180,6 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
 
   if (s21_strcmp(my_res, std_res) || my_ret != std_ret) {
     print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 1);
-    char temp[1000] = {0};
-    s21_sprintf(temp, format, (wchar_t*)val);
   }
 #ifdef DEBUG
   else {
@@ -174,7 +192,10 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
   if (type == DOUBLE || type == LDOUBLE) {
     return test_float_types(format, my_res, std_res, my_ret, std_ret, type);
   }
-  return (s21_strcmp(my_res, std_res) || my_ret != std_ret) ? 1 : 0;
+  int ret_val = s21_strcmp(my_res, std_res) || my_ret != std_ret;
+  free(my_res);
+  free(std_res);
+  return ret_val;
 }
 
 void strtok_test_common(char s21_haystack[], char str_haystack[],

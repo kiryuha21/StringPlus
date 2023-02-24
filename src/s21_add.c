@@ -70,6 +70,7 @@ char* s21_strerror(int errnum) {
   }
 
   if (!found) {
+    // TODO: use own sprintf
     sprintf(default_description + 14, "%d", errnum);
   }
 

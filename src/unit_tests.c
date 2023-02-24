@@ -64,42 +64,24 @@ wchar_t* generate_random_size_wstring(int* size) {
   return res;
 }
 
-void add_random_chars(char* format, int* index, int max) {
-  for (; rand() % 10 == 0 && *index < max;) {
-    char rand_char;
-    for (; s21_strchr(additional_specs, rand_char) || rand_char == '\0';
-         rand_char = rand() % 128)
-      ;
-    format[(*index)++] = rand_char;
-  }
-}
-
 // const char* specifications_test = "cdioxXu%pneEfsgG";
-int random_test(int with_assert, int random_chars) {
+int random_test(int with_assert) {
   // TODO: test for all flags
   char specification = specifications_test[rand() % 14];
-  char format[100] = {0};
+  char* format = calloc(100, sizeof(char));
+  if (format == NULL) {
+    return 1;
+  }
+
   int index = 0;
-  if (random_chars) {
-    add_random_chars(format, &index, 80);
-  }
   format[index++] = '%';
-  if (random_chars) {
-    add_random_chars(format, &index, 80);
-  }
   // flags
   for (int j = 0; rand() % 3 > 0 && j < 4; ++j) {
     format[index++] = writer_flags_test[rand() % 5];
   }
-  if (random_chars) {
-    add_random_chars(format, &index, 80);
-  }
   // width
   for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
     format[index++] = '0' + rand() % 9;
-  }
-  if (random_chars) {
-    add_random_chars(format, &index, 80);
   }
   // precision
   if (rand() % 2) {
@@ -107,9 +89,6 @@ int random_test(int with_assert, int random_chars) {
     for (int j = 0; rand() % 2 == 0 && j < 1; ++j) {
       format[index++] = (char)('0' + rand() % 10);
     }
-  }
-  if (random_chars) {
-    add_random_chars(format, &index, 80);
   }
   // length
   for (int j = 0; rand() % 2 && j < 2; ++j) {
@@ -121,14 +100,8 @@ int random_test(int with_assert, int random_chars) {
       format[index++] = lengths_test[rand() % 2];
     }
   }
-  if (random_chars) {
-    add_random_chars(format, &index, 80);
-  }
   //  specification
   format[index++] = specification;
-  if (random_chars) {
-    add_random_chars(format, &index, 80);
-  }
   WriterFormat writer;
   init_writer(&writer);
   parse_into_writer(&writer, format);
@@ -209,6 +182,7 @@ int random_test(int with_assert, int random_chars) {
     }
   }
 
+  free(format);
   return cmp;
 }
 
@@ -220,7 +194,7 @@ void random_tests(int with_assert, int count) {
     printf("%d | ", i + 1);
 #endif
     // TODO: random_chars -> 1
-    cmp = random_test(with_assert, 0);
+    cmp = random_test(with_assert);
   }
 
   printf(cmp ? "ERROR\n" : "SUCCESS\n");
@@ -534,8 +508,13 @@ int main(void) {
   srunner_run_all(sr, CK_NORMAL);
 
   srunner_free(sr);
-  char a[10000];
-  char b[10000];
+  char* a = calloc(10000, sizeof(char));
+  char* b = calloc(10000, sizeof(char));
+  if (a == NULL || b == NULL) {
+    puts("Bad allocation");
+    return -1;
+  }
+
   char* f = "%6207Le";
   long double val = -3584423.500000;
   int my_res = s21_sprintf(a, f, val);
