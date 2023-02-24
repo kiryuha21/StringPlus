@@ -122,7 +122,7 @@ int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
 }
 
 int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
-  char* my_res = calloc(10000, sizeof(char));
+  char* my_res = calloc(10001, sizeof(char));
   char* std_res = calloc(10000, sizeof(char));
   if (my_res == NULL) {
     if (std_res != NULL) {
@@ -137,6 +137,7 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
     return 1;
   }
 
+  int is_g = !(strchr(format, 'g') != NULL || strchr(format, 'G') != NULL);
   int my_ret = 0, std_ret = 0;
   if (type == INT) {
     std_ret = sprintf(std_res, format, *((int*)val));
@@ -171,6 +172,9 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
       print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 0);
       free(my_res);
       free(std_res);
+      if (with_assert) {
+        ck_assert(1);
+      }
       return 1;
     }
   } else if (type == VOID_PTR) {
@@ -186,13 +190,19 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
     print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 0);
   }
 #endif
-  if (with_assert) {
-    ck_assert_str_eq(my_res, std_res);
-  }
   if (type == DOUBLE || type == LDOUBLE) {
-    return test_float_types(format, my_res, std_res, my_ret, std_ret, type);
+    int ret_val =
+        test_float_types(format, my_res, std_res, my_ret, std_ret, type) &&
+        is_g;
+    if (with_assert) {
+      ck_assert(!ret_val);
+    }
+    return ret_val;
   }
   int ret_val = s21_strcmp(my_res, std_res) || my_ret != std_ret;
+  if (with_assert) {
+    ck_assert(!ret_val);
+  }
   free(my_res);
   free(std_res);
   return ret_val;

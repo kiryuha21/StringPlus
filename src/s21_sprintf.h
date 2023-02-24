@@ -40,7 +40,7 @@ void init_extra_info(ExtraInfo* info, size_t written_bytes, int* bad_return,
 void init_writer(WriterFormat* writer);
 int parse_into_writer(WriterFormat* writer,
                       const char* src);  // src = pointer to '%'
-int validate_writer(WriterFormat* writer);
+void validate_writer_flags(WriterFormat* writer);
 int define_precision(int precision);
 
 int s21_sprintf(char* str, const char* format, ...);

@@ -64,7 +64,6 @@ void validate_writer_flags(WriterFormat *writer) {
       writer->flags.lattice_flag = 0;
     }
 
-    // TODO: should be determined
     if ((writer->flags.zero_flag || writer->flags.space_flag) &&
         s21_strchr("cs%", writer->specification)) {
       writer->flags.zero_flag = 0;
@@ -77,14 +76,8 @@ void validate_writer_flags(WriterFormat *writer) {
   }
 }
 
-// TODO: test
-int validate_writer(WriterFormat *writer) {
-  validate_writer_flags(writer);
-  return OK;
-}
-
 char *get_writer_flags(WriterFormat *writer) {
-  validate_writer(writer);
+  validate_writer_flags(writer);
   char *res = (char *)calloc(6, sizeof(char));
   res[0] = '%';
   int i = 1;
@@ -828,7 +821,6 @@ void apply_flags(char **formatted_string, WriterFormat *writer,
     }
   }
 
-  // TODO: check for specifications inapplicable with these flags
   if (writer->specification != 'n' && writer->specification != 'p') {
     if (writer->flags.plus_flag == 1) {
       add_to_num(formatted_string, "+", writer->flags.minus_flag,
@@ -866,7 +858,7 @@ int s21_sprintf(char *str, const char *format, ...) {
       WriterFormat writer;
       init_writer(&writer);
       int skip = parse_into_writer(&writer, format + 1);
-      validate_writer(&writer);
+      validate_writer_flags(&writer);
       if (skip == 0 && writer.specification != UNKNOWN) {
         format += writer.parsed_length + 1;
 
@@ -926,7 +918,6 @@ int s21_sprintf(char *str, const char *format, ...) {
   *(str + 1) = '\0';
 
   va_end(vars);
-  // TODO: orig sprintf returns 0 with raw %n, our func returns -1
   int len = (int)s21_strlen(start);
   return len + null_chars ? len + null_chars : bad_return;
 }

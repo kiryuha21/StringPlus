@@ -64,8 +64,7 @@ wchar_t* generate_random_size_wstring(int* size) {
 
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert) {
-  // TODO: test for all flags
-  char specification = specifications_test[rand() % 14];
+  char specification = specifications_test[rand() % 16];
   char* format = calloc(100, sizeof(char));
   if (format == NULL) {
     return 1;
@@ -103,7 +102,7 @@ int random_test(int with_assert) {
   WriterFormat writer;
   init_writer(&writer);
   parse_into_writer(&writer, format);
-  validate_writer(&writer);
+  validate_writer_flags(&writer);
   int cmp = 0;
   printf("%s\n", format);
   if (specification == 'c') {
@@ -191,15 +190,13 @@ void random_tests(int with_assert, int count) {
 #ifdef DEBUG
     printf("%d | ", i + 1);
 #endif
-    // TODO: random_chars -> 1
     cmp = random_test(with_assert);
   }
 
   printf(cmp ? "ERROR\n" : "SUCCESS\n");
 }
 
-// TODO: increase number of tests
-START_TEST(sprintf_random_int) { random_tests(1, 0); }
+START_TEST(sprintf_random_int) { random_tests(1, 100000); }
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
 
@@ -506,27 +503,5 @@ int main(void) {
   srunner_run_all(sr, CK_NORMAL);
 
   srunner_free(sr);
-  char* a = calloc(10000, sizeof(char));
-  char* b = calloc(10000, sizeof(char));
-  if (a == NULL || b == NULL) {
-    puts("Bad allocation");
-    return -1;
-  }
-
-  char* f = "%0 #g";
-  double val = 0.0418671;
-  int my_res = s21_sprintf(a, f, val);
-  printf("format - \"%s\" \nval - %.30f\n", f, val);
-  int std_res = sprintf(b, f, val);
-  printf("my_res - std_res:\n\"%s\"\n\"%s\"\n", a, b);
-  printf("my_ret - std_ret:\n%d\n%d\n", my_res, std_res);
-  if (test_float_types(f, a, b, my_res, std_res, LDOUBLE) == 0) {
-    puts("Equal\n");
-
-    // TODO: should be less output but always with assert(guess after functions
-    //  will be debugged and finished)
-    random_tests(0, 10000000);
-  }
-
   return 0;
 }
