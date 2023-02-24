@@ -22,7 +22,6 @@ TEST_H_FILES = test_commons.h
 TEST_TARGET  = s21_test
 
 OBJ = $(patsubst %.c, %.o, $(SRC_C_FILES))
-HEADER_OBJ = s21_string.o
 LIB = s21_string.a
 
 REPORT_DIR = report
@@ -51,8 +50,7 @@ gcov_report:
 	rm *.gcda *.gcno *.info
 
 $(LIB): $(OBJ)
-	$(CC) $(FLAGS) -c $(SRC_H_FILES) -o $(HEADER_OBJ) $(ADDITIONAL_FLAGS)
-	ar -rc $(LIB) $(OBJ) $(HEADER_OBJ)
+	ar -rc $(LIB) $(OBJ)
 	rm *.o
 
 %.o : %.c

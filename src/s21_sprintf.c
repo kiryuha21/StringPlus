@@ -712,7 +712,7 @@ void apply_precision(char **formatted_string, WriterFormat *writer,
       }
     } else if (s21_strchr(
                    "iduxXs",
-                   writer->specification)) {  // TODO: or maybe smth else too
+                   writer->specification)) {
       int precision = define_precision(writer->precision);
       if (precision < (int)s21_strlen(*formatted_string)) {
         if (precision == 0) {
