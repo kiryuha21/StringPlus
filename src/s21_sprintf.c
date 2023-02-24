@@ -198,7 +198,7 @@ int get_digits_amount(unsigned long long num, int number_system) {
 void convert_ll_to_string(ull num, int number_system, char **str) {
   int len = get_digits_amount(num, number_system);
 
-  *str = (char *)calloc(sizeof(char), len + 4);
+  *str = (char *)calloc(len + 4, sizeof(char));
 
   if (num == 0) {
     **str = '0';
@@ -468,7 +468,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
   } else if (writer->specification == '%') {
     writer->width = UNKNOWN;
     writer->specification = 'c';
-    *formatted_string = (char *)calloc(sizeof(char), 2);
+    *formatted_string = (char *)calloc(2, sizeof(char));
     if (*formatted_string == NULL) {
       return FAIL;
     }
@@ -477,7 +477,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
   } else if (writer->specification == 'c') {
     if (writer->length.l) {
       wchar_t num = va_arg(vars, wchar_t);
-      *formatted_string = (char *)calloc(sizeof(wchar_t), 2);
+      *formatted_string = (char *)calloc(2, sizeof(wchar_t));
       if (*formatted_string == NULL || num < 0 || num > 127) {
         return FAIL;
       }
@@ -491,7 +491,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       wcstombs(*formatted_string, temp, 2);
     } else {
       int num = va_arg(vars, int);
-      *formatted_string = (char *)calloc(sizeof(char), 2);
+      *formatted_string = (char *)calloc(2, sizeof(char));
       if (*formatted_string == NULL || num < 0 || num > 127) {
         return FAIL;
       }
@@ -673,7 +673,7 @@ size_t apply_width(char **formatted_string, WriterFormat *writer) {
     if (writer->width > len) {
       size_t diff = writer->width - len;
 
-      char *spacer = (char *)calloc(sizeof(char), diff + 1);
+      char *spacer = (char *)calloc(diff + 1, sizeof(char));
       s21_memset(spacer, ' ', diff);
 
       char *with_spacer;
@@ -691,7 +691,7 @@ size_t apply_width(char **formatted_string, WriterFormat *writer) {
 }
 
 void insert_null_spacer_at_index(char **src, int index, int nsp_size) {
-  char *null_spacer = (char *)calloc(sizeof(char), nsp_size + 1);
+  char *null_spacer = (char *)calloc(nsp_size + 1, sizeof(char));
   s21_memset(null_spacer, '0', nsp_size);
 
   char *result = s21_insert(*src, null_spacer, index);
@@ -743,7 +743,7 @@ void add_to_num(char **formatted_string, const char *str, int reverse,
   if (!reverse) {
     size_t len = s21_strlen(str);
     if (len > left_space) {
-      char *null_spaces = (char *)calloc(len - left_space, sizeof(char));
+      char *null_spaces = (char *)calloc(len - left_space + 1, sizeof(char));
       s21_memset(null_spaces, ' ', len - left_space);
       char *additional_space = s21_insert(*formatted_string, null_spaces, 0);
       safe_replace(formatted_string, &additional_space);
@@ -762,7 +762,7 @@ void add_to_num(char **formatted_string, const char *str, int reverse,
   } else {
     size_t len = s21_strlen(str);
     if (len > left_space) {
-      char *null_spaces = (char *)calloc(len - left_space, sizeof(char));
+      char *null_spaces = (char *)calloc(len - left_space + 1, sizeof(char));
       s21_memset(null_spaces, ' ', len - left_space);
       char *additional_space = s21_insert(*formatted_string, null_spaces,
                                           s21_strlen(*formatted_string));

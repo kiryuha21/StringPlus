@@ -11,7 +11,7 @@
 void *change_case_common(const char *str, int to_upper) {
   size_t len = s21_strlen(str);
 
-  char *result = (char *)calloc(sizeof(char), len + 1);
+  char *result = (char *)calloc(len + 1, sizeof(char));
   if (result != NULL) {
     for (size_t i = 0; i < len; ++i) {
       result[i] = (char)(to_upper ? toupper(str[i]) : tolower(str[i]));
@@ -27,7 +27,7 @@ void *s21_to_lower(const char *str) { return change_case_common(str, 0); }
 void *s21_insert(const char *src, const char *str, size_t start_index) {
   size_t len = s21_strlen(src) + s21_strlen(str);
 
-  char *result = (char *)calloc(sizeof(char), len + 1);
+  char *result = (char *)calloc(len + 1, sizeof(char));
   if (result != NULL) {
     s21_strncat(result, src, start_index);
     s21_strcat(result, str);
@@ -40,7 +40,7 @@ void *s21_insert(const char *src, const char *str, size_t start_index) {
 void *s21_trim(const char *src, const char *trim_chars) {
   size_t len = s21_strlen(src);
 
-  char *result = (char *)calloc(sizeof(char), len + 1);
+  char *result = (char *)calloc(len + 1, sizeof(char));
   if (result != NULL) {
     size_t start = 0;
     for (; s21_strchr(trim_chars, src[start]) != NULL; ++start) {
