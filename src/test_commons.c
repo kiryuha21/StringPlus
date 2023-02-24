@@ -1,67 +1,32 @@
 #include "test_commons.h"
 
 #include <check.h>
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void print_wstring(wchar_t* str) {
-  printf("VALUE:\n");
-  wchar_t* temp = str;
-  while (*temp != L'\0') {
-    printf("%d ", *temp);
-    ++temp;
-  }
-  printf("\n");
-}
-
 void print_debug(char* format, void* values, Types type, char* my_res,
-                 char* std_res, int my_ret, int std_ret, int full) {
-  if (full) {
-    printf("---------\nformat:\n%s\n", format);
-    if (type == INT || type == INT_PTR) {
-      printf("val:\n%d\n", *((int*)values));
-    } else if (type == STRING) {
-      printf("val:\n%s\n", (char*)values);
-    } else if (type == WSTRING) {
-      print_wstring((wchar_t*)values);
-      // printf("val:\n\"%ls\"\n", (wchar_t*)values);q
-      printf("error description - %s (%d)\n", strerror(errno), errno);
-    } else if (type == CHAR) {
-      printf("val:\n\"%c\"\n", *((char*)values));
-    } else if (type == WCHAR) {
-      printf("val:\n\"%lc\"\n", *((wchar_t*)values));
-    } else if (type == DOUBLE) {
-      printf("val:\n%f\n", *((double*)values));
-    } else if (type == LDOUBLE) {
-      printf("val:\n%Lf\n", *((long double*)values));
-    } else if (type == VOID_PTR) {
-      printf("val:\n%p\n", values);
-    }
-    printf("results(my - std):\n\"%s\"\n\"%s\"\n", my_res, std_res);
-    printf("returns(my - std):\n%d\n%d\n---------\n", my_ret, std_ret);
-  } else {
-    printf("%s | ", format);
-    if (type == INT || type == INT_PTR) {
-      printf("%d", *((int*)values));
-    } else if (type == STRING) {
-      printf("%s", (char*)values);
-    } else if (type == WSTRING) {
-      printf("val:\n%ls\n", (wchar_t*)values);
-    } else if (type == CHAR) {
-      printf("%c", *((char*)values));
-    } else if (type == WCHAR) {
-      printf("val:\n\"%lc\"\n", *((wchar_t*)values));
-    } else if (type == DOUBLE) {
-      printf("%f", *((double*)values));
-    } else if (type == LDOUBLE) {
-      printf("val:\n%Lf\n", *((long double*)values));
-    } else if (type == VOID_PTR) {
-      printf("%p", values);
-    }
-    printf(" | \"%s\" | \"%s\"\n", my_res, std_res);
+                 char* std_res, int my_ret, int std_ret) {
+  printf("---------\nformat:\n%s\n", format);
+  if (type == INT || type == INT_PTR) {
+    printf("val:\n%d\n", *((int*)values));
+  } else if (type == STRING) {
+    printf("val:\n%s\n", (char*)values);
+  } else if (type == WSTRING) {
+    printf("val:\n\"%ls\"\n", (wchar_t*)values);
+  } else if (type == CHAR) {
+    printf("val:\n\"%c\"\n", *((char*)values));
+  } else if (type == WCHAR) {
+    printf("val:\n\"%lc\"\n", *((wchar_t*)values));
+  } else if (type == DOUBLE) {
+    printf("val:\n%f\n", *((double*)values));
+  } else if (type == LDOUBLE) {
+    printf("val:\n%Lf\n", *((long double*)values));
+  } else if (type == VOID_PTR) {
+    printf("val:\n%p\n", values);
   }
+  printf("results(my - std):\n\"%s\"\n\"%s\"\n", my_res, std_res);
+  printf("returns(my - std):\n%d\n%d\n---------\n", my_ret, std_ret);
 }
 
 int define_precision_with_e(const char* str) {
@@ -169,7 +134,7 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
 
     if (my_num != std_num) {
       printf("\nmy num - %d, std num - %d\n", my_num, std_num);
-      print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 0);
+      print_debug(format, val, type, my_res, std_res, my_ret, std_ret);
       free(my_res);
       free(std_res);
       if (with_assert) {
@@ -183,11 +148,11 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
   }
 
   if (s21_strcmp(my_res, std_res) || my_ret != std_ret) {
-    print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 1);
+    print_debug(format, val, type, my_res, std_res, my_ret, std_ret);
   }
 #ifdef DEBUG
   else {
-    print_debug(format, val, type, my_res, std_res, my_ret, std_ret, 0);
+    print_debug(format, val, type, my_res, std_res, my_ret, std_ret);
   }
 #endif
   if (type == DOUBLE || type == LDOUBLE) {
