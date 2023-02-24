@@ -77,7 +77,7 @@ void add_random_chars(char* format, int* index, int max) {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 int random_test(int with_assert, int random_chars) {
   // TODO: test for all flags
-  char specification = 's';  // specifications_test[14 + rand() % 2];
+  char specification = specifications_test[rand() % 14];
   char format[100] = {0};
   int index = 0;
   if (random_chars) {
@@ -536,14 +536,14 @@ int main(void) {
   srunner_free(sr);
   char a[10000];
   char b[10000];
-  char* f = "%ls";
-  wchar_t* val = L"aaabbbccc";
+  char* f = "%6207Le";
+  long double val = -3584423.500000;
   int my_res = s21_sprintf(a, f, val);
-  printf("format - \"%s\" \nval - %.30ls\n", f, val);
+  printf("format - \"%s\" \nval - %.30Lf\n", f, val);
   int std_res = sprintf(b, f, val);
   printf("my_res - std_res:\n\"%s\"\n\"%s\"\n", a, b);
   printf("my_ret - std_ret:\n%d\n%d\n", my_res, std_res);
-  if (strcmp(a, b) == 0 && my_res == std_res) {
+  if (test_float_types(f, a, b, my_res, std_res, LDOUBLE) == 0) {
     puts("Equal\n");
 
     // TODO: should be less output but always with assert(guess after functions
