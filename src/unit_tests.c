@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "s21_sprintf.h"
+#include "s21_sscanf.h"
 #include "s21_string.h"
 #include "test_commons.h"
 
@@ -503,5 +504,12 @@ int main(void) {
   srunner_run_all(sr, CK_NORMAL);
 
   srunner_free(sr);
+
+  char a[100] = {'\0'};
+  char b[100] = {'\0'};
+  printf("%d\n", s21_sscanf("Hello, world", "%s%s", a, b));
+  puts(a);
+  puts(b);
+
   return 0;
 }

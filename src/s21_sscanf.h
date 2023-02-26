@@ -1,6 +1,15 @@
 #ifndef C2_S21_STRINGPLUS_0_S21_SSCANF_H
 #define C2_S21_STRINGPLUS_0_S21_SSCANF_H
 
+#include "s21_string.h"
+
+typedef struct AssignmentInfo {
+    int return_code;
+    int source_shift;
+} AssignmentInfo;
+
+AssignmentInfo* new_assignment_info();
+
 typedef struct ReaderFormat {
   int skip_assignment;  // true if asterisk before specification
   int width;
