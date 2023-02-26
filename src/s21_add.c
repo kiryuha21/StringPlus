@@ -1,6 +1,4 @@
-#include <stdio.h>
-
-#include "s21_string.h"
+#include "s21_sprintf.h"
 
 // char *strtok(char *str, const char *delim)
 // char *strerror(int errnum)
@@ -59,7 +57,7 @@ char* s21_strtok(char* restrict str, const char* restrict sep) {
 
 char* s21_strerror(int errnum) {
   char* description = NULL;
-  char default_description[20] = "Unknown error ";
+  static char default_description[100];
 
   int found = 0;
   for (int i = 0; i < sys_nerr && !found; ++i) {
@@ -70,9 +68,10 @@ char* s21_strerror(int errnum) {
   }
 
   if (!found) {
-    // TODO: use own sprintf
-    sprintf(default_description + 14, "%d", errnum);
+    s21_memset(default_description, '\0', 100);
+    s21_sprintf(default_description, "Unknown error %d", errnum);
+    description = default_description;
   }
 
-  return found ? description : default_description;
+  return description;
 }
