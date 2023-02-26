@@ -4,11 +4,12 @@
 #include "s21_string.h"
 
 typedef struct AssignmentInfo {
-    int return_code;
-    int source_shift;
+  int return_code;
+  int source_shift;
+  int processed_chars;
 } AssignmentInfo;
 
-AssignmentInfo* new_assignment_info();
+void init_assignment_info(AssignmentInfo* info, int code, int shift, int chars);
 
 typedef struct ReaderFormat {
   int skip_assignment;  // true if asterisk before specification
