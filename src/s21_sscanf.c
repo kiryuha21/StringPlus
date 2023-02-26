@@ -51,6 +51,7 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 }
 
+// width of the word to be scanned
 int define_width(ReaderFormat* reader, const char* str) {
   if (reader->width != UNKNOWN) {
     return reader->width;
@@ -64,6 +65,7 @@ int define_width(ReaderFormat* reader, const char* str) {
 
 void process_format_string(const char* str, ReaderFormat* reader,
                            AssignmentInfo* info, va_list args) {
+  // default values to be possibly changed for certain specs
   int width = define_width(reader, str);
   info->source_shift = width;
   info->return_code = OK;
