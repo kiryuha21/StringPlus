@@ -92,20 +92,40 @@ int string_to_int(const char* str, int width, int base) {
   int negative = str[0] == '-';
   if (negative) {
     ++str;
+    --width;
   }
 
   if (starts_with(str, "0x") || starts_with(str, "0X")) {
     str += 2;
+    width -= 2;
   } else if (starts_with(str, "0")) {
     ++str;
+    --width;
   }
 
   int res = 0;
-  for (int i = width, power = 0; i >= negative; --i, ++power) {
+  for (int i = width - 1, power = 0; i >= 0; --i, ++power) {
     res += (int)pow(base, power) * char_to_num(str[i]);
+  }
+  if (negative) {
+    res = -res;
   }
 
   return res;
+}
+
+int is_base_16(const char* str) {
+    if (*str == '-') {
+        ++str;
+    }
+    return starts_with(str, "0x") || starts_with(str, "0X");
+}
+
+int is_base_8(const char* str) {
+    if (*str == '-') {
+        ++str;
+    }
+    return starts_with(str, "0");
 }
 
 void process_format_string(const char* str, ReaderFormat* reader,
@@ -119,7 +139,11 @@ void process_format_string(const char* str, ReaderFormat* reader,
 
   int width = define_width(reader, str);
   info->source_shift += width;
-  info->return_code = OK;
+  info->return_code = 1;
+
+  if (reader->skip_assignment == 1) {
+    return;
+  }
 
   if (reader->specification == 's') {
     char* dest = va_arg(args, char*);
@@ -135,15 +159,14 @@ void process_format_string(const char* str, ReaderFormat* reader,
     info->source_shift = 1;
   } else if (s21_strchr("di", reader->specification)) {
     int* dest = va_arg(args, int*);
-    if (reader->specification == 'i') {
-      if (starts_with(str, "0x") || starts_with(str, "0X")) {
-        *dest = string_to_int(str, width, 16);
-      } else if (starts_with(str, "0")) {
-        *dest = string_to_int(str, width, 8);
-      }
+    if (reader->specification == 'i' && is_base_16(str)) {
+      *dest = string_to_int(str, width, 16);
+    } else if (reader->specification == 'i' && is_base_8(str)) {
+      *dest = string_to_int(str, width, 8);
+    } else {
+      *dest = string_to_int(str, width, 10);
     }
-    *dest = string_to_int(str, width, 10);
-  } else if (s21_strchr("ouxX", reader->specification == 'i')) {
+  } else if (s21_strchr("ouxX", reader->specification)) {
     unsigned int* dest = va_arg(args, unsigned int*);
     if (reader->specification == 'u') {
       *dest = string_to_int(str, width, 10);

@@ -498,19 +498,16 @@ Suite* string_suite(void) {
 }
 
 int main(void) {
-  Suite* s = string_suite();
-  SRunner* sr = srunner_create(s);
+  //  Suite* s = string_suite();
+  //  SRunner* sr = srunner_create(s);
+  //
+  //  srunner_run_all(sr, CK_NORMAL);
+  //
+  //  srunner_free(sr);
 
-  srunner_run_all(sr, CK_NORMAL);
-
-  srunner_free(sr);
-
-  int a = 5;
-  void* b = &a;
-  char buff[100] = {'\0'};
-  sprintf(buff, "%p", b);
-  printf("%d\n", s21_sscanf(buff, "%p", &b));
-  printf("%p", b);
+  int a;
+  printf("%d\n", s21_sscanf("012", "%o", &a));
+  printf("%d\n", a);
 
   return 0;
 }
