@@ -11,12 +11,6 @@ typedef struct Flags {
   int lattice_flag;
 } Flags;
 
-typedef struct Lengths {
-  int l;
-  int L;
-  int h;
-} Lengths;
-
 typedef struct WriterFormat {
   Flags flags;
   Lengths length;

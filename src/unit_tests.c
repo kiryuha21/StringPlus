@@ -498,12 +498,12 @@ Suite* string_suite(void) {
 }
 
 int main(void) {
-  //  Suite* s = string_suite();
-  //  SRunner* sr = srunner_create(s);
-  //
-  //  srunner_run_all(sr, CK_NORMAL);
-  //
-  //  srunner_free(sr);
+  Suite* s = string_suite();
+  SRunner* sr = srunner_create(s);
+
+  srunner_run_all(sr, CK_NORMAL);
+
+  srunner_free(sr);
 
   int a;
   printf("%d\n", s21_sscanf("012", "%o", &a));

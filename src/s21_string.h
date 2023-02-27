@@ -311,4 +311,15 @@ void* s21_trim(const char* src, const char* trim_chars);
 // s21_format_commons.c
 int str_to_int(const char* str, int* index);
 
+typedef struct Lengths {
+  int l;
+  int L;
+  int h;
+} Lengths;
+
+void init_lengths(Lengths* lens);
+
+long long apply_signed_length(Lengths* lens, long long num);
+ull apply_unsigned_length(Lengths* lens, ull num);
+
 #endif  // C2_S21_STRINGPLUS_0_S21_STRING_H

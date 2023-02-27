@@ -9,7 +9,7 @@ extern const char* lengths;
 extern const char* decimal_places;
 
 void init_reader(ReaderFormat* reader) {
-  reader->length = UNKNOWN;
+  init_lengths(&(reader->length));
   reader->width = UNKNOWN;
   reader->specification = UNKNOWN;
   reader->skip_assignment = UNKNOWN;
@@ -41,8 +41,16 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 
   // length
-  if (s21_strchr(lengths, src[reader->parsed_length]) != NULL) {
-    reader->length = src[reader->parsed_length];
+  // TODO: (?) wrong combinations should be handled
+  while (s21_strchr(lengths, src[reader->parsed_length]) != NULL) {
+    if (src[reader->parsed_length] == 'L') {
+      ++reader->length.L;
+    } else if (src[reader->parsed_length] == 'l') {
+      ++reader->length.l;
+    } else if (src[reader->parsed_length] == 'h') {
+      ++reader->length.h;
+    }
+
     ++reader->parsed_length;
   }
 
@@ -88,7 +96,7 @@ int char_to_num(char ch) {
   return ch - 'A' + 10;
 }
 
-int string_to_int(const char* str, int width, int base) {
+long long string_to_ll(const char* str, int width, int base) {
   int negative = str[0] == '-';
   if (negative) {
     ++str;
@@ -103,9 +111,9 @@ int string_to_int(const char* str, int width, int base) {
     --width;
   }
 
-  int res = 0;
+  long long res = 0;
   for (int i = width - 1, power = 0; i >= 0; --i, ++power) {
-    res += (int)pow(base, power) * char_to_num(str[i]);
+    res += (long long)powl(base, power) * char_to_num(str[i]);
   }
   if (negative) {
     res = -res;
@@ -115,17 +123,17 @@ int string_to_int(const char* str, int width, int base) {
 }
 
 int is_base_16(const char* str) {
-    if (*str == '-') {
-        ++str;
-    }
-    return starts_with(str, "0x") || starts_with(str, "0X");
+  if (*str == '-') {
+    ++str;
+  }
+  return starts_with(str, "0x") || starts_with(str, "0X");
 }
 
 int is_base_8(const char* str) {
-    if (*str == '-') {
-        ++str;
-    }
-    return starts_with(str, "0");
+  if (*str == '-') {
+    ++str;
+  }
+  return starts_with(str, "0");
 }
 
 void process_format_string(const char* str, ReaderFormat* reader,
@@ -146,11 +154,21 @@ void process_format_string(const char* str, ReaderFormat* reader,
   }
 
   if (reader->specification == 's') {
-    char* dest = va_arg(args, char*);
-    s21_strncpy(dest, str, width);
+    if (reader->length.l) {
+      wchar_t* dest = va_arg(args, wchar_t*);
+      mbstowcs(dest, str, width);
+    } else {
+      char* dest = va_arg(args, char*);
+      s21_strncpy(dest, str, width);
+    }
   } else if (reader->specification == 'c') {
-    char* dest = va_arg(args, char*);
-    *dest = *str;
+    if (reader->length.l) {
+      wchar_t* dest = va_arg(args, wchar_t*);
+      mbtowc(dest, str, 1);
+    } else {
+      char* dest = va_arg(args, char*);
+      *dest = *str;
+    }
     info->source_shift = 1;
   } else if (reader->specification == 'n') {
     int* dest = va_arg(args, int*);
@@ -158,26 +176,32 @@ void process_format_string(const char* str, ReaderFormat* reader,
   } else if (reader->specification == '%') {
     info->source_shift = 1;
   } else if (s21_strchr("di", reader->specification)) {
-    int* dest = va_arg(args, int*);
+    long long* dest = va_arg(args, long long*);
+    long long converted;
     if (reader->specification == 'i' && is_base_16(str)) {
-      *dest = string_to_int(str, width, 16);
+      converted = string_to_ll(str, width, 16);
     } else if (reader->specification == 'i' && is_base_8(str)) {
-      *dest = string_to_int(str, width, 8);
+      converted = string_to_ll(str, width, 8);
     } else {
-      *dest = string_to_int(str, width, 10);
+      converted = string_to_ll(str, width, 10);
     }
+    long long res = apply_signed_length(&reader->length, converted);
+    *dest = res;
   } else if (s21_strchr("ouxX", reader->specification)) {
-    unsigned int* dest = va_arg(args, unsigned int*);
+    unsigned long long* dest = va_arg(args, unsigned long long*);
+    unsigned long long converted;
     if (reader->specification == 'u') {
-      *dest = string_to_int(str, width, 10);
+      converted = string_to_ll(str, width, 10);
     } else if (s21_strchr("xX", reader->specification)) {
-      *dest = string_to_int(str, width, 16);
+      converted = string_to_ll(str, width, 16);
     } else {
-      *dest = string_to_int(str, width, 8);
+      converted = string_to_ll(str, width, 8);
     }
+    unsigned long long res = apply_unsigned_length(&reader->length, converted);
+    *dest = res;
   } else if (reader->specification == 'p') {
     void** dest = va_arg(args, void**);
-    *((unsigned int*)(*dest)) = string_to_int(str, width, 16);
+    *((unsigned int*)(*dest)) = string_to_ll(str, width, 16);
   }
 }
 

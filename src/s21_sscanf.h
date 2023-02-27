@@ -15,7 +15,7 @@ typedef struct ReaderFormat {
   int skip_assignment;  // true if asterisk before specification
   int width;
   int parsed_length;
-  char length;
+  Lengths length;
   char specification;
 } ReaderFormat;
 

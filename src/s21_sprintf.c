@@ -26,12 +26,6 @@ void init_flags(Flags *flags) {
   flags->zero_flag = 0;
 }
 
-void init_lengths(Lengths *lens) {
-  lens->L = 0;
-  lens->l = 0;
-  lens->h = 0;
-}
-
 void init_writer(WriterFormat *writer) {
   init_flags(&writer->flags);
   init_lengths(&writer->length);
@@ -229,49 +223,17 @@ long long handle_overflow(long long int num, WriterFormat *writer) {
   return llabs(num);
 }
 
-void apply_signed_length(WriterFormat *writer, long long num, int number_system,
-                         char **formatted_string) {
-  if (writer->length.l == 1 || writer->length.L == 1) {
-    long li = (long)num;
-    long long res = handle_overflow(li, writer);
-    convert_ll_to_string(res, number_system, formatted_string);
-  } else if (writer->length.l >= 2 || writer->length.L >= 2) {
-    long long lli = (long long)num;
-    long long res = handle_overflow(lli, writer);
-    convert_ll_to_string(res, number_system, formatted_string);
-  } else if (writer->length.h == 1) {
-    short si = (short)num;
-    long long res = handle_overflow(si, writer);
-    convert_ll_to_string(res, number_system, formatted_string);
-  } else if (writer->length.h >= 2) {
-    char ci = (char)num;
-    long long res = handle_overflow(ci, writer);
-    convert_ll_to_string(res, number_system, formatted_string);
-  } else {
-    int i = (int)num;
-    long long res = handle_overflow(i, writer);
-    convert_ll_to_string(res, number_system, formatted_string);
-  }
+void signed_length_wrapper(WriterFormat *writer, long long num,
+                           int number_system, char **formatted_string) {
+  long long temp = apply_signed_length(&writer->length, num);
+  long long res = handle_overflow(temp, writer);
+  convert_ll_to_string(res, number_system, formatted_string);
 }
 
-void apply_unsigned_length(WriterFormat *writer, ull num, int number_system,
-                           char **formatted_string) {
-  if (writer->length.l == 1 || writer->length.L == 1) {
-    unsigned long uli = (unsigned long)num;
-    convert_ll_to_string((long long)uli, number_system, formatted_string);
-  } else if (writer->length.l >= 2 || writer->length.L >= 2) {
-    unsigned long long ulli = (unsigned long long)num;
-    convert_ll_to_string((long long)ulli, number_system, formatted_string);
-  } else if (writer->length.h == 1) {
-    unsigned short usi = (unsigned short)num;
-    convert_ll_to_string(usi, number_system, formatted_string);
-  } else if (writer->length.h >= 2) {
-    unsigned char uci = (unsigned char)num;
-    convert_ll_to_string(uci, number_system, formatted_string);
-  } else {
-    unsigned int ui = (unsigned int)num;
-    convert_ll_to_string(ui, number_system, formatted_string);
-  }
+void unsigned_length_wrapper(WriterFormat *writer, ull num, int number_system,
+                             char **formatted_string) {
+  ull temp = apply_unsigned_length(&writer->length, num);
+  convert_ll_to_string(temp, number_system, formatted_string);
 }
 
 int get_ldouble_pow(long double *num) {
@@ -429,7 +391,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
   if (s21_strchr("di", writer->specification)) {
     long long num = va_arg(vars, long long);
 
-    apply_signed_length(writer, num, 10, formatted_string);
+    signed_length_wrapper(writer, num, 10, formatted_string);
 
     if (**formatted_string == '0') {
       *(info->bad_return) = 0;
@@ -445,7 +407,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       number_system = 8;
     }
 
-    apply_unsigned_length(writer, num, number_system, formatted_string);
+    unsigned_length_wrapper(writer, num, number_system, formatted_string);
 
     if (s21_strchr("x", writer->specification)) {
       char *temp = s21_to_lower(*formatted_string);
@@ -647,7 +609,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
       writer->precision = UNKNOWN;
       return OK;
     }
-    apply_unsigned_length(writer, (ull)pointer, 16, formatted_string);
+    unsigned_length_wrapper(writer, (ull)pointer, 16, formatted_string);
 
     char *lowered = s21_to_lower(*formatted_string);
     safe_replace(formatted_string, &lowered);
