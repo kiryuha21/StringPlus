@@ -1,4 +1,5 @@
-#include "ctype.h"
+#include <ctype.h>
+
 #include "s21_string.h"
 
 const char* specifications = "cdieEfgGosuxXpn%";

@@ -1,10 +1,12 @@
 #include "s21_sscanf.h"
 
+#include <math.h>
 #include <stdarg.h>
 #include <stdlib.h>
 
 extern const char* specifications;
 extern const char* lengths;
+extern const char* decimal_places;
 
 void init_reader(ReaderFormat* reader) {
   reader->length = UNKNOWN;
@@ -63,11 +65,60 @@ int define_width(ReaderFormat* reader, const char* str) {
   return (int)(closest_space - str);
 }
 
+int dist_to_non_space(const char* str) {
+  int res = 0;
+  for (; *str == ' '; ++str, ++res)
+    ;
+  return res;
+}
+
+int starts_with(const char* str, char* prefix) {
+  for (; *prefix != '\0'; ++str, ++prefix) {
+    if (*str != *prefix) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+int char_to_num(char ch) {
+  if (ch >= '0' && ch <= '9') {
+    return ch - '0';
+  }
+  return ch - 'A' + 10;
+}
+
+int string_to_int(const char* str, int width, int base) {
+  int negative = str[0] == '-';
+  if (negative) {
+    ++str;
+  }
+
+  if (starts_with(str, "0x") || starts_with(str, "0X")) {
+    str += 2;
+  } else if (starts_with(str, "0")) {
+    ++str;
+  }
+
+  int res = 0;
+  for (int i = width, power = 0; i >= negative; --i, ++power) {
+    res += (int)pow(base, power) * char_to_num(str[i]);
+  }
+
+  return res;
+}
+
 void process_format_string(const char* str, ReaderFormat* reader,
                            AssignmentInfo* info, va_list args) {
   // default values to be possibly changed for certain specs
+  int spaces_until_data = dist_to_non_space(str);
+  if (s21_strchr("cn", reader->specification) == NULL) {
+    info->source_shift = spaces_until_data;
+    str += spaces_until_data;
+  }
+
   int width = define_width(reader, str);
-  info->source_shift = width;
+  info->source_shift += width;
   info->return_code = OK;
 
   if (reader->specification == 's') {
@@ -82,10 +133,28 @@ void process_format_string(const char* str, ReaderFormat* reader,
     *dest = info->processed_chars;
   } else if (reader->specification == '%') {
     info->source_shift = 1;
-  }
-
-  while (*(str + info->source_shift) == ' ') {
-    ++(info->source_shift);
+  } else if (s21_strchr("di", reader->specification)) {
+    int* dest = va_arg(args, int*);
+    if (reader->specification == 'i') {
+      if (starts_with(str, "0x") || starts_with(str, "0X")) {
+        *dest = string_to_int(str, width, 16);
+      } else if (starts_with(str, "0")) {
+        *dest = string_to_int(str, width, 8);
+      }
+    }
+    *dest = string_to_int(str, width, 10);
+  } else if (s21_strchr("ouxX", reader->specification == 'i')) {
+    unsigned int* dest = va_arg(args, unsigned int*);
+    if (reader->specification == 'u') {
+      *dest = string_to_int(str, width, 10);
+    } else if (s21_strchr("xX", reader->specification)) {
+      *dest = string_to_int(str, width, 16);
+    } else {
+      *dest = string_to_int(str, width, 8);
+    }
+  } else if (reader->specification == 'p') {
+    void** dest = va_arg(args, void**);
+    *((unsigned int*)(*dest)) = string_to_int(str, width, 16);
   }
 }
 

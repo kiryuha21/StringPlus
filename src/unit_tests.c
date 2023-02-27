@@ -505,11 +505,12 @@ int main(void) {
 
   srunner_free(sr);
 
-  char a[100] = {'\0'};
-  char b[100] = {'\0'};
-  printf("%d\n", s21_sscanf("Hello, world", "%s%s", a, b));
-  puts(a);
-  puts(b);
+  int a = 5;
+  void* b = &a;
+  char buff[100] = {'\0'};
+  sprintf(buff, "%p", b);
+  printf("%d\n", s21_sscanf(buff, "%p", &b));
+  printf("%p", b);
 
   return 0;
 }
