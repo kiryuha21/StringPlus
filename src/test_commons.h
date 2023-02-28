@@ -2,6 +2,7 @@
 #define C2_S21_STRINGPLUS_0_TEST_COMMONS_H
 
 #include "s21_sprintf.h"
+#include "s21_sscanf.h"
 #include "s21_string.h"
 
 typedef enum {
@@ -16,7 +17,12 @@ typedef enum {
   VOID_PTR
 } Types;
 
+typedef enum { SPRINTF, SSCANF } Funcs;
+
 int sprintf_test_common(char* format, void* val, Types type, int with_assert);
+int sscanf_test_common(char* format, void* val, Types type, int with_assert);
+void print_sscanf(char* format, char* str, Types type, void* my_val,
+                  void* std_val, int my_ret, int std_ret);
 int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
                      int std_ret, Types type);
 

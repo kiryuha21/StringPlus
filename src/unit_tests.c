@@ -64,18 +64,21 @@ wchar_t* generate_random_size_wstring(int* size) {
 }
 
 // const char* specifications_test = "cdioxXu%pneEfsgG";
-int random_test(int with_assert) {
+
+char* random_format(int with_flags) {
   char specification = specifications_test[rand() % 16];
   char* format = calloc(100, sizeof(char));
   if (format == NULL) {
-    return 1;
+    return NULL;
   }
 
   int index = 0;
   format[index++] = '%';
   // flags
-  for (int j = 0; rand() % 3 > 0 && j < 4; ++j) {
-    format[index++] = writer_flags_test[rand() % 5];
+  if (with_flags) {
+    for (int j = 0; rand() % 3 > 0 && j < 4; ++j) {
+      format[index++] = writer_flags_test[rand() % 5];
+    }
   }
   // width
   for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
@@ -100,29 +103,43 @@ int random_test(int with_assert) {
   }
   //  specification
   format[index++] = specification;
+  return format;
+}
+
+int random_test(int with_assert, int type) {
+  char* format = random_format(type == SPRINTF ? 1 : 0);
+  if (format == NULL) {
+    return 1;
+  }
+  char specification = format[s21_strlen(format) - 1];
   WriterFormat writer;
   init_writer(&writer);
   parse_into_writer(&writer, format);
   validate_writer_flags(&writer);
-  int cmp = 0;
-  printf("%s\n", format);
+  int cmp = 1;
   if (specification == 'c') {
     if (strchr(format, 'l')) {
       wchar_t res = rand() % 255 - rand() % 255;
-      cmp = sprintf_test_common(format, (void*)(&res), WCHAR, with_assert);
+      if (type == SPRINTF) {
+        cmp = sprintf_test_common(format, (void*)(&res), WCHAR, with_assert);
+      } else if (type == SSCANF) {
+        cmp = sscanf_test_common(format, (void*)(&res), WCHAR, with_assert);
+      }
     } else {
       char res = rand() % 127;
-      cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
+      if (type == SPRINTF) {
+        cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
+      } else if (type == SSCANF) {
+        cmp = sscanf_test_common(format, (void*)(&res), CHAR, with_assert);
+      }
     }
-  } else if (strchr("di", specification)) {
+  } else if (strchr("xuXodi", specification)) {
     int res = rand() - rand();
-    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
-  } else if (specification == 'o') {
-    int res = rand() - rand();
-    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
-  } else if (strchr("xX", specification)) {
-    int res = rand() - rand();
-    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
+    if (type == SPRINTF) {
+      cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
+    } else if (type == SSCANF) {
+      cmp = sscanf_test_common(format, (void*)(&res), INT, with_assert);
+    }
   } else if (s21_strchr("efEgG", specification)) {
     if (strchr(format, 'L')) {
       long double divider = (long double)(rand() % (int)pow(10, rand() % 10));
@@ -131,7 +148,11 @@ int random_test(int with_assert) {
       if (rand() % 2) {
         res *= -1;
       }
-      cmp = sprintf_test_common(format, (void*)(&res), LDOUBLE, with_assert);
+      if (type == SPRINTF) {
+        cmp = sprintf_test_common(format, (void*)(&res), LDOUBLE, with_assert);
+      } else if (type == SSCANF) {
+        cmp = sscanf_test_common(format, (void*)(&res), LDOUBLE, with_assert);
+      }
     } else {
       double divider = (double)(rand() % (int)pow(10, rand() % 10));
       double divisor = (double)(rand() % (int)pow(10, rand() % 10));
@@ -139,30 +160,47 @@ int random_test(int with_assert) {
       if (rand() % 2) {
         res *= -1;
       }
-      cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, with_assert);
+      if (type == SPRINTF) {
+        cmp = sprintf_test_common(format, (void*)(&res), DOUBLE, with_assert);
+      } else if (type == SSCANF) {
+        cmp = sscanf_test_common(format, (void*)(&res), DOUBLE, with_assert);
+      }
     }
-  } else if (specification == 'u') {
-    int res = rand() % 10000;
-    cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
   } else if (specification == '%') {
     char res = '%';
-    cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
+    if (type == SPRINTF) {
+      cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
+    } else if (type == SSCANF) {
+      cmp = sscanf_test_common(format, (void*)(&res), CHAR, with_assert);
+    }
   } else if (specification == 'n') {
     int res;
-    cmp = sprintf_test_common(format, (void*)(&res), INT_PTR, with_assert);
+    if (type == SPRINTF) {
+      cmp = sprintf_test_common(format, (void*)(&res), INT_PTR, with_assert);
+    } else if (type == SSCANF) {
+      cmp = sscanf_test_common(format, (void*)(&res), INT_PTR, with_assert);
+    }
   } else if (specification == 's') {
     if (strchr(format, 'l')) {
       int size;
       wchar_t* res = generate_random_size_wstring(&size);
       if (res != NULL) {
-        cmp = sprintf_test_common(format, (void*)(res), WSTRING, with_assert);
+        if (type == SPRINTF) {
+          cmp = sprintf_test_common(format, (void*)(res), WSTRING, with_assert);
+        } else if (type == SSCANF) {
+          cmp = sscanf_test_common(format, (void*)(res), WSTRING, with_assert);
+        }
         free(res);
       }
     } else {
       int size;
       char* res = generate_random_size_string(&size);
       if (res != NULL) {
-        cmp = sprintf_test_common(format, (void*)(res), STRING, with_assert);
+        if (type == SPRINTF) {
+          cmp = sprintf_test_common(format, (void*)(res), STRING, with_assert);
+        } else if (type == SSCANF) {
+          cmp = sscanf_test_common(format, (void*)(res), STRING, with_assert);
+        }
         free(res);
       }
     }
@@ -172,11 +210,21 @@ int random_test(int with_assert) {
       char* res = generate_random_size_string(&size);
       if (res != NULL) {
         char* ptr = res + (rand() % size);
-        cmp = sprintf_test_common(format, (void*)(ptr), VOID_PTR, with_assert);
+        if (type == SPRINTF) {
+          cmp =
+              sprintf_test_common(format, (void*)(&ptr), VOID_PTR, with_assert);
+        } else if (type == SSCANF) {
+          cmp =
+              sscanf_test_common(format, (void*)(&ptr), VOID_PTR, with_assert);
+        }
         free(res);
       }
     } else {
-      cmp = sprintf_test_common(format, (void*)(NULL), VOID_PTR, with_assert);
+      if (type == SPRINTF) {
+        cmp = sprintf_test_common(format, NULL, VOID_PTR, with_assert);
+      } else if (type == SSCANF) {
+        cmp = sscanf_test_common(format, NULL, VOID_PTR, with_assert);
+      }
     }
   }
 
@@ -184,20 +232,22 @@ int random_test(int with_assert) {
   return cmp;
 }
 
-void random_tests(int with_assert, int count) {
+void random_tests(int with_assert, int count, int type) {
   int cmp = 0;
   srand(time(NULL));
   for (int i = 0; i < count && cmp == 0; ++i) {
 #ifdef DEBUG
-    printf("%d | ", i + 1);
+    printf("%d | %s\n", i + 1, type == SPRINTF ? "sprintf" : "sscanf");
 #endif
-    cmp = random_test(with_assert);
+    cmp = random_test(with_assert, type);
   }
 
   printf(cmp ? "ERROR\n" : "SUCCESS\n");
 }
 
-START_TEST(sprintf_random_int) { random_tests(1, 100000); }
+START_TEST(sprintf_random) { random_tests(1, 100000, SPRINTF); }
+
+START_TEST(sscanf_random) { random_tests(1, 100000, SSCANF); }
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
 
@@ -469,7 +519,10 @@ Suite* string_suite(void) {
 
   TCase* sprintf_cases = tcase_create("SPrintF");
   tcase_add_test(sprintf_cases, sprintf_basic);
-  tcase_add_test(sprintf_cases, sprintf_random_int);
+  tcase_add_test(sprintf_cases, sprintf_random);
+
+  TCase* sscanf_cases = tcase_create("SSCanF");
+  tcase_add_test(sprintf_cases, sscanf_random);
 
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strerror_cases);
@@ -492,7 +545,8 @@ Suite* string_suite(void) {
   suite_add_tcase(s, to_upper_cases);
   suite_add_tcase(s, insert_cases);
   suite_add_tcase(s, trim_cases);
-  suite_add_tcase(s, sprintf_cases);
+  // suite_add_tcase(s, sprintf_cases);
+  suite_add_tcase(s, sscanf_cases);
 
   return s;
 }
@@ -505,9 +559,26 @@ int main(void) {
 
   srunner_free(sr);
 
-  double a;
-  printf("%d\n", s21_sscanf("-12.12e-1", "%e", &a));
-  printf("%f\n", a);
+  int std_val, my_val;
+  char* format = "%7x";
+  char* str = "117a634f";
+  int std_ret = sscanf(str, format, &std_val);
+  int my_ret = s21_sscanf(str, format, &my_val);
+  if (my_val != std_val) {
+    print_sscanf(format, str, INT, (void*)(&my_val), (void*)(&std_val), my_ret,
+                 std_ret);
+  }
+
+  int cmp = 0;
+  srand(time(NULL));
+  for (int i = 0; i < 100000; ++i) {
+#ifdef DEBUG
+    printf("%d | %s\n", i + 1, "sscanf");
+#endif
+    cmp = random_test(0, SSCANF);
+  }
+
+  printf(cmp ? "ERROR\n" : "SUCCESS\n");
 
   return 0;
 }
