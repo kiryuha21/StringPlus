@@ -505,9 +505,9 @@ int main(void) {
 
   srunner_free(sr);
 
-  int a;
-  printf("%d\n", s21_sscanf("012", "%o", &a));
-  printf("%d\n", a);
+  double a;
+  printf("%d\n", s21_sscanf("-12.12e-1", "%e", &a));
+  printf("%f\n", a);
 
   return 0;
 }

@@ -1,5 +1,6 @@
 #include "s21_sscanf.h"
 
+#include <ctype.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -112,7 +113,7 @@ long long string_to_ll(const char* str, int width, int base) {
   }
 
   long long res = 0;
-  for (int i = width - 1, power = 0; i >= 0; --i, ++power) {
+  for (int i = width - 1, power = 0; i >= 0 && isdigit(str[i]); --i, ++power) {
     res += (long long)powl(base, power) * char_to_num(str[i]);
   }
   if (negative) {
@@ -134,6 +135,50 @@ int is_base_8(const char* str) {
     ++str;
   }
   return starts_with(str, "0");
+}
+
+long contains_in_first(const char* str, char sym, int width) {
+  char* temp = calloc(width + 1, sizeof(char));
+  s21_strncpy(temp, str, width);
+  char* search_res = s21_strchr(temp, sym);
+  if (search_res == NULL) {
+    return FAIL;
+  }
+  return search_res - temp;
+}
+
+long double parse_float(const char* str, int width) {
+  int point_search = (int)contains_in_first(str, '.', width);
+  if (point_search == FAIL) {
+    return string_to_ll(str, width, 10);
+  }
+  long double res = string_to_ll(str, point_search, 10);
+  width -= point_search;
+  str += point_search;
+
+  ++str;  // skip '.'
+  --width;
+  int is_positive = res > 0;
+  long double float_part = 0;
+  for (int i = 0; width > 0 && isdigit(*str); ++i, ++str, --width) {
+    long double digit = (*str - '0') * powl(0.1, i + 1);
+    float_part = is_positive ? float_part + digit : float_part - digit;
+  }
+  res += float_part;
+
+  if (tolower(*str) != 'e') {
+    return res;
+  }
+
+  ++str;  // skip 'e' or 'E'
+  int positive_power = *str == '+';
+  ++str;  // skip '+' or '-'
+
+  width -= 2;
+  long long power = string_to_ll(str, width, 10);
+  res *= powl(positive_power ? 10 : 0.1, power);
+
+  return res;
 }
 
 void process_format_string(const char* str, ReaderFormat* reader,
@@ -202,6 +247,14 @@ void process_format_string(const char* str, ReaderFormat* reader,
   } else if (reader->specification == 'p') {
     void** dest = va_arg(args, void**);
     *((unsigned int*)(*dest)) = string_to_ll(str, width, 16);
+  } else if (s21_strchr("eEfgG", reader->specification)) {
+    if (reader->length.L) {
+      long double* dest = va_arg(args, long double*);
+      *dest = parse_float(str, width);
+    } else {
+      double* dest = va_arg(args, double*);
+      *dest = (double)parse_float(str, width);
+    }
   }
 }
 
