@@ -82,9 +82,9 @@ char* random_format(int for_sprintf) {
   }
   // width
   if (for_sprintf || specification != 'c') {
-      for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
-          format[index++] = '0' + rand() % 9;
-      }
+    for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
+      format[index++] = '0' + rand() % 9;
+    }
   }
   // precision
   if (for_sprintf) {
@@ -138,8 +138,15 @@ int random_test(int with_assert, int type) {
         cmp = sscanf_test_common(format, (void*)(&res), CHAR, with_assert);
       }
     }
-  } else if (strchr("xuXodi", specification)) {
-    int res = rand() - rand();
+  } else if (strchr("xuXo", specification)) {
+    unsigned long long res = rand() - rand();
+    if (type == SPRINTF) {
+      cmp = sprintf_test_common(format, (void*)(&res), ULL, with_assert);
+    } else if (type == SSCANF) {
+      cmp = sscanf_test_common(format, (void*)(&res), ULL, with_assert);
+    }
+  } else if (strchr("di", specification)) {
+    long long res = rand() - rand();
     if (type == SPRINTF) {
       cmp = sprintf_test_common(format, (void*)(&res), INT, with_assert);
     } else if (type == SSCANF) {
@@ -564,22 +571,28 @@ int main(void) {
   srunner_free(sr);
 
   // TODO: remove
-  char* format = "%50LE";
-  long double val = 0.4;
-  int cmp = sscanf_test_common(format, &val, LDOUBLE, 0);
+  char* format = "%5hi";
+  long long val = -263;
+  int suc = 0;
+  int cmp = sscanf_test_common(format, &val, INT, 0);
   if (cmp != 0) {
+    suc = 1;
     puts("Not equal");
   }
+  if (cmp == 0 || 0) {  // || 0/1 - for easy debug
+    cmp = 0;
+    srand(time(NULL));
+    for (int i = 0; i < 100000 && (cmp == 0 || 0);  // || 0/1 - for easy debug
+         ++i) {
+      if (cmp != 0) {
+        suc = 1;
+      }
+      printf("%d | %s\n", i + 1, "sscanf");
+      cmp = random_test(0, SSCANF);
+    }
 
-  cmp = 0;
-  srand(time(NULL));
-  for (int i = 0; i < 100000 && (cmp == 0 || 1);
-       ++i) {  // || 0/1 - for easy debug
-    printf("%d | %s\n", i + 1, "sscanf");
-    cmp = random_test(0, SSCANF);
+    printf(suc ? "ERROR\n" : "SUCCESS\n");
   }
-
-  printf(cmp ? "ERROR\n" : "SUCCESS\n");
 
   return 0;
 }

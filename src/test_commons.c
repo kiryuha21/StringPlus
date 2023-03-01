@@ -72,6 +72,35 @@ int define_precision_with_e(const char* str) {
   return res;
 }
 
+int cmp_floats_by_str(char* format, char* str, void* my_val, void* std_val,
+                      Types type) {
+  WriterFormat writer;
+  init_writer(&writer);
+  parse_into_writer(&writer, format + 1);
+  if (type == DOUBLE) {
+    double delta = pow(0.1, define_precision_with_e(str)) * 5;
+    if (fabs(*(double*)my_val - *(double*)std_val) > delta) {
+      printf("\ndelta - %.*f num1 - %.*f num2 - %.*f num2 - num1 = %.*f\n",
+             writer.precision, delta, writer.precision, *(double*)my_val,
+             writer.precision, *(double*)std_val, writer.precision,
+             fabs(*(double*)my_val - *(double*)std_val));
+      return 1;
+    }
+    return 0;
+  } else if (type == LDOUBLE) {
+    long double delta = pow(0.1, define_precision_with_e(str)) * 5;
+    if (fabsl(*(long double*)my_val - *(long double*)std_val) > delta) {
+      printf("\ndelta - %.*Lf num1 - %.*Lf num2 - %.*Lf num2 - num1 = %.*Lf\n",
+             writer.precision, delta, writer.precision, *(long double*)my_val,
+             writer.precision, *(long double*)std_val, writer.precision,
+             fabsl(*(long double*)my_val - *(long double*)std_val));
+      return 1;
+    }
+    return 0;
+  }
+  return 1;
+}
+
 int test_float_types(char* format, char* my_res, char* std_res, int my_ret,
                      int std_ret, Types type) {
   if (my_ret != std_ret || strcmp(my_res, std_res) == 0) {
@@ -204,8 +233,18 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
   // TODO: handle
   // int is_g = !(strchr(format, 'g') != NULL || strchr(format, 'G') != NULL);
   if (type == INT) {
-    int my_val, std_val;
-    sprintf(str, format, *((int*)val));
+    long long my_val, std_val;
+    sprintf(str, format, *((long long*)val));
+    std_ret = sscanf(str, format, &std_val);
+    my_ret = s21_sscanf(str, format, &my_val);
+    if (my_val != std_val) {
+      ret_val = 1;
+    }
+    print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
+                 std_ret);
+  } else if (type == ULL) {
+    unsigned long long my_val, std_val;
+    sprintf(str, format, *((unsigned long long*)val));
     std_ret = sscanf(str, format, &std_val);
     my_ret = s21_sscanf(str, format, &my_val);
     if (my_val != std_val) {
@@ -284,22 +323,22 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
   } else if (type == DOUBLE) {
-    // TODO: cmp for floats -> ret
-    ret_val = 1;
     double my_val, std_val;
     sprintf(str, format, *((double*)val));
     std_ret = sscanf(str, format, &std_val);
     my_ret = s21_sscanf(str, format, &my_val);
+    ret_val = cmp_floats_by_str(format, str, (void*)(&my_val),
+                                (void*)(&std_val), DOUBLE);
 
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
   } else if (type == LDOUBLE) {
-    // TODO: cmp for floats -> ret
-    ret_val = 1;
     long double my_val, std_val;
     sprintf(str, format, *((long double*)val));
     std_ret = sscanf(str, format, &std_val);
     my_ret = s21_sscanf(str, format, &my_val);
+    ret_val = cmp_floats_by_str(format, str, (void*)(&my_val),
+                                (void*)(&std_val), LDOUBLE);
 
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
