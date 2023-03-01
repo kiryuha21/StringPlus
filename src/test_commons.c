@@ -10,7 +10,8 @@ void print_sscanf(char* format, char* str, Types type, void* my_val,
                   void* std_val, int my_ret, int std_ret) {
   printf("---------\nformat:\n%s\nstr:\n%s\n", format, str);
   if (type == INT || type == INT_PTR) {
-    printf("my_val: %i\nstd_val: %i\n", *((int*)my_val), *((int*)std_val));
+    printf("my_val: %lld\nstd_val: %lld\n", *((long long*)my_val),
+           *((long long*)std_val));
   } else if (type == STRING) {
     printf("my_val: %s\nstd_val: %s\n", (char*)my_val, (char*)std_val);
   } else if (type == WSTRING) {
@@ -28,6 +29,9 @@ void print_sscanf(char* format, char* str, Types type, void* my_val,
            *((long double*)std_val));
   } else if (type == VOID_PTR) {
     printf("my_val: %p\nstd_val: %p\n", my_val, std_val);
+  } else if (type == ULL) {
+    printf("my_val: %llu\nstd_val: %llu\n", *((unsigned long long*)my_val),
+           *((unsigned long long*)std_val));
   }
   printf("returns(my - std):\n%d\n%d\n---------\n", my_ret, std_ret);
 }
@@ -36,7 +40,7 @@ void print_sprintf(char* format, void* values, Types type, char* my_res,
                    char* std_res, int my_ret, int std_ret) {
   printf("---------\nformat:\n%s\n", format);
   if (type == INT || type == INT_PTR) {
-    printf("val:\n%d\n", *((int*)values));
+    printf("val:\n%lld\n", *((long long int*)values));
   } else if (type == STRING) {
     printf("val:\n%s\n", (char*)values);
   } else if (type == WSTRING) {
