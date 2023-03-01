@@ -7,7 +7,8 @@
 
 extern const char* specifications;
 extern const char* lengths;
-extern const char* decimal_places;
+
+const char* digits = "0123456789ABCDEFabcdef";
 
 void init_reader(ReaderFormat* reader) {
   init_lengths(&(reader->length));
@@ -94,7 +95,10 @@ int char_to_num(char ch) {
   if (ch >= '0' && ch <= '9') {
     return ch - '0';
   }
-  return ch - 'A' + 10;
+  if (ch >= 'A' && ch <= 'F') {
+    return ch - 'A' + 10;
+  }
+  return ch - 'a' + 10;
 }
 
 long long string_to_ll(const char* str, int width, int base) {
@@ -113,7 +117,8 @@ long long string_to_ll(const char* str, int width, int base) {
   }
 
   long long res = 0;
-  for (int i = width - 1, power = 0; i >= 0 && isdigit(str[i]); --i, ++power) {
+  for (int i = width - 1, power = 0; i >= 0 && s21_strchr(digits, str[i]);
+       --i, ++power) {
     res += (long long)powl(base, power) * char_to_num(str[i]);
   }
   if (negative) {
@@ -246,7 +251,7 @@ void process_format_string(const char* str, ReaderFormat* reader,
     *dest = res;
   } else if (reader->specification == 'p') {
     void** dest = va_arg(args, void**);
-    *((unsigned int*)(*dest)) = string_to_ll(str, width, 16);
+    *dest = (void*)(string_to_ll(str, width, 16));
   } else if (s21_strchr("eEfgG", reader->specification)) {
     if (reader->length.L) {
       long double* dest = va_arg(args, long double*);
