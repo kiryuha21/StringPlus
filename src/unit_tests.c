@@ -81,8 +81,10 @@ char* random_format(int for_sprintf) {
     }
   }
   // width
-  for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
-    format[index++] = '0' + rand() % 9;
+  if (for_sprintf || specification != 'c') {
+      for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
+          format[index++] = '0' + rand() % 9;
+      }
   }
   // precision
   if (for_sprintf) {
@@ -94,7 +96,7 @@ char* random_format(int for_sprintf) {
     }
   }
   // length
-  for (int j = 0; rand() % 2 && j < 2; ++j) {
+  for (int j = 0; rand() % 2 && j < (for_sprintf ? 2 : 1); ++j) {
     if (s21_strchr("eEfgG", specification)) {
       format[index++] = 'L';
     } else if (strchr("cs", specification)) {
@@ -113,6 +115,7 @@ int random_test(int with_assert, int type) {
   if (format == NULL) {
     return 1;
   }
+  printf("%s\n", format);
   char specification = format[s21_strlen(format) - 1];
   WriterFormat writer;
   init_writer(&writer);
@@ -545,6 +548,7 @@ Suite* string_suite(void) {
   suite_add_tcase(s, to_upper_cases);
   suite_add_tcase(s, insert_cases);
   suite_add_tcase(s, trim_cases);
+  // TODO: uncomment)
   // suite_add_tcase(s, sprintf_cases);
   suite_add_tcase(s, sscanf_cases);
 
@@ -560,7 +564,7 @@ int main(void) {
   srunner_free(sr);
 
   // TODO: remove
-  char* format = "%50.LE";
+  char* format = "%50LE";
   long double val = 0.4;
   int cmp = sscanf_test_common(format, &val, LDOUBLE, 0);
   if (cmp != 0) {

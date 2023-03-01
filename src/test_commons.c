@@ -218,8 +218,8 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
          *std_val = calloc(10000, sizeof(std_val));
     if (my_val != NULL && std_val != NULL) {
       sprintf(str, format, (char*)val);
-      std_ret = sscanf(str, format, &std_val);
-      my_ret = s21_sscanf(str, format, &my_val);
+      std_ret = sscanf(str, format, std_val);
+      my_ret = s21_sscanf(str, format, my_val);
       if (s21_strcmp(my_val, std_val) != 0) {
         ret_val = 1;
       }
@@ -229,12 +229,12 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     free(std_val);
     free(my_val);
   } else if (type == WSTRING) {
-    wchar_t *my_val = calloc(10000, sizeof(my_val)),
-            *std_val = calloc(10000, sizeof(std_val));
+    wchar_t *my_val = calloc(10000, sizeof(wchar_t)),
+            *std_val = calloc(10000, sizeof(wchar_t));
     if (my_val != NULL && std_val != NULL) {
       sprintf(str, format, (wchar_t*)val);
-      std_ret = sscanf(str, format, &std_val);
-      my_ret = s21_sscanf(str, format, &my_val);
+      std_ret = sscanf(str, format, std_val);
+      my_ret = s21_sscanf(str, format, my_val);
       if (wcscmp(my_val, std_val) != 0) {
         ret_val = 1;
       }
@@ -274,40 +274,35 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
   } else if (type == VOID_PTR) {
-    void *my_val, *std_val;
+    char *my_val, *std_val;
     sprintf(str, format, val);
-    std_ret = sscanf(str, format, &std_val);
+    std_ret = sscanf(str, format, (void**)(&std_val));
     my_ret = s21_sscanf(str, format, &my_val);
     if (my_val != std_val) {
       ret_val = 1;
     }
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
-  }
-  if (type == DOUBLE || type == LDOUBLE) {
-    // TODO: check values
-    if (type == DOUBLE) {
-      double my_val, std_val;
-      sprintf(str, format, *((double*)val));
-      std_ret = sscanf(str, format, &std_val);
-      my_ret = s21_sscanf(str, format, &my_val);
-
-      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
-                   my_ret, std_ret);
-    } else {
-      long double my_val, std_val;
-      sprintf(str, format, *((long double*)val));
-      std_ret = sscanf(str, format, &std_val);
-      my_ret = s21_sscanf(str, format, &my_val);
-
-      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
-                   my_ret, std_ret);
-    }
+  } else if (type == DOUBLE) {
+    // TODO: cmp for floats -> ret
     ret_val = 1;
-    if (with_assert) {
-      ck_assert(!ret_val);
-    }
-    return ret_val;
+    double my_val, std_val;
+    sprintf(str, format, *((double*)val));
+    std_ret = sscanf(str, format, &std_val);
+    my_ret = s21_sscanf(str, format, &my_val);
+
+    print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
+                 std_ret);
+  } else if (type == LDOUBLE) {
+    // TODO: cmp for floats -> ret
+    ret_val = 1;
+    long double my_val, std_val;
+    sprintf(str, format, *((long double*)val));
+    std_ret = sscanf(str, format, &std_val);
+    my_ret = s21_sscanf(str, format, &my_val);
+
+    print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
+                 std_ret);
   }
 
   free(str);
