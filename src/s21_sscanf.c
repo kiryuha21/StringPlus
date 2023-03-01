@@ -8,8 +8,6 @@
 extern const char* specifications;
 extern const char* lengths;
 
-const char* digits = "0123456789ABCDEFabcdef";
-
 void init_reader(ReaderFormat* reader) {
   init_lengths(&(reader->length));
   reader->width = UNKNOWN;
@@ -101,12 +99,17 @@ int char_to_num(char ch) {
   return ch - 'a' + 10;
 }
 
-long long string_to_ll(const char* str, int width, int base) {
-  int negative = str[0] == '-';
-  if (negative) {
-    ++str;
-    --width;
+void sign_check(const char** str, int* width, int* negative) {
+  *negative = *str[0] == '-';
+  if (*negative || *str[0] == '+') {
+    ++(*str);
+    --(*width);
   }
+}
+
+long long string_to_ll(const char* str, int width, int base) {
+  int negative;
+  sign_check(&str, &width, &negative);
 
   if (starts_with(str, "0x") || starts_with(str, "0X")) {
     str += 2;
@@ -117,8 +120,7 @@ long long string_to_ll(const char* str, int width, int base) {
   }
 
   long long res = 0;
-  for (int i = width - 1, power = 0; i >= 0 && s21_strchr(digits, str[i]);
-       --i, ++power) {
+  for (int i = width - 1, power = 0; i >= 0 && isxdigit(str[i]); --i, ++power) {
     res += (long long)powl(base, power) * char_to_num(str[i]);
   }
   if (negative) {
@@ -142,7 +144,7 @@ int is_base_8(const char* str) {
   return starts_with(str, "0");
 }
 
-long contains_in_first(const char* str, char sym, int width) {
+long contains_char_in_first(const char* str, char sym, int width) {
   char* temp = calloc(width + 1, sizeof(char));
   s21_strncpy(temp, str, width);
   char* search_res = s21_strchr(temp, sym);
@@ -152,8 +154,58 @@ long contains_in_first(const char* str, char sym, int width) {
   return search_res - temp;
 }
 
+int starts_with_anycase_str(const char* str, const char* substr) {
+  size_t len = s21_strlen(substr);
+  for (size_t i = 0; i < len; ++i) {
+    if (tolower(substr[i]) != tolower(str[i])) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+int is_nan_str(const char* str, int width) {
+  int is_negative;
+  sign_check(&str, &width, &is_negative);
+
+  if (width < 3) {
+    return 0;
+  }
+
+  if (starts_with_anycase_str(str, "nan")) {
+    return is_negative ? -1 : 1;
+  }
+
+  return 0;
+}
+
+int is_inf_str(const char* str, int width) {
+  int is_negative;
+  sign_check(&str, &width, &is_negative);
+
+  if (width < 3) {
+    return 0;
+  }
+
+  if (starts_with_anycase_str(str, "inf")) {
+    return is_negative ? -1 : 1;
+  }
+
+  return 0;
+}
+
 long double parse_float(const char* str, int width) {
-  int point_search = (int)contains_in_first(str, '.', width);
+  int nan_search = is_nan_str(str, width);
+  if (nan_search != 0) {
+    return nan_search == 1 ? nanl("") : -nanl("");
+  }
+
+  int inf_search = is_inf_str(str, width);
+  if (inf_search != 0) {
+    return inf_search == 1 ? INFINITY : -INFINITY;
+  }
+
+  int point_search = (int)contains_char_in_first(str, '.', width);
   if (point_search == FAIL) {
     return string_to_ll(str, width, 10);
   }
