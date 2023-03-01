@@ -236,9 +236,7 @@ void random_tests(int with_assert, int count, int type) {
   int cmp = 0;
   srand(time(NULL));
   for (int i = 0; i < count && cmp == 0; ++i) {
-#ifdef DEBUG
     printf("%d | %s\n", i + 1, type == SPRINTF ? "sprintf" : "sscanf");
-#endif
     cmp = random_test(with_assert, type);
   }
 
@@ -559,22 +557,18 @@ int main(void) {
 
   srunner_free(sr);
 
-  int std_val, my_val;
-  char* format = "%7x";
-  char* str = "117a634f";
-  int std_ret = sscanf(str, format, &std_val);
-  int my_ret = s21_sscanf(str, format, &my_val);
-  if (my_val != std_val) {
-    print_sscanf(format, str, INT, (void*)(&my_val), (void*)(&std_val), my_ret,
-                 std_ret);
+  // TODO: remove
+  char* format = "%50.LLE";
+  long double val = 0.4;
+  int cmp = sscanf_test_common(format, &val, LDOUBLE, 0);
+  if (cmp != 0) {
+    puts("Not equal");
   }
 
-  int cmp = 0;
+  cmp = 0;
   srand(time(NULL));
-  for (int i = 0; i < 100000; ++i) {
-#ifdef DEBUG
+  for (int i = 0; i < 100000 && (cmp == 0 || 0); ++i) { // || 0/1 - for easy debug
     printf("%d | %s\n", i + 1, "sscanf");
-#endif
     cmp = random_test(0, SSCANF);
   }
 
