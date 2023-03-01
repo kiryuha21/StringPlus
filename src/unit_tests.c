@@ -65,7 +65,7 @@ wchar_t* generate_random_size_wstring(int* size) {
 
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 
-char* random_format(int with_flags) {
+char* random_format(int for_sprintf) {
   char specification = specifications_test[rand() % 16];
   char* format = calloc(100, sizeof(char));
   if (format == NULL) {
@@ -75,20 +75,22 @@ char* random_format(int with_flags) {
   int index = 0;
   format[index++] = '%';
   // flags
-  if (with_flags) {
+  if (for_sprintf) {
     for (int j = 0; rand() % 3 > 0 && j < 4; ++j) {
       format[index++] = writer_flags_test[rand() % 5];
     }
   }
   // width
-  for (int j = 0; rand() % 2 == 0 && j < 4; ++j) {
+  for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
     format[index++] = '0' + rand() % 9;
   }
   // precision
-  if (rand() % 2) {
-    format[index++] = '.';
-    for (int j = 0; rand() % 2 == 0 && j < 1; ++j) {
-      format[index++] = (char)('0' + rand() % 10);
+  if (for_sprintf) {
+    if (rand() % 2) {
+      format[index++] = '.';
+      for (int j = 0; rand() % 2 == 0 && j < 1; ++j) {
+        format[index++] = (char)('0' + rand() % 10);
+      }
     }
   }
   // length
@@ -558,7 +560,7 @@ int main(void) {
   srunner_free(sr);
 
   // TODO: remove
-  char* format = "%50.LLE";
+  char* format = "%50.LE";
   long double val = 0.4;
   int cmp = sscanf_test_common(format, &val, LDOUBLE, 0);
   if (cmp != 0) {
@@ -567,7 +569,8 @@ int main(void) {
 
   cmp = 0;
   srand(time(NULL));
-  for (int i = 0; i < 100000 && (cmp == 0 || 0); ++i) { // || 0/1 - for easy debug
+  for (int i = 0; i < 100000 && (cmp == 0 || 1);
+       ++i) {  // || 0/1 - for easy debug
     printf("%d | %s\n", i + 1, "sscanf");
     cmp = random_test(0, SSCANF);
   }

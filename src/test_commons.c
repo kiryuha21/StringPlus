@@ -265,7 +265,7 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
                  std_ret);
   } else if (type == INT_PTR) {
     int *my_val, *std_val;
-    sprintf(str, format, (int*)val);
+    sprintf(str, format, val);
     std_ret = sscanf(str, format, &std_val);
     my_ret = s21_sscanf(str, format, &my_val);
     if (my_val != std_val) {
@@ -285,7 +285,7 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
                  std_ret);
   }
   if (type == DOUBLE || type == LDOUBLE) {
-      // TODO: check values
+    // TODO: check values
     if (type == DOUBLE) {
       double my_val, std_val;
       sprintf(str, format, *((double*)val));
