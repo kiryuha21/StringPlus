@@ -131,7 +131,7 @@ int random_test(int with_assert, int type) {
   int cmp = 1;
   if (specification == 'c') {
     if (strchr(format, 'l')) {
-      wchar_t res = rand() % 255 - rand() % 255;
+      wchar_t res = generate_random_wchar();
       if (type == SPRINTF) {
         cmp = sprintf_test_common(format, (void*)(&res), WCHAR, with_assert);
       } else if (type == SSCANF) {
@@ -148,9 +148,9 @@ int random_test(int with_assert, int type) {
   } else if (strchr("xuXo", specification)) {
     unsigned long long res = rand() - rand();
     if (type == SPRINTF) {
-      cmp = sprintf_test_common(format, (void*)(&res), ULL, with_assert);
+      cmp = sprintf_test_common(format, (void*)(&res), UINT, with_assert);
     } else if (type == SSCANF) {
-      cmp = sscanf_test_common(format, (void*)(&res), ULL, with_assert);
+      cmp = sscanf_test_common(format, (void*)(&res), UINT, with_assert);
     }
   } else if (strchr("di", specification)) {
     long long res = rand() - rand();
@@ -591,11 +591,11 @@ int main(void) {
     srand(time(NULL));
     for (int i = 0; i < 100000 && (cmp == 0 || 0);  // || 0/1 - for easy debug
          ++i) {
-      if (cmp != 0) {
-        suc = 1;
-      }
       printf("%d | %s\n", i + 1, "sscanf");
       cmp = random_test(0, SSCANF);
+        if (cmp != 0) {
+            suc = 1;
+        }
     }
 
     printf(suc ? "ERROR\n" : "SUCCESS\n");

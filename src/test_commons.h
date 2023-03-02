@@ -7,7 +7,7 @@
 
 typedef enum {
   INT,
-  ULL,
+  UINT,
   DOUBLE,
   LDOUBLE,
   STRING,
