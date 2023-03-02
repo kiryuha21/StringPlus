@@ -63,12 +63,16 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
 
 // width of the word to be scanned
 int define_width(ReaderFormat* reader, const char* str) {
+  int len = (int)s21_strlen(str);
   if (reader->width != UNKNOWN) {
-    return reader->width;
+    if (reader->width <= len) {
+      return reader->width;
+    }
+    return len;
   }
   char* closest_space = s21_strchr(str, ' ');
   if (closest_space == NULL) {
-    return (int)(s21_strlen(str));
+    return len;
   }
   return (int)(closest_space - str);
 }
