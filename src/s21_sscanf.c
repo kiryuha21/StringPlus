@@ -310,12 +310,15 @@ void process_format_string(const char* str, ReaderFormat* reader,
     void** dest = va_arg(args, void**);
     *dest = (void*)(string_to_ll(str, width, 16));
   } else if (s21_strchr("eEfgG", reader->specification)) {
-    if (reader->length.L) {
+    if (reader->length.l) {
+      double* dest = va_arg(args, double*);
+      *dest = (double)parse_float(str, width);
+    } else if (reader->length.L) {
       long double* dest = va_arg(args, long double*);
       *dest = parse_float(str, width);
     } else {
-      double* dest = va_arg(args, double*);
-      *dest = (double)parse_float(str, width);
+      float* dest = va_arg(args, float*);
+      *dest = (float)parse_float(str, width);
     }
   }
 }
