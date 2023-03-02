@@ -64,7 +64,7 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
 // width of the word to be scanned
 int define_width(ReaderFormat* reader, const char* str) {
   int len = (int)s21_strlen(str);
-  if (reader->width != UNKNOWN) {
+  if (reader->width != UNKNOWN && reader->width != 0) {
     if (reader->width <= len) {
       return reader->width;
     }
