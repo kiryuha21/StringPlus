@@ -219,7 +219,7 @@ long double parse_float(const char* str, int width) {
 
   ++str;  // skip '.'
   --width;
-  int is_positive = res > 0;
+  int is_positive = signbit(res) == 0;
   long double float_part = 0;
   for (int i = 0; width > 0 && isdigit(*str); ++i, ++str, --width) {
     long double digit = (*str - '0') * powl(0.1, i + 1);
