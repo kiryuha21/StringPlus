@@ -64,17 +64,25 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
 // width of the word to be scanned
 int define_width(ReaderFormat* reader, const char* str) {
   int len = (int)s21_strlen(str);
-  if (reader->width != UNKNOWN && reader->width != 0) {
+  char* closest_space = s21_strchr(str, ' ');
+  if (closest_space == NULL) {
+    if (reader->width == UNKNOWN) {
+      return len;
+    }
     if (reader->width <= len) {
       return reader->width;
     }
     return len;
   }
-  char* closest_space = s21_strchr(str, ' ');
-  if (closest_space == NULL) {
-    return len;
+
+  int dist_to_space = (int)(closest_space - str);
+  if (reader->width == UNKNOWN) {
+    return dist_to_space;
   }
-  return (int)(closest_space - str);
+  if (reader->width <= dist_to_space) {
+    return reader->width;
+  }
+  return dist_to_space;
 }
 
 int dist_to_non_space(const char* str) {
@@ -314,7 +322,11 @@ void process_format_string(const char* str, ReaderFormat* reader,
   } else if (reader->specification == 'p') {
     int pass;
     void** dest = va_arg(args, void**);
-    *dest = (void*)(string_to_ull(str, width, 16, &pass));
+    if (starts_with_anycase_str(str, "(nil)") && width >= 5) {
+        *dest = NULL;
+    } else {
+        *dest = (void *) (string_to_ull(str, width, 16, &pass));
+    }
   } else if (s21_strchr("eEfgG", reader->specification)) {
     if (reader->length.l) {
       double* dest = va_arg(args, double*);

@@ -64,7 +64,7 @@ wchar_t* generate_random_size_wstring(int* size) {
 }
 
 wchar_t generate_random_wchar() {
-  char temp = (char)(rand() % 127);
+  char temp = (char)((rand() % 97) + 30);
   wchar_t res;
   mbtowc(&res, &temp, 1);
   return res;
@@ -90,11 +90,11 @@ char* random_format(int for_sprintf) {
   // width
   if (for_sprintf || specification != 'c') {
     for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
-        if (!for_sprintf && j == 0) {
-            format[index++] = '4' + rand() % 6;
-        } else {
-            format[index++] = '0' + rand() % 9;
-        }
+      if (!for_sprintf && j == 0) {
+        format[index++] = '4' + rand() % 6;
+      } else {
+        format[index++] = '0' + rand() % 9;
+      }
     }
   }
   // precision
@@ -112,7 +112,7 @@ char* random_format(int for_sprintf) {
       format[index++] = 'L';
     } else if (strchr("cs", specification)) {
       format[index++] = 'l';
-    } else if (for_sprintf || specification != 'n'){
+    } else if (for_sprintf || strchr("pn", specification) == NULL) {
       format[index++] = lengths_test[rand() % 2];
     }
   }
@@ -593,10 +593,10 @@ int main(void) {
   srunner_free(sr);
 
   // TODO: remove
-  char* format = "%20n";
-  int val;
+  char* format = "%4p";
+  char* val = "(nil)";
   int suc = 0;
-  int cmp = sscanf_test_common(format, &val, INT_PTR, 0);
+  int cmp = sscanf_test_common(format, val, VOID_PTR, 0);
   if (cmp != 0) {
     suc = 1;
     puts("Not equal");
