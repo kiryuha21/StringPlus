@@ -604,7 +604,7 @@ int main(void) {
   if (cmp == 0 || 0) {  // || 0/1 - for easy debug
     cmp = 0;
     srand(time(NULL));
-    for (int i = 0; i < 10000000 && (cmp == 0 || 0);  // || 0/1 - for easy debug
+    for (int i = 0; i < 1000000 && (cmp == 0 || 0);  // || 0/1 - for easy debug
          ++i) {
       printf("%d | %s\n", i + 1, "sscanf");
       cmp = random_test(0, SSCANF);

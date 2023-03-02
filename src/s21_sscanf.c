@@ -158,9 +158,12 @@ long contains_char_in_first(const char* str, char sym, int width) {
   s21_strncpy(temp, str, width);
   char* search_res = s21_strchr(temp, sym);
   if (search_res == NULL) {
+    free(temp);
     return FAIL;
   }
-  return search_res - temp;
+  long res = search_res - temp;
+  free(temp);
+  return res;
 }
 
 int starts_with_anycase_str(const char* str, const char* substr) {
