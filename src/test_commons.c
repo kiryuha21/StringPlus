@@ -238,10 +238,12 @@ int sprintf_test_common(char* format, void* val, Types type, int with_assert) {
     my_ret = s21_sprintf(my_res, format, *((long double*)val));
   } else if (type == INT_PTR) {  // only for %n specifier
     std_ret = s21_sprintf(std_res, format, (int*)val);
-    int my_num = *(int*)val;
+    int my_num = 0;
+    my_num = *(int*)val;
 
     my_ret = sprintf(my_res, format, (int*)val);
-    int std_num = *(int*)val;
+    int std_num = 0;
+    std_num = *(int*)val;
 
     if (my_num != std_num) {
       printf("\nmy num - %d, std num - %d\n", my_num, std_num);
