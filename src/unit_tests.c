@@ -549,7 +549,7 @@ Suite* string_suite(void) {
 
   TCase* sprintf_cases = tcase_create("SPrintF");
   tcase_add_test(sprintf_cases, sprintf_basic);
-  //tcase_add_test(sprintf_cases, sprintf_random);
+  tcase_add_test(sprintf_cases, sprintf_random);
 
   TCase* sscanf_cases = tcase_create("SSCanF");
   tcase_add_test(sscanf_cases, sscanf_random);
