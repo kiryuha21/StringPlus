@@ -122,7 +122,6 @@ int random_test(int with_assert, int type) {
   if (format == NULL) {
     return 1;
   }
-  printf("%s\n", format);
   char specification = format[s21_strlen(format) - 1];
   WriterFormat writer;
   init_writer(&writer);
@@ -586,7 +585,7 @@ int main(void) {
     suc = 1;
     puts("Not equal");
   }
-  if (cmp == 0 || 0) {  // || 0/1 - for easy debug
+  if (cmp == 0 || 1) {  // || 0/1 - for easy debug
     cmp = 0;
     srand(time(NULL));
     for (int i = 0; i < 100000 && (cmp == 0 || 0);  // || 0/1 - for easy debug
