@@ -171,7 +171,7 @@ int random_test(int with_assert, int type) {
       } else if (type == SSCANF) {
         cmp = sscanf_test_common(format, (void*)(&res), LDOUBLE, with_assert);
       }
-    } else {
+    } else if (strchr(format, 'l')){
       double divider = (double)(rand() % (int)pow(10, rand() % 10));
       double divisor = (double)(rand() % (int)pow(10, rand() % 10));
       double res = divisor / divider;
@@ -183,6 +183,18 @@ int random_test(int with_assert, int type) {
       } else if (type == SSCANF) {
         cmp = sscanf_test_common(format, (void*)(&res), DOUBLE, with_assert);
       }
+    } else {
+        float divider = (float)(rand() % (int)pow(10, rand() % 10));
+        float divisor = (float)(rand() % (int)pow(10, rand() % 10));
+        float res = divisor / divider;
+        if (rand() % 2) {
+            res *= -1;
+        }
+        if (type == SPRINTF) {
+            cmp = sprintf_test_common(format, (void*)(&res), FLOAT, with_assert);
+        } else if (type == SSCANF) {
+            cmp = sscanf_test_common(format, (void*)(&res), FLOAT, with_assert);
+        }
     }
   } else if (specification == '%') {
     char res = '%';
@@ -577,15 +589,15 @@ int main(void) {
   srunner_free(sr);
 
   // TODO: remove
-  char* format = "%0LE";
-  long double val = 8.368515E-08;
+  char* format = "%G";
+  float val = -0.049493;
   int suc = 0;
-  int cmp = sscanf_test_common(format, &val, LDOUBLE, 0);
+  int cmp = sscanf_test_common(format, &val, FLOAT, 0);
   if (cmp != 0) {
     suc = 1;
     puts("Not equal");
   }
-  if (cmp == 0 || 1) {  // || 0/1 - for easy debug
+  if (cmp == 0 || 0) {  // || 0/1 - for easy debug
     cmp = 0;
     srand(time(NULL));
     for (int i = 0; i < 100000 && (cmp == 0 || 0);  // || 0/1 - for easy debug

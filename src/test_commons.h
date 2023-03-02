@@ -15,7 +15,8 @@ typedef enum {
   WSTRING,
   WCHAR,
   INT_PTR,
-  VOID_PTR
+  VOID_PTR,
+  FLOAT
 } Types;
 
 typedef enum { SPRINTF, SSCANF } Funcs;

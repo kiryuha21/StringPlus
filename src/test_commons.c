@@ -45,8 +45,11 @@ void print_sscanf(char* format, char* str, Types type, void* my_val,
     printf("my_val: %f\nstd_val: %f\n", *((double*)my_val),
            *((double*)std_val));
   } else if (type == LDOUBLE) {
-    printf("my_val: %Lf\nstd_val: %Lf\n", *((long double*)my_val),
-           *((long double*)std_val));
+      printf("my_val: %Lf\nstd_val: %Lf\n", *((long double*)my_val),
+             *((long double*)std_val));
+  } else if (type == FLOAT) {
+      printf("my_val: %f\nstd_val: %f\n", *((float*)my_val),
+             *((float*)std_val));
   } else if (type == VOID_PTR) {
     printf("my_val: %p\nstd_val: %p\n", my_val, std_val);
   } else if (type == UINT) {
@@ -129,15 +132,25 @@ int cmp_floats_by_str(char* format, char* str, void* my_val, void* std_val,
     }
     return 0;
   } else if (type == LDOUBLE) {
-    long double delta = pow(0.1, define_precision_with_e(str)) * 5;
-    if (fabsl(*(long double*)my_val - *(long double*)std_val) > delta) {
-      printf("\ndelta - %.*Lf my_val = %.*Lf; std_val = %.*Lf; diff = %.*Lf\n",
-             writer.precision, delta, writer.precision, *(long double*)my_val,
-             writer.precision, *(long double*)std_val, writer.precision,
-             fabsl(*(long double*)my_val - *(long double*)std_val));
-      return 1;
-    }
-    return 0;
+      long double delta = pow(0.1, define_precision_with_e(str)) * 5;
+      if (fabsl(*(long double*)my_val - *(long double*)std_val) > delta) {
+          printf("\ndelta - %.*Lf my_val = %.*Lf; std_val = %.*Lf; diff = %.*Lf\n",
+                 writer.precision, delta, writer.precision, *(long double*)my_val,
+                 writer.precision, *(long double*)std_val, writer.precision,
+                 fabsl(*(long double*)my_val - *(long double*)std_val));
+          return 1;
+      }
+      return 0;
+  } else if (type == FLOAT) {
+      float delta = powf(0.1f, (float)define_precision_with_e(str)) * 5;
+      if (fabsl(*(float*)my_val - *(float*)std_val) > delta) {
+          printf("\ndelta - %.*f my_val = %.*f; std_val = %.*f; diff = %.*f\n",
+                 writer.precision, delta, writer.precision, *(float*)my_val,
+                 writer.precision, *(float*)std_val, writer.precision,
+                 fabsf(*(float*)my_val - *(float*)std_val));
+          return 1;
+      }
+      return 0;
   }
   return 1;
 }
@@ -464,6 +477,10 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
   } else if (type == DOUBLE) {
+      ReaderFormat reader;
+      init_reader(&reader);
+      parse_into_reader(&reader, format + 1);
+      Lengths lens = reader.length;
     double my_val, std_val;
     sprintf(str, format, *((double*)val));
     std_ret = sscanf(str, format, &std_val);
@@ -483,6 +500,16 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
 
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
+  } else if (type == FLOAT) {
+      float my_val, std_val;
+      sprintf(str, format, *((float*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      ret_val = cmp_floats_by_str(format, str, (void*)(&my_val),
+                                  (void*)(&std_val), FLOAT);
+
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
+                   std_ret);
   }
 
   free(str);
