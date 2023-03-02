@@ -323,9 +323,9 @@ void process_format_string(const char* str, ReaderFormat* reader,
     int pass;
     void** dest = va_arg(args, void**);
     if (starts_with_anycase_str(str, "(nil)") && width >= 5) {
-        *dest = NULL;
+      *dest = NULL;
     } else {
-        *dest = (void *) (string_to_ull(str, width, 16, &pass));
+      *dest = (void*)(string_to_ull(str, width, 16, &pass));
     }
   } else if (s21_strchr("eEfgG", reader->specification)) {
     if (reader->length.l) {

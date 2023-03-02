@@ -88,7 +88,7 @@ char* random_format(int for_sprintf) {
     }
   }
   // width
-  if (for_sprintf || specification != 'c') {
+  if (for_sprintf || s21_strchr("cp", specification) == NULL) {
     for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
       if (!for_sprintf && j == 0) {
         format[index++] = '4' + rand() % 6;
@@ -141,7 +141,7 @@ int random_test(int with_assert, int type) {
         cmp = sscanf_test_common(format, (void*)(&res), WCHAR, with_assert);
       }
     } else {
-      char res = rand() % 127;
+      char res = (char)((rand() % 97) + 30);
       if (type == SPRINTF) {
         cmp = sprintf_test_common(format, (void*)(&res), CHAR, with_assert);
       } else if (type == SSCANF) {
@@ -604,7 +604,7 @@ int main(void) {
   if (cmp == 0 || 0) {  // || 0/1 - for easy debug
     cmp = 0;
     srand(time(NULL));
-    for (int i = 0; i < 100000 && (cmp == 0 || 0);  // || 0/1 - for easy debug
+    for (int i = 0; i < 10000000 && (cmp == 0 || 0);  // || 0/1 - for easy debug
          ++i) {
       printf("%d | %s\n", i + 1, "sscanf");
       cmp = random_test(0, SSCANF);

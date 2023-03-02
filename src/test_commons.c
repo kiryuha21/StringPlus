@@ -526,9 +526,9 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
 
   free(str);
   // TODO: fix return and test
-  //    if (std_ret != my_ret) {
-  //      ret_val = 1;
-  //    }
+  //  if (std_ret != my_ret) {
+  //    ret_val = 1;
+  //  }
   if (with_assert) {
     ck_assert(!ret_val);
   }
