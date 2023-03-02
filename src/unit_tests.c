@@ -71,7 +71,7 @@ wchar_t generate_random_wchar() {
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 
 char* random_format(int for_sprintf) {
-  char specification = specifications_test[rand() % 14];
+  char specification = specifications_test[rand() % 16];
   char* format = calloc(100, sizeof(char));
   if (format == NULL) {
     return NULL;
@@ -87,7 +87,7 @@ char* random_format(int for_sprintf) {
   }
   // width
   if (for_sprintf || s21_strchr("cp", specification) == NULL) {
-    for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 2 : 2); ++j) {
+    for (int j = 0; rand() % 2 == 0 && j < 2; ++j) {
       if (!for_sprintf && j == 0) {
         format[index++] = '4' + rand() % 6;
       } else {
