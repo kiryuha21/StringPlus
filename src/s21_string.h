@@ -321,5 +321,6 @@ void init_lengths(Lengths* lens);
 
 long long apply_signed_length(Lengths* lens, long long num);
 ull apply_unsigned_length(Lengths* lens, ull num);
+char* generate_random_size_string(int* size);
 
 #endif  // C2_S21_STRINGPLUS_0_S21_STRING_H

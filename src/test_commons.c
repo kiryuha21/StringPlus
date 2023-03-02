@@ -30,8 +30,7 @@ void print_sscanf(char* format, char* str, Types type, void* my_val,
       printf("my_val: %d\nstd_val: %d\n", *((int*)my_val), *((int*)std_val));
     }
   } else if (type == INT_PTR) {
-    printf("my_val:\n%lld\nstd_val:\n%lld\n", *(long long int*)my_val,
-           *(long long int*)std_val);
+      printf("my_val: %d\nstd_val: %d\n", *((int *) my_val), *((int *) std_val));
   } else if (type == STRING) {
     printf("my_val: %s\nstd_val: %s\n", (char*)my_val, (char*)std_val);
   } else if (type == WSTRING) {
@@ -457,15 +456,21 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
   } else if (type == INT_PTR) {
-    int *my_val, *std_val;
-    sprintf(str, format, val);
-    std_ret = sscanf(str, format, &std_val);
-    my_ret = s21_sscanf(str, format, &my_val);
+      int size;
+      char *random_str = generate_random_size_string(&size);
+      char *temp = (char*) calloc(size + 20, sizeof(char));
+      s21_strncpy(temp, random_str, rand() % size + 1);
+      s21_strcat(temp, format);
+    int my_val, std_val;
+    std_ret = sscanf(random_str, temp, &std_val);
+    my_ret = s21_sscanf(random_str, temp, &my_val);
     if (my_val != std_val) {
       ret_val = 1;
     }
-    print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
+    print_sscanf(temp, random_str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
+    free(temp);
+    free(random_str);
   } else if (type == VOID_PTR) {
     void *my_val, *std_val;
     sprintf(str, format, val);
