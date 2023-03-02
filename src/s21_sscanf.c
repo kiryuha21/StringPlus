@@ -111,9 +111,8 @@ void sign_check(const char** str, int* width, int* negative) {
   }
 }
 
-long long string_to_ll(const char* str, int width, int base) {
-  int negative;
-  sign_check(&str, &width, &negative);
+ull string_to_ull(const char* str, int width, int base, int* negative) {
+  sign_check(&str, &width, negative);
 
   if (starts_with(str, "0x") || starts_with(str, "0X")) {
     str += 2;
@@ -123,12 +122,10 @@ long long string_to_ll(const char* str, int width, int base) {
     --width;
   }
 
-  long long res = 0;
-  for (int i = width - 1, power = 0; i >= 0 && isxdigit(str[i]); --i, ++power) {
-    res += (long long)powl(base, power) * char_to_num(str[i]);
-  }
-  if (negative) {
-    res = -res;
+  unsigned long long res = 0;
+  unsigned long long mul_base = 1;
+  for (int i = width - 1; i >= 0 && isxdigit(str[i]); --i, mul_base *= base) {
+    res += mul_base * char_to_num(str[i]);
   }
 
   return res;
@@ -204,19 +201,21 @@ long double parse_float(const char* str, int width) {
 
   int nan_search = is_nan_str(str, width);
   if (nan_search != 0) {
-    return nan_search == 1 ? nanl("") : -nanl("");
+    return is_negative ? -NAN : NAN;
   }
 
   int inf_search = is_inf_str(str, width);
   if (inf_search != 0) {
-    return inf_search == 1 ? INFINITY : -INFINITY;
+    return is_negative ? -INFINITY : INFINITY;
   }
 
+  int pass;
   int point_search = (int)contains_char_in_first(str, '.', width);
   if (point_search == FAIL) {
-    return string_to_ll(str, width, 10) * (is_negative ? -1 : 1);
+    long long signed_res = (long long)string_to_ull(str, width, 10, &pass);
+    return signed_res * (is_negative ? -1 : 1);
   }
-  long double res = string_to_ll(str, point_search, 10);
+  long double res = string_to_ull(str, point_search, 10, &pass);
   width -= point_search;
   str += point_search;
 
@@ -238,7 +237,7 @@ long double parse_float(const char* str, int width) {
   ++str;  // skip '+' or '-'
 
   width -= 2;
-  long long power = string_to_ll(str, width, 10);
+  long long power = (long long)string_to_ull(str, width, 10, &pass);
   res *= powl(positive_power ? 10 : 0.1, power);
 
   return res * (is_negative ? -1 : 1);
@@ -287,30 +286,35 @@ void process_format_string(const char* str, ReaderFormat* reader,
   } else if (s21_strchr("di", reader->specification)) {
     long long* dest = va_arg(args, long long*);
     long long converted;
+    int is_negative;
     if (reader->specification == 'i' && is_base_16(str)) {
-      converted = string_to_ll(str, width, 16);
+      converted = (long long)string_to_ull(str, width, 16, &is_negative);
     } else if (reader->specification == 'i' && is_base_8(str)) {
-      converted = string_to_ll(str, width, 8);
+      converted = (long long)string_to_ull(str, width, 8, &is_negative);
     } else {
-      converted = string_to_ll(str, width, 10);
+      converted = (long long)string_to_ull(str, width, 10, &is_negative);
     }
+    converted *= (is_negative ? -1 : 1);
     long long res = apply_signed_length(&reader->length, converted);
     *dest = res;
   } else if (s21_strchr("ouxX", reader->specification)) {
     unsigned long long* dest = va_arg(args, unsigned long long*);
     unsigned long long converted;
+    int is_negative;
     if (reader->specification == 'u') {
-      converted = string_to_ll(str, width, 10);
+      converted = string_to_ull(str, width, 10, &is_negative);
     } else if (s21_strchr("xX", reader->specification)) {
-      converted = string_to_ll(str, width, 16);
+      converted = string_to_ull(str, width, 16, &is_negative);
     } else {
-      converted = string_to_ll(str, width, 8);
+      converted = string_to_ull(str, width, 8, &is_negative);
     }
+    converted *= (is_negative ? -1 : 1);
     unsigned long long res = apply_unsigned_length(&reader->length, converted);
     *dest = res;
   } else if (reader->specification == 'p') {
+    int pass;
     void** dest = va_arg(args, void**);
-    *dest = (void*)(string_to_ll(str, width, 16));
+    *dest = (void*)(string_to_ull(str, width, 16, &pass));
   } else if (s21_strchr("eEfgG", reader->specification)) {
     if (reader->length.l) {
       double* dest = va_arg(args, double*);
