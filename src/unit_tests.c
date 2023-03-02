@@ -63,6 +63,13 @@ wchar_t* generate_random_size_wstring(int* size) {
   return res;
 }
 
+wchar_t generate_random_wchar() {
+  char temp = (char)(rand() % 127);
+  wchar_t res;
+  mbtowc(&res, &temp, 1);
+  return res;
+}
+
 // const char* specifications_test = "cdioxXu%pneEfsgG";
 
 char* random_format(int for_sprintf) {
