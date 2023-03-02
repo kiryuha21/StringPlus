@@ -578,10 +578,10 @@ int main(void) {
   srunner_free(sr);
 
   // TODO: remove
-  char* format = "%5hi";
-  long long val = -263;
+  char* format = "%0LE";
+  long double val = 8.368515E-08;
   int suc = 0;
-  int cmp = sscanf_test_common(format, &val, INT, 0);
+  int cmp = sscanf_test_common(format, &val, LDOUBLE, 0);
   if (cmp != 0) {
     suc = 1;
     puts("Not equal");
