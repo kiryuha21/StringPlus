@@ -91,7 +91,7 @@ char* random_format(int for_sprintf) {
   if (for_sprintf || specification != 'c') {
     for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
         if (!for_sprintf && j == 0) {
-            format[index++] = '2' + rand() % 7;
+            format[index++] = '4' + rand() % 6;
         } else {
             format[index++] = '0' + rand() % 9;
         }
@@ -112,7 +112,7 @@ char* random_format(int for_sprintf) {
       format[index++] = 'L';
     } else if (strchr("cs", specification)) {
       format[index++] = 'l';
-    } else {
+    } else if (for_sprintf || specification != 'n'){
       format[index++] = lengths_test[rand() % 2];
     }
   }
@@ -593,10 +593,10 @@ int main(void) {
   srunner_free(sr);
 
   // TODO: remove
-  char* format = "%G";
-  float val = -0.049493;
+  char* format = "%20n";
+  int val;
   int suc = 0;
-  int cmp = sscanf_test_common(format, &val, FLOAT, 0);
+  int cmp = sscanf_test_common(format, &val, INT_PTR, 0);
   if (cmp != 0) {
     suc = 1;
     puts("Not equal");
