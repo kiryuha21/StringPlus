@@ -90,7 +90,11 @@ char* random_format(int for_sprintf) {
   // width
   if (for_sprintf || specification != 'c') {
     for (int j = 0; rand() % 2 == 0 && j < (for_sprintf ? 4 : 2); ++j) {
-      format[index++] = '0' + rand() % 9;
+        if (!for_sprintf && j == 0) {
+            format[index++] = '2' + rand() % 7;
+        } else {
+            format[index++] = '0' + rand() % 9;
+        }
     }
   }
   // precision

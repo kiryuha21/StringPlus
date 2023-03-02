@@ -36,10 +36,10 @@ void print_sscanf(char* format, char* str, Types type, void* my_val,
   } else if (type == WSTRING) {
     printf("my_val: %ls\nstd_val: %ls\n", (wchar_t*)my_val, (wchar_t*)std_val);
   } else if (type == CHAR) {
-    printf("my_val: %c\nstd_val: %c\n", *((char*)my_val), *((char*)std_val));
+    printf("my_val: %c (%d)\nstd_val: %c (%d)\n", *((char*)my_val), *((char*)my_val), *((char*)std_val), *((char*)std_val));
   } else if (type == WCHAR) {
-    printf("my_val: %lc\nstd_val: %lc\n", *((wchar_t*)my_val),
-           *((wchar_t*)std_val));
+    printf("my_val: %lc (%d)\nstd_val: %lc (%d)\n", *((wchar_t*)my_val), *((wchar_t*)my_val),
+           *((wchar_t*)std_val), *((wchar_t*)std_val));
   } else if (type == DOUBLE) {
     printf("my_val: %f\nstd_val: %f\n", *((double*)my_val),
            *((double*)std_val));
@@ -406,6 +406,9 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
       my_ret = s21_sscanf(str, format, my_val);
       if (s21_strcmp(my_val, std_val) != 0) {
         ret_val = 1;
+          sprintf(str, format, (char*)val);
+          std_ret = sscanf(str, format, std_val);
+          my_ret = s21_sscanf(str, format, my_val);
       }
       print_sscanf(format, str, type, (void*)(my_val), (void*)(std_val), my_ret,
                    std_ret);
@@ -515,9 +518,9 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
 
   free(str);
   // TODO: fix return and test
-  //  if (std_ret != my_ret) {
-  //    ret_val = 1;
-  //  }
+//    if (std_ret != my_ret) {
+//      ret_val = 1;
+//    }
   if (with_assert) {
     ck_assert(!ret_val);
   }
