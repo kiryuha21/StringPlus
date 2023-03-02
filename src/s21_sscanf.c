@@ -219,22 +219,31 @@ long double parse_float(const char* str, int width) {
 
   int pass;
   int point_search = (int)contains_char_in_first(str, '.', width);
-  if (point_search == FAIL) {
+  if (point_search == FAIL && s21_strpbrk(str, "Ee") == NULL) {
     long long signed_res = (long long)string_to_ull(str, width, 10, &pass);
     return signed_res * (is_negative ? -1 : 1);
   }
-  long double res = string_to_ull(str, point_search, 10, &pass);
-  width -= point_search;
-  str += point_search;
 
-  ++str;  // skip '.'
-  --width;
-  long double float_part = 0;
-  for (int i = 0; width > 0 && isdigit(*str); ++i, ++str, --width) {
-    long double digit = (*str - '0') * powl(0.1, i + 1);
-    float_part += digit;
+  long double res;
+  if (point_search != FAIL) {
+    res = string_to_ull(str, point_search, 10, &pass);
+    width -= point_search;
+    str += point_search;
+
+    ++str;  // skip '.'
+    --width;
+    long double float_part = 0;
+    for (int i = 0; width > 0 && isdigit(*str); ++i, ++str, --width) {
+      long double digit = (*str - '0') * powl(0.1, i + 1);
+      float_part += digit;
+    }
+    res += float_part;
+  } else {
+    int num_width = (int)(s21_strpbrk(str, "eE") - str);
+    res = string_to_ull(str, num_width, 10, &pass);
+    width -= num_width;
+    str += num_width;
   }
-  res += float_part;
 
   if (tolower(*str) != 'e') {
     return res * (is_negative ? -1 : 1);
@@ -288,6 +297,7 @@ void process_format_string(const char* str, ReaderFormat* reader,
   } else if (reader->specification == 'n') {
     int* dest = va_arg(args, int*);
     *dest = info->processed_chars;
+    info->return_code = 0;
   } else if (reader->specification == '%') {
     info->source_shift = spaces_until_data + 1;
     info->return_code = 0;

@@ -464,7 +464,7 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     int size;
     char* random_str = generate_random_size_string(&size);
     for (int i = 0; i < size; ++i) {
-      if (random_str[i] == '%') {
+      if (random_str[i] == '%' || random_str[i] == ' ') {
         ++random_str[i];
       }
     }
