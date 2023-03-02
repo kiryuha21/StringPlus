@@ -280,7 +280,8 @@ void process_format_string(const char* str, ReaderFormat* reader,
     int* dest = va_arg(args, int*);
     *dest = info->processed_chars;
   } else if (reader->specification == '%') {
-    info->source_shift = 1;
+    info->source_shift = spaces_until_data + 1;
+    info->return_code = 0;
   } else if (s21_strchr("di", reader->specification)) {
     long long* dest = va_arg(args, long long*);
     long long converted;
