@@ -4,8 +4,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "s21_sprintf.h"
-#include "s21_sscanf.h"
 #include "s21_string.h"
 #include "test_commons.h"
 
@@ -577,8 +575,7 @@ Suite* string_suite(void) {
   suite_add_tcase(s, to_upper_cases);
   suite_add_tcase(s, insert_cases);
   suite_add_tcase(s, trim_cases);
-  // TODO: uncomment)
-  // suite_add_tcase(s, sprintf_cases);
+  suite_add_tcase(s, sprintf_cases);
   suite_add_tcase(s, sscanf_cases);
 
   return s;
@@ -591,30 +588,5 @@ int main(void) {
   srunner_run_all(sr, CK_NORMAL);
 
   srunner_free(sr);
-
-  // TODO: remove
-  char* format = "%4p";
-  char* val = "(nil)";
-  int suc = 0;
-  int cmp = sscanf_test_common(format, val, VOID_PTR, 0);
-  if (cmp != 0) {
-    suc = 1;
-    puts("Not equal");
-  }
-  if (cmp == 0 || 0) {  // || 0/1 - for easy debug
-    cmp = 0;
-    srand(time(NULL));
-    for (int i = 0; i < 1000000 && (cmp == 0 || 0);  // || 0/1 - for easy debug
-         ++i) {
-      printf("%d | %s\n", i + 1, "sscanf");
-      cmp = random_test(0, SSCANF);
-      if (cmp != 0) {
-        suc = 1;
-      }
-    }
-
-    printf(suc ? "ERROR\n" : "SUCCESS\n");
-  }
-
   return 0;
 }

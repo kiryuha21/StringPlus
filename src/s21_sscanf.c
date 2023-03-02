@@ -61,6 +61,16 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 }
 
+int is_blank(const char* str) {
+  size_t len = s21_strlen(str);
+  for (size_t i = 0; i < len; ++i) {
+    if (str[i] != ' ') {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 // width of the word to be scanned
 int define_width(ReaderFormat* reader, const char* str) {
   int len = (int)s21_strlen(str);
@@ -373,6 +383,15 @@ int s21_sscanf(const char* str, const char* format, ...) {
       ReaderFormat reader;
       init_reader(&reader);
       parse_into_reader(&reader, format + 1);
+
+      if (reader.specification != 'n') {
+        if (s21_strlen(str) == 0) {
+          return -1;
+        }
+        if (reader.specification != 'c' && is_blank(str)) {
+          return -1;
+        }
+      }
 
       AssignmentInfo info;
       init_assignment_info(&info, UNKNOWN, UNKNOWN, processed_chars);
