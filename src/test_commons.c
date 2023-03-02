@@ -131,7 +131,7 @@ int cmp_floats_by_str(char* format, char* str, void* my_val, void* std_val,
   } else if (type == LDOUBLE) {
     long double delta = pow(0.1, define_precision_with_e(str)) * 5;
     if (fabsl(*(long double*)my_val - *(long double*)std_val) > delta) {
-      printf("\ndelta - %.*Lf my_val = %.*Lf; std_val = %.*Lf; diff = %.*f\n",
+      printf("\ndelta - %.*Lf my_val = %.*Lf; std_val = %.*Lf; diff = %.*Lf\n",
              writer.precision, delta, writer.precision, *(long double*)my_val,
              writer.precision, *(long double*)std_val, writer.precision,
              fabsl(*(long double*)my_val - *(long double*)std_val));
@@ -332,7 +332,7 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
   } else if (type == UINT) {
       ReaderFormat reader;
       init_reader(&reader);
-      parse_into_reader(&reader, format);
+      parse_into_reader(&reader, format + 1);
       Lengths lens = reader.length;
       if (lens.l == 1 || lens.L == 1) {
           unsigned long my_val, std_val;
@@ -416,15 +416,23 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     free(std_val);
     free(my_val);
   } else if (type == CHAR) {
-    char my_val, std_val;
-    sprintf(str, format, *((char*)val));
-    std_ret = sscanf(str, format, &std_val);
-    my_ret = s21_sscanf(str, format, &my_val);
-    if (my_val != std_val) {
-      ret_val = 1;
+    sprintf(str, format, *((char *) val));
+    if (*((char*)val) != '%') {
+        char my_val, std_val;
+        std_ret = sscanf(str, format, &std_val);
+        my_ret = s21_sscanf(str, format, &my_val);
+        if (my_val != std_val) {
+            ret_val = 1;
+        }
+        print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
+                     std_ret);
+    } else {
+        char my_val = '%', std_val = '%';
+        std_ret = sscanf(str, format);
+        my_ret = s21_sscanf(str, format);
+        print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
+                     std_ret);
     }
-    print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                 std_ret);
   } else if (type == WCHAR) {
     wchar_t my_val, std_val;
     sprintf(str, format, *((wchar_t*)val));
