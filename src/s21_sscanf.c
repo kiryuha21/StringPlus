@@ -199,6 +199,9 @@ int is_inf_str(const char* str, int width) {
 }
 
 long double parse_float(const char* str, int width) {
+  int is_negative;
+  sign_check(&str, &width, &is_negative);
+
   int nan_search = is_nan_str(str, width);
   if (nan_search != 0) {
     return nan_search == 1 ? nanl("") : -nanl("");
@@ -211,7 +214,7 @@ long double parse_float(const char* str, int width) {
 
   int point_search = (int)contains_char_in_first(str, '.', width);
   if (point_search == FAIL) {
-    return string_to_ll(str, width, 10);
+    return string_to_ll(str, width, 10) * (is_negative ? -1 : 1);
   }
   long double res = string_to_ll(str, point_search, 10);
   width -= point_search;
@@ -219,16 +222,15 @@ long double parse_float(const char* str, int width) {
 
   ++str;  // skip '.'
   --width;
-  int is_positive = signbit(res) == 0;
   long double float_part = 0;
   for (int i = 0; width > 0 && isdigit(*str); ++i, ++str, --width) {
     long double digit = (*str - '0') * powl(0.1, i + 1);
-    float_part = is_positive ? float_part + digit : float_part - digit;
+    float_part += digit;
   }
   res += float_part;
 
   if (tolower(*str) != 'e') {
-    return res;
+    return res * (is_negative ? -1 : 1);
   }
 
   ++str;  // skip 'e' or 'E'
@@ -239,7 +241,7 @@ long double parse_float(const char* str, int width) {
   long long power = string_to_ll(str, width, 10);
   res *= powl(positive_power ? 10 : 0.1, power);
 
-  return res;
+  return res * (is_negative ? -1 : 1);
 }
 
 void process_format_string(const char* str, ReaderFormat* reader,

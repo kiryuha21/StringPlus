@@ -10,28 +10,28 @@ void print_sscanf(char* format, char* str, Types type, void* my_val,
                   void* std_val, int my_ret, int std_ret) {
   printf("---------\nformat:\n%s\nstr:\n%s\n", format, str);
   if (type == INT) {
-      ReaderFormat reader;
-      init_reader(&reader);
-      parse_into_reader(&reader, format + 1);
-      Lengths lens = reader.length;
-      if (lens.l == 1 || lens.L == 1) {
-          printf("my_val: %ld\nstd_val: %ld\n", *((long*)my_val),
-                 *((long*)std_val));
-      } else if (lens.l >= 2 || lens.L >= 2) {
-          printf("my_val: %lld\nstd_val: %lld\n", *((long long*)my_val),
-                 *((long long*)std_val));
-      } else if (lens.h == 1) {
-          printf("my_val: %hd\nstd_val: %hd\n", *((short*)my_val),
-                 *((short*)std_val));
-      } else if (lens.h >= 2) {
-          printf("my_val: %hhd\nstd_val: %hhd\n", *((char*)my_val),
-                 *((char*)std_val));
-      } else {
-          printf("my_val: %d\nstd_val: %d\n", *((int*)my_val),
-                 *((int*)std_val));
-      }
+    ReaderFormat reader;
+    init_reader(&reader);
+    parse_into_reader(&reader, format + 1);
+    Lengths lens = reader.length;
+    if (lens.l == 1 || lens.L == 1) {
+      printf("my_val: %ld\nstd_val: %ld\n", *((long*)my_val),
+             *((long*)std_val));
+    } else if (lens.l >= 2 || lens.L >= 2) {
+      printf("my_val: %lld\nstd_val: %lld\n", *((long long*)my_val),
+             *((long long*)std_val));
+    } else if (lens.h == 1) {
+      printf("my_val: %hd\nstd_val: %hd\n", *((short*)my_val),
+             *((short*)std_val));
+    } else if (lens.h >= 2) {
+      printf("my_val: %hhd\nstd_val: %hhd\n", *((char*)my_val),
+             *((char*)std_val));
+    } else {
+      printf("my_val: %d\nstd_val: %d\n", *((int*)my_val), *((int*)std_val));
+    }
   } else if (type == INT_PTR) {
-      printf("my_val:\n%lld\nstd_val:\n%lld\n", *(long long int*)my_val, *(long long int*)std_val);
+    printf("my_val:\n%lld\nstd_val:\n%lld\n", *(long long int*)my_val,
+           *(long long int*)std_val);
   } else if (type == STRING) {
     printf("my_val: %s\nstd_val: %s\n", (char*)my_val, (char*)std_val);
   } else if (type == WSTRING) {
@@ -45,35 +45,35 @@ void print_sscanf(char* format, char* str, Types type, void* my_val,
     printf("my_val: %f\nstd_val: %f\n", *((double*)my_val),
            *((double*)std_val));
   } else if (type == LDOUBLE) {
-      printf("my_val: %Lf\nstd_val: %Lf\n", *((long double*)my_val),
-             *((long double*)std_val));
+    printf("my_val: %Lf\nstd_val: %Lf\n", *((long double*)my_val),
+           *((long double*)std_val));
   } else if (type == FLOAT) {
-      printf("my_val: %f\nstd_val: %f\n", *((float*)my_val),
-             *((float*)std_val));
+    printf("my_val: %f\nstd_val: %f\n", *((float*)my_val), *((float*)std_val));
   } else if (type == VOID_PTR) {
     printf("my_val: %p\nstd_val: %p\n", my_val, std_val);
   } else if (type == UINT) {
-      ReaderFormat reader;
-      init_reader(&reader);
-      parse_into_reader(&reader, format + 1);
-      Lengths lens = reader.length;
-      if (lens.l == 1 || lens.L == 1) {
-          printf("my_val: %lu\nstd_val: %lu\n", *((unsigned long *) my_val),
-                 *((unsigned long *) std_val));
-      } else if (lens.l >= 2 || lens.L >= 2) {
-          printf("my_val: %llu\nstd_val: %llu\n", *((unsigned long long *) my_val),
-                 *((unsigned long long *) std_val));
-      } else if (lens.h == 1) {
-          printf("my_val: %hu\nstd_val: %hu\n", *((unsigned short *) my_val),
-                 *((unsigned short *) std_val));
-      } else if (lens.h >= 2) {
-          printf("my_val: %hhu\nstd_val: %hhu\n", *((unsigned char *) my_val),
-                 *((unsigned char *) std_val));
-      } else {
-          printf("my_val: %u\nstd_val: %u\n", *((unsigned int *) my_val),
-                 *((unsigned int *) std_val));
-      }
+    ReaderFormat reader;
+    init_reader(&reader);
+    parse_into_reader(&reader, format + 1);
+    Lengths lens = reader.length;
+    if (lens.l == 1 || lens.L == 1) {
+      printf("my_val: %lu\nstd_val: %lu\n", *((unsigned long*)my_val),
+             *((unsigned long*)std_val));
+    } else if (lens.l >= 2 || lens.L >= 2) {
+      printf("my_val: %llu\nstd_val: %llu\n", *((unsigned long long*)my_val),
+             *((unsigned long long*)std_val));
+    } else if (lens.h == 1) {
+      printf("my_val: %hu\nstd_val: %hu\n", *((unsigned short*)my_val),
+             *((unsigned short*)std_val));
+    } else if (lens.h >= 2) {
+      printf("my_val: %hhu\nstd_val: %hhu\n", *((unsigned char*)my_val),
+             *((unsigned char*)std_val));
+    } else {
+      printf("my_val: %u\nstd_val: %u\n", *((unsigned int*)my_val),
+             *((unsigned int*)std_val));
+    }
   }
+  printf("my_ret = %d; std_ret = %d\n", my_ret, std_ret);
 }
 
 void print_sprintf(char* format, void* values, Types type, char* my_res,
@@ -132,25 +132,25 @@ int cmp_floats_by_str(char* format, char* str, void* my_val, void* std_val,
     }
     return 0;
   } else if (type == LDOUBLE) {
-      long double delta = pow(0.1, define_precision_with_e(str)) * 5;
-      if (fabsl(*(long double*)my_val - *(long double*)std_val) > delta) {
-          printf("\ndelta - %.*Lf my_val = %.*Lf; std_val = %.*Lf; diff = %.*Lf\n",
-                 writer.precision, delta, writer.precision, *(long double*)my_val,
-                 writer.precision, *(long double*)std_val, writer.precision,
-                 fabsl(*(long double*)my_val - *(long double*)std_val));
-          return 1;
-      }
-      return 0;
+    long double delta = pow(0.1, define_precision_with_e(str)) * 5;
+    if (fabsl(*(long double*)my_val - *(long double*)std_val) > delta) {
+      printf("\ndelta - %.*Lf my_val = %.*Lf; std_val = %.*Lf; diff = %.*Lf\n",
+             writer.precision, delta, writer.precision, *(long double*)my_val,
+             writer.precision, *(long double*)std_val, writer.precision,
+             fabsl(*(long double*)my_val - *(long double*)std_val));
+      return 1;
+    }
+    return 0;
   } else if (type == FLOAT) {
-      float delta = powf(0.1f, (float)define_precision_with_e(str)) * 5;
-      if (fabsl(*(float*)my_val - *(float*)std_val) > delta) {
-          printf("\ndelta - %.*f my_val = %.*f; std_val = %.*f; diff = %.*f\n",
-                 writer.precision, delta, writer.precision, *(float*)my_val,
-                 writer.precision, *(float*)std_val, writer.precision,
-                 fabsf(*(float*)my_val - *(float*)std_val));
-          return 1;
-      }
-      return 0;
+    float delta = powf(0.1f, (float)define_precision_with_e(str)) * 5;
+    if (fabsl(*(float*)my_val - *(float*)std_val) > delta) {
+      printf("\ndelta - %.*f my_val = %.*f; std_val = %.*f; diff = %.*f\n",
+             writer.precision, delta, writer.precision, *(float*)my_val,
+             writer.precision, *(float*)std_val, writer.precision,
+             fabsf(*(float*)my_val - *(float*)std_val));
+      return 1;
+    }
+    return 0;
   }
   return 1;
 }
@@ -287,117 +287,117 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
   // TODO: handle
   // int is_g = !(strchr(format, 'g') != NULL || strchr(format, 'G') != NULL);
   if (type == INT) {
-      ReaderFormat reader;
-      init_reader(&reader);
-      parse_into_reader(&reader, format + 1);
-      Lengths lens = reader.length;
-      if (lens.l == 1 || lens.L == 1) {
-          long my_val, std_val;
-          sprintf(str, format, *((long*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
-      } else if (lens.l >= 2 || lens.L >= 2) {
-          long long my_val, std_val;
-          sprintf(str, format, *((long long*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
-      } else if (lens.h == 1) {
-          short int my_val, std_val;
-          sprintf(str, format, *((short int*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
-      } else if (lens.h >= 2) {
-          char my_val, std_val;
-          sprintf(str, format, *((char*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
-      } else {
-          int my_val, std_val;
-          sprintf(str, format, *((int*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
+    ReaderFormat reader;
+    init_reader(&reader);
+    parse_into_reader(&reader, format + 1);
+    Lengths lens = reader.length;
+    if (lens.l == 1 || lens.L == 1) {
+      long my_val, std_val;
+      sprintf(str, format, *((long*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
       }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    } else if (lens.l >= 2 || lens.L >= 2) {
+      long long my_val, std_val;
+      sprintf(str, format, *((long long*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    } else if (lens.h == 1) {
+      short int my_val, std_val;
+      sprintf(str, format, *((short int*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    } else if (lens.h >= 2) {
+      char my_val, std_val;
+      sprintf(str, format, *((char*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    } else {
+      int my_val, std_val;
+      sprintf(str, format, *((int*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    }
   } else if (type == UINT) {
-      ReaderFormat reader;
-      init_reader(&reader);
-      parse_into_reader(&reader, format + 1);
-      Lengths lens = reader.length;
-      if (lens.l == 1 || lens.L == 1) {
-          unsigned long my_val, std_val;
-          sprintf(str, format, *((unsigned long*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
-      } else if (lens.l >= 2 || lens.L >= 2) {
-          unsigned long long my_val, std_val;
-          sprintf(str, format, *((unsigned long long*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
-      } else if (lens.h == 1) {
-          unsigned short my_val, std_val;
-          sprintf(str, format, *((unsigned short*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
-      } else if (lens.h >= 2) {
-          unsigned char my_val, std_val;
-          sprintf(str, format, *((unsigned char*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
-      } else {
-          unsigned int my_val, std_val;
-          sprintf(str, format, *((unsigned int*)val));
-          std_ret = sscanf(str, format, &std_val);
-          my_ret = s21_sscanf(str, format, &my_val);
-          if (my_val != std_val) {
-              ret_val = 1;
-          }
-          print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                       std_ret);
+    ReaderFormat reader;
+    init_reader(&reader);
+    parse_into_reader(&reader, format + 1);
+    Lengths lens = reader.length;
+    if (lens.l == 1 || lens.L == 1) {
+      unsigned long my_val, std_val;
+      sprintf(str, format, *((unsigned long*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
       }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    } else if (lens.l >= 2 || lens.L >= 2) {
+      unsigned long long my_val, std_val;
+      sprintf(str, format, *((unsigned long long*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    } else if (lens.h == 1) {
+      unsigned short my_val, std_val;
+      sprintf(str, format, *((unsigned short*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    } else if (lens.h >= 2) {
+      unsigned char my_val, std_val;
+      sprintf(str, format, *((unsigned char*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    } else {
+      unsigned int my_val, std_val;
+      sprintf(str, format, *((unsigned int*)val));
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
+    }
   } else if (type == STRING) {
     char *my_val = calloc(10000, sizeof(my_val)),
          *std_val = calloc(10000, sizeof(std_val));
@@ -429,22 +429,22 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     free(std_val);
     free(my_val);
   } else if (type == CHAR) {
-    sprintf(str, format, *((char *) val));
+    sprintf(str, format, *((char*)val));
     if (*((char*)val) != '%') {
-        char my_val, std_val;
-        std_ret = sscanf(str, format, &std_val);
-        my_ret = s21_sscanf(str, format, &my_val);
-        if (my_val != std_val) {
-            ret_val = 1;
-        }
-        print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                     std_ret);
+      char my_val, std_val;
+      std_ret = sscanf(str, format, &std_val);
+      my_ret = s21_sscanf(str, format, &my_val);
+      if (my_val != std_val) {
+        ret_val = 1;
+      }
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
     } else {
-        char my_val = '%', std_val = '%';
-        std_ret = sscanf(str, format);
-        my_ret = s21_sscanf(str, format);
-        print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                     std_ret);
+      char my_val = '%', std_val = '%';
+      std_ret = sscanf(str, "%%");
+      my_ret = s21_sscanf(str, "%%");
+      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val),
+                   my_ret, std_ret);
     }
   } else if (type == WCHAR) {
     wchar_t my_val, std_val;
@@ -457,7 +457,7 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
   } else if (type == INT_PTR) {
-    int* my_val, *std_val;
+    int *my_val, *std_val;
     sprintf(str, format, val);
     std_ret = sscanf(str, format, &std_val);
     my_ret = s21_sscanf(str, format, &my_val);
@@ -477,10 +477,6 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
   } else if (type == DOUBLE) {
-      ReaderFormat reader;
-      init_reader(&reader);
-      parse_into_reader(&reader, format + 1);
-      Lengths lens = reader.length;
     double my_val, std_val;
     sprintf(str, format, *((double*)val));
     std_ret = sscanf(str, format, &std_val);
@@ -501,15 +497,15 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
     print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
                  std_ret);
   } else if (type == FLOAT) {
-      float my_val, std_val;
-      sprintf(str, format, *((float*)val));
-      std_ret = sscanf(str, format, &std_val);
-      my_ret = s21_sscanf(str, format, &my_val);
-      ret_val = cmp_floats_by_str(format, str, (void*)(&my_val),
-                                  (void*)(&std_val), FLOAT);
+    float my_val, std_val;
+    sprintf(str, format, *((float*)val));
+    std_ret = sscanf(str, format, &std_val);
+    my_ret = s21_sscanf(str, format, &my_val);
+    ret_val = cmp_floats_by_str(format, str, (void*)(&my_val),
+                                (void*)(&std_val), FLOAT);
 
-      print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
-                   std_ret);
+    print_sscanf(format, str, type, (void*)(&my_val), (void*)(&std_val), my_ret,
+                 std_ret);
   }
 
   free(str);

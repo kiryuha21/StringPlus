@@ -171,7 +171,7 @@ int random_test(int with_assert, int type) {
       } else if (type == SSCANF) {
         cmp = sscanf_test_common(format, (void*)(&res), LDOUBLE, with_assert);
       }
-    } else if (strchr(format, 'l')){
+    } else if (strchr(format, 'l')) {
       double divider = (double)(rand() % (int)pow(10, rand() % 10));
       double divisor = (double)(rand() % (int)pow(10, rand() % 10));
       double res = divisor / divider;
@@ -184,17 +184,17 @@ int random_test(int with_assert, int type) {
         cmp = sscanf_test_common(format, (void*)(&res), DOUBLE, with_assert);
       }
     } else {
-        float divider = (float)(rand() % (int)pow(10, rand() % 10));
-        float divisor = (float)(rand() % (int)pow(10, rand() % 10));
-        float res = divisor / divider;
-        if (rand() % 2) {
-            res *= -1;
-        }
-        if (type == SPRINTF) {
-            cmp = sprintf_test_common(format, (void*)(&res), FLOAT, with_assert);
-        } else if (type == SSCANF) {
-            cmp = sscanf_test_common(format, (void*)(&res), FLOAT, with_assert);
-        }
+      float divider = (float)(rand() % (int)pow(10, rand() % 10));
+      float divisor = (float)(rand() % (int)pow(10, rand() % 10));
+      float res = divisor / divider;
+      if (rand() % 2) {
+        res *= -1;
+      }
+      if (type == SPRINTF) {
+        cmp = sprintf_test_common(format, (void*)(&res), FLOAT, with_assert);
+      } else if (type == SSCANF) {
+        cmp = sscanf_test_common(format, (void*)(&res), FLOAT, with_assert);
+      }
     }
   } else if (specification == '%') {
     char res = '%';
@@ -604,9 +604,9 @@ int main(void) {
          ++i) {
       printf("%d | %s\n", i + 1, "sscanf");
       cmp = random_test(0, SSCANF);
-        if (cmp != 0) {
-            suc = 1;
-        }
+      if (cmp != 0) {
+        suc = 1;
+      }
     }
 
     printf(suc ? "ERROR\n" : "SUCCESS\n");
