@@ -37,6 +37,4 @@ int parse_into_writer(WriterFormat* writer,
 void validate_writer_flags(WriterFormat* writer);
 int define_precision(int precision);
 
-int s21_sprintf(char* str, const char* format, ...);
-
 #endif  // C2_S21_STRINGPLUS_0_S21_SPRINTF_H

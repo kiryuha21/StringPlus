@@ -322,4 +322,8 @@ void init_lengths(Lengths* lens);
 long long apply_signed_length(Lengths* lens, long long num);
 ull apply_unsigned_length(Lengths* lens, ull num);
 
+// format functions
+int s21_sprintf(char* str, const char* format, ...);
+int s21_sscanf(const char* str, const char* format, ...);
+
 #endif  // C2_S21_STRINGPLUS_0_S21_STRING_H
