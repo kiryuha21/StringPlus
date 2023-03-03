@@ -6,7 +6,28 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-START_TEST(sprintf_basic) {}
+START_TEST(sprintf_basic) {
+  int str_size = 10000;
+  char* my_str = (char*)calloc(str_size, sizeof(char));
+  char* std_str = (char*)calloc(str_size, sizeof(char));
+  if (my_str != NULL && std_str != NULL) {
+    int my_res, std_res;
+
+    my_res = s21_sprintf(my_str, "%d   aaaa %lld %hd %hhd", 1000000000, 1000000000, 1000000000, 1000000000);
+    std_res = sprintf(std_str, "%d   aaaa %lld %hd %hhd", 1000000000, 1000000000LL, 1000000000, 1000000000);
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    for (int i = 0; i < str_size && my_str[i] && std_str[i]; ++i) {
+      my_str[i] = '\0';
+      std_str[i] = '\0';
+    }
+  } else {
+    printf("alloc error");
+  }
+
+  free(my_str);
+  free(std_str);
+}
 
 START_TEST(sscanf_strings) {
   char* b1 = calloc(20, sizeof(char));
