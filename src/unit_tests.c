@@ -286,19 +286,21 @@ START_TEST(sscanf_wchar_values) {
   wchar_t* a1 = calloc(20, sizeof(wchar_t));
   wchar_t* a2 = calloc(20, sizeof(wchar_t));
 
-  int std_res = sscanf("abcdef", "%ls", a1);
-  int my_res = s21_sscanf("abcdef", "%ls", a2);
+  if (a1 && a2) {
+    int std_res = sscanf("abcdef", "%ls", a1);
+    int my_res = s21_sscanf("abcdef", "%ls", a2);
 
-  ck_assert_int_eq(std_res, my_res);
-  ck_assert(wcscmp(a1, a2) == 0);
+    ck_assert_int_eq(std_res, my_res);
+    ck_assert(wcscmp(a1, a2) == 0);
+  }
 
   free(a1);
   free(a2);
 
   wchar_t b1, b2;
 
-  std_res = sscanf(" a", "%lc", &b1);
-  my_res = s21_sscanf(" a", "%lc", &b2);
+  int std_res = sscanf(" a", "%lc", &b1);
+  int my_res = s21_sscanf(" a", "%lc", &b2);
 
   ck_assert_int_eq(std_res, my_res);
   ck_assert(b1 == b2);
