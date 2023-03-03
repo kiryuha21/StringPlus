@@ -33,7 +33,7 @@ long long apply_signed_length(Lengths* lens, long long num) {
   } else if (lens->h == 1) {
     res = (short)num;
   } else if (lens->h >= 2) {
-    res = (char)num;
+    res = (signed char)num;
   } else {
     res = (int)num;
   }
