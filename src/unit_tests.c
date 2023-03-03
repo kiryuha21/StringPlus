@@ -6,21 +6,160 @@
 #include "s21_string.h"
 #include "test_commons.h"
 
-START_TEST(sprintf_basic) {
+START_TEST(sprintf_ints) {
   int str_size = 10000;
   char* my_str = (char*)calloc(str_size, sizeof(char));
   char* std_str = (char*)calloc(str_size, sizeof(char));
   if (my_str != NULL && std_str != NULL) {
     int my_res, std_res;
 
-    my_res = s21_sprintf(my_str, "%d   aaaa %lld %hd %hhd", 1000000000, 1000000000, 1000000000, 1000000000);
-    std_res = sprintf(std_str, "%d   aaaa %lld %hd %hhd", 1000000000, 1000000000LL, 1000000000, 1000000000);
+    my_res = s21_sprintf(my_str, "%d   aaaa %lld %hd %hhd", 1000000000,
+                         1000000000LL, 1000000000, 1000000000);
+    std_res = sprintf(std_str, "%d   aaaa %lld %hd %hhd", 1000000000,
+                      1000000000LL, 1000000000, 1000000000);
     ck_assert_str_eq(my_str, std_str);
     ck_assert_int_eq(my_res, std_res);
-    for (int i = 0; i < str_size && my_str[i] && std_str[i]; ++i) {
-      my_str[i] = '\0';
-      std_str[i] = '\0';
-    }
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res = s21_sprintf(my_str, "%d   aaaa %lli %hi %hhi", 1000000000,
+                         1000000000LL, 1000000000, 1000000000);
+    std_res = sprintf(std_str, "%d   aaaa %lli %hi %hhi", 1000000000,
+                      1000000000LL, 1000000000, 1000000000);
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res = s21_sprintf(my_str, "%-#o", -10010);
+    std_res = sprintf(std_str, "%-#o", -10010);
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res = s21_sprintf(my_str, "%-#.o %-#.5o %-#10o%-#.1000o", -10010, -10010,
+                         -10010, -10010);
+    std_res = sprintf(std_str, "%-#.o %-#.5o %-#10o%-#.1000o", -10010, -10010,
+                      -10010, -10010);
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res = s21_sprintf(my_str, "%lc", L'\0');
+    std_res = sprintf(std_str, "%lc", L'\0');
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res = s21_sprintf(my_str, "%c %%", 'a');
+    std_res = sprintf(std_str, "%c %%", 'a');
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+  } else {
+    printf("alloc error");
+  }
+
+  free(my_str);
+  free(std_str);
+}
+
+START_TEST(sprintf_floats) {
+  int str_size = 10000;
+  char* my_str = (char*)calloc(str_size, sizeof(char));
+  char* std_str = (char*)calloc(str_size, sizeof(char));
+  if (my_str != NULL && std_str != NULL) {
+    int my_res, std_res;
+
+    my_res = s21_sprintf(my_str, "%f%e%g%2f%2e%2g%.2f%.2e%.2g", 1.4, 1.5, 1.6,
+                         14.7, 13.8, 12.9, 2.32424, 3.2352, 2234.4);
+    std_res = sprintf(std_str, "%f%e%g%2f%2e%2g%.2f%.2e%.2g", 1.4, 1.5, 1.6,
+                      14.7, 13.8, 12.9, 2.32424, 3.2352, 2234.4);
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res =
+        s21_sprintf(my_str, "%Lf%Le%Lg%2Lf%2Le%2Lg%.2Lf%.2Le%.2Lg", 1.4L, 1.5L,
+                    1.6L, 14.7L, 13.8L, 12.9L, 2.32424L, 3.2352L, 2234.4L);
+    std_res =
+        sprintf(std_str, "%Lf%Le%Lg%2Lf%2Le%2Lg%.2Lf%.2Le%.2Lg", 1.4L, 1.5L,
+                1.6L, 14.7L, 13.8L, 12.9L, 2.32424L, 3.2352L, 2234.4L);
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res = s21_sprintf(my_str, "%lf%le%lg%2lf%2le%2lg%.2lf%.2le%.2lg", 1.4,
+                         1.5, 1.6, 14.7, 13.8, 12.9, 2.32424, 3.2352, 2234.4);
+    std_res = sprintf(std_str, "%lf%le%lg%2lf%2le%2lg%.2lf%.2le%.2lg", 1.4, 1.5,
+                      1.6, 14.7, 13.8, 12.9, 2.32424, 3.2352, 2234.4);
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res = s21_sprintf(my_str, "%f %lf", NAN, INFINITY);
+    std_res = sprintf(std_str, "%f %lf", NAN, INFINITY);
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+  } else {
+    printf("alloc error");
+  }
+
+  free(my_str);
+  free(std_str);
+}
+
+START_TEST(sprintf_strings) {
+  int str_size = 10000;
+  char* my_str = (char*)calloc(str_size, sizeof(char));
+  char* std_str = (char*)calloc(str_size, sizeof(char));
+  if (my_str != NULL && std_str != NULL) {
+    int my_res, std_res;
+
+    my_res = s21_sprintf(my_str, "%10s", "Hello, world!");
+    std_res = sprintf(std_str, "%10s", "Hello, world!");
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
+    my_res = s21_sprintf(my_str, "%10ls", L"Hello, world!");
+    std_res = sprintf(std_str, "%10ls", L"Hello, world!");
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+  } else {
+    printf("alloc error");
+  }
+
+  free(my_str);
+  free(std_str);
+}
+
+START_TEST(sprintf_pointers) {
+  int str_size = 10000;
+  char* my_str = (char*)calloc(str_size, sizeof(char));
+  char* std_str = (char*)calloc(str_size, sizeof(char));
+  if (my_str != NULL && std_str != NULL) {
+    int my_res, std_res;
+
+    my_res = s21_sprintf(my_str, "%20p", "Hello, world!");
+    std_res = sprintf(std_str, "%20p", "Hello, world!");
+    ck_assert_str_eq(my_str, std_str);
+    ck_assert_int_eq(my_res, std_res);
+    memset(my_str, '\0', str_size);
+    memset(std_str, '\0', str_size);
+
   } else {
     printf("alloc error");
   }
@@ -350,7 +489,10 @@ Suite* string_suite(void) {
   tcase_add_test(strcspn_cases, strcspn_zero_res);
 
   TCase* sprintf_cases = tcase_create("SPrintF");
-  tcase_add_test(sprintf_cases, sprintf_basic);
+  tcase_add_test(sprintf_cases, sprintf_ints);
+  tcase_add_test(sprintf_cases, sprintf_floats);
+  tcase_add_test(sprintf_cases, sprintf_strings);
+  tcase_add_test(sprintf_cases, sprintf_pointers);
 
   TCase* sscanf_cases = tcase_create("SSCanF");
   tcase_add_test(sscanf_cases, sscanf_strings);

@@ -514,6 +514,10 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
   } else if (type == INT_PTR) {
     int size;
     char* random_str = generate_random_size_string(&size);
+    if (random_str == NULL) {
+      free(str);
+      return 1;
+    }
     for (int i = 0; i < size; ++i) {
       if (random_str[i] == '%' || random_str[i] == ' ') {
         ++random_str[i];
@@ -621,13 +625,17 @@ char* random_format(int for_sprintf) {
     }
   }
   // length
-  for (int j = 0; rand() % 2 && j < (for_sprintf ? 2 : 1); ++j) {
+  if (rand() % 2) {
     if (s21_strchr("eEfgG", specification)) {
       format[index++] = 'L';
     } else if (strchr("cs", specification)) {
       format[index++] = 'l';
     } else if (for_sprintf || strchr("pn", specification) == NULL) {
       format[index++] = lengths_test[rand() % 2];
+      if (rand() % 2 && strchr("ud", specification) != NULL && !for_sprintf) {
+        format[index] = format[index - 1];
+        ++index;
+      }
     }
   }
   //  specification
