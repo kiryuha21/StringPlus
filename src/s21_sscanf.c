@@ -287,6 +287,7 @@ void process_format_string(const char* str, ReaderFormat* reader,
   info->return_code = 1;
 
   if (reader->skip_assignment == 1) {
+    info->return_code = 0;
     return;
   }
 

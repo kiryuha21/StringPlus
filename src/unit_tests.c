@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 
 #include "s21_string.h"
 #include "test_commons.h"
@@ -31,7 +32,7 @@ START_TEST(sprintf_basic) {
   free(std_str);
 }
 
-START_TEST(sscanf_strings) {
+START_TEST(sscanf_strings_chars) {
   char* b1 = calloc(20, sizeof(char));
   char* b2 = calloc(20, sizeof(char));
   char* b3 = calloc(20, sizeof(char));
@@ -39,7 +40,7 @@ START_TEST(sscanf_strings) {
 
   if (b1 && b2 && b3 && b4) {
     int std_ret = sscanf("abc cdef", "%20s%3s", b1, b2);
-    int my_ret = sscanf("abc cdef", "%20s%3s", b3, b4);
+    int my_ret = s21_sscanf("abc cdef", "%20s%3s", b3, b4);
 
     ck_assert_int_eq(std_ret, my_ret);
     ck_assert_str_eq(b1, b3);
@@ -50,6 +51,14 @@ START_TEST(sscanf_strings) {
   free(b2);
   free(b3);
   free(b4);
+
+  char a1, a2, a3, a4;
+  int std_ret = sscanf(" a", "%c%c", &a1, &a2);
+  int my_ret = s21_sscanf(" a", "%c%c", &a3, &a4);
+
+  ck_assert_int_eq(std_ret, my_ret);
+  ck_assert(a1 == a3);
+  ck_assert(a2 == a4);
 }
 
 START_TEST(sscanf_floats) {
@@ -73,9 +82,9 @@ START_TEST(sscanf_signed) {
   long d1, d2;
   long long e1, e2;
 
-  int my_ret = s21_sscanf("100 32000 -2000000000 5000000000 -10000000000",
+  int my_ret = s21_sscanf("100 32000 -2000000000 077777777777 -0xFFFFFFFFFF",
                           "%hhd%hd%i%li%lli", &a2, &b2, &c2, &d2, &e2);
-  int std_ret = sscanf("100 32000 -2000000000 5000000000 -10000000000",
+  int std_ret = sscanf("100 32000 -2000000000 077777777777 -0xFFFFFFFFFF",
                        "%hhd%hd%i%li%lli", &a1, &b1, &c1, &d1, &e1);
 
   ck_assert_int_eq(std_ret, my_ret);
@@ -85,6 +94,85 @@ START_TEST(sscanf_signed) {
   ck_assert_int_eq(c1, c2);
   ck_assert_int_eq(d1, d2);
   ck_assert_int_eq(e1, e2);
+}
+
+START_TEST(sscanf_unsigned) {
+  unsigned char a1, a2;
+  unsigned short b1, b2;
+  unsigned int c1, c2;
+  unsigned long d1, d2;
+  unsigned long long e1, e2;
+
+  int my_ret = s21_sscanf("100 32000 0xFFFFFF 077777777777 0xffffffffff",
+                          "%hhu%hu%x%lo%llX", &a2, &b2, &c2, &d2, &e2);
+  int std_ret = sscanf("100 32000 0xFFFFFF 077777777777 0xffffffffff",
+                       "%hhu%hu%x%lo%llX", &a1, &b1, &c1, &d1, &e1);
+
+  ck_assert_int_eq(std_ret, my_ret);
+
+  ck_assert_int_eq(a1, a2);
+  ck_assert_int_eq(b1, b2);
+  ck_assert_int_eq(c1, c2);
+  ck_assert_int_eq(d1, d2);
+  ck_assert_int_eq(e1, e2);
+}
+
+START_TEST(sscanf_skip_assignment) {
+  int a1, a2;
+
+  int my_res = s21_sscanf("123 345", "%*d%d", &a2);
+  int std_res = sscanf("123 345", "%*d%d", &a1);
+
+  ck_assert_int_eq(std_res, my_res);
+  ck_assert_int_eq(a1, a2);
+}
+
+START_TEST(sscanf_extra_values) {
+  double a1, a2;
+
+  int std_res = sscanf("NAN", "%lf", &a1);
+  int my_res = s21_sscanf("NAN", "%lf", &a2);
+
+  ck_assert_int_eq(std_res, my_res);
+  ck_assert(isnan(a1));
+  ck_assert(isnan(a2));
+
+  std_res = sscanf("INF", "%lf", &a1);
+  my_res = s21_sscanf("INF", "%lf", &a2);
+
+  ck_assert_int_eq(std_res, my_res);
+  ck_assert(isinf(a1));
+  ck_assert(isinf(a2));
+}
+
+START_TEST(sscanf_wchar_values) {
+  wchar_t* a1 = calloc(20, sizeof(wchar_t));
+  wchar_t* a2 = calloc(20, sizeof(wchar_t));
+
+  int std_res = sscanf("abcdef", "%ls", a1);
+  int my_res = s21_sscanf("abcdef", "%ls", a2);
+
+  ck_assert_int_eq(std_res, my_res);
+  ck_assert(wcscmp(a1, a2) == 0);
+
+  wchar_t b1, b2;
+
+  std_res = sscanf(" a", "%lc", &b1);
+  my_res = s21_sscanf(" a", "%lc", &b2);
+
+  ck_assert_int_eq(std_res, my_res);
+  ck_assert(b1 == b2);
+}
+
+START_TEST(sscanf_pointer) {
+  void *p1, *p2, *p3, *p4;
+
+  int std_res = sscanf("(nil) 0xFFFFF", "%p%p", &p1, &p2);
+  int my_res = s21_sscanf("(nil) 0xFFFFF", "%p%p", &p3, &p4);
+
+  ck_assert_int_eq(std_res, my_res);
+  ck_assert_ptr_eq(p1, p3);
+  ck_assert_ptr_eq(p2, p4);
 }
 
 START_TEST(sscanf_errors) {
@@ -376,10 +464,15 @@ Suite* string_suite(void) {
   tcase_add_test(sprintf_cases, sprintf_basic);
 
   TCase* sscanf_cases = tcase_create("SSCanF");
-  tcase_add_test(sscanf_cases, sscanf_strings);
+  tcase_add_test(sscanf_cases, sscanf_strings_chars);
   tcase_add_test(sscanf_cases, sscanf_floats);
   tcase_add_test(sscanf_cases, sscanf_errors);
   tcase_add_test(sscanf_cases, sscanf_signed);
+  tcase_add_test(sscanf_cases, sscanf_unsigned);
+  tcase_add_test(sscanf_cases, sscanf_extra_values);
+  tcase_add_test(sscanf_cases, sscanf_pointer);
+  tcase_add_test(sscanf_cases, sscanf_wchar_values);
+  tcase_add_test(sscanf_cases, sscanf_skip_assignment);
 
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strerror_cases);
