@@ -387,9 +387,11 @@ int s21_sscanf(const char* str, const char* format, ...) {
 
       if (reader.specification != 'n') {
         if (s21_strlen(str) == 0) {
+          va_end(args);
           return -1;
         }
         if (reader.specification != 'c' && is_blank(str)) {
+          va_end(args);
           return -1;
         }
       }

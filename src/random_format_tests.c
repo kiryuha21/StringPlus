@@ -449,8 +449,8 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
                    my_ret, std_ret);
     }
   } else if (type == STRING) {
-    char *my_val = calloc(10000, sizeof(my_val)),
-         *std_val = calloc(10000, sizeof(std_val));
+    char *my_val = calloc(10000, sizeof(char)),
+         *std_val = calloc(10000, sizeof(char));
     if (my_val != NULL && std_val != NULL) {
       sprintf(str, format, (char*)val);
       std_ret = sscanf(str, format, std_val);

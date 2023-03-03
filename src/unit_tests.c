@@ -292,6 +292,9 @@ START_TEST(sscanf_wchar_values) {
   ck_assert_int_eq(std_res, my_res);
   ck_assert(wcscmp(a1, a2) == 0);
 
+  free(a1);
+  free(a2);
+
   wchar_t b1, b2;
 
   std_res = sscanf(" a", "%lc", &b1);

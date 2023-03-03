@@ -827,5 +827,5 @@ int s21_sprintf(char *str, const char *format, ...) {
 
   va_end(vars);
   int len = (int)s21_strlen(start);
-  return len + null_chars ? len + null_chars : bad_return;
+  return (len + null_chars) ? (len + null_chars) : (bad_return);
 }
