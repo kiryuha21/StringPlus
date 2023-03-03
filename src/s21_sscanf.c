@@ -41,7 +41,6 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 
   // length
-  // TODO: (?) wrong combinations should be handled
   while (s21_strchr(lengths, src[reader->parsed_length]) != NULL) {
     if (src[reader->parsed_length] == 'L') {
       ++reader->length.L;

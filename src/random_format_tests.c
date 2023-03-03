@@ -336,8 +336,6 @@ int sscanf_test_common(char* format, void* val, Types type, int with_assert) {
   }
 
   int std_ret = 1, my_ret = 0, ret_val = 0;
-  // TODO: handle
-  // int is_g = !(strchr(format, 'g') != NULL || strchr(format, 'G') != NULL);
   if (type == INT) {
     ReaderFormat reader;
     init_reader(&reader);

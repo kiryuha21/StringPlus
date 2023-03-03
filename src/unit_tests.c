@@ -432,7 +432,6 @@ START_TEST(strspn_basic) { strspn_test_common("000111222", "01", 1); }
 
 START_TEST(strspn_zero_res) { strspn_test_common("000111222", "12", 1); }
 
-// TODO: Add more tests lol
 Suite* string_suite(void) {
   Suite* s = suite_create("String");
 
