@@ -18,6 +18,7 @@ SRC_H_FILES = s21_string.h \
 			  s21_sprintf.h
 
 TEST_C_FILES = unit_tests.c test_commons.c
+RANDOM_TESTS_FILE = random_format_tests.c
 TEST_H_FILES = test_commons.h
 TEST_TARGET  = s21_test
 
@@ -35,11 +36,11 @@ test: $(SRC_C_FILES) $(SRC_H_FILES)
 	$(CC) $(FLAGS) $(SRC_C_FILES) $(SRC_H_FILES) $(TEST_C_FILES) $(TEST_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
 	./$(TEST_TARGET)
 
-test_debug: $(SRC_C_FILES) $(SRC_H_FILES)
+random_tests: $(SRC_C_FILES) $(SRC_H_FILES)
 	cp ../materials/linters/.clang-format .
 	clang-format -i *.[ch]
 	rm -f .clang-format
-	$(CC) $(FLAGS) $(SRC_C_FILES) $(SRC_H_FILES) $(TEST_C_FILES) $(TEST_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS) -D DEBUG
+	$(CC) $(FLAGS) $(SRC_C_FILES) $(SRC_H_FILES) $(RANDOM_TESTS_FILE) $(TEST_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
 	./$(TEST_TARGET)
 
 gcov_report:

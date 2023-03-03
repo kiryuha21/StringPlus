@@ -791,3 +791,8 @@ void random_tests(int with_assert, int count, int type) {
 
   printf(cmp ? "ERROR\n" : "SUCCESS\n");
 }
+
+int main() {
+  random_tests(0, 1000000, SPRINTF);
+  random_tests(0, 1000000, SSCANF);
+}
