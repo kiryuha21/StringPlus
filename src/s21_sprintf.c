@@ -70,29 +70,6 @@ void validate_writer_flags(WriterFormat *writer) {
   }
 }
 
-char *get_writer_flags(WriterFormat *writer) {
-  validate_writer_flags(writer);
-  char *res = (char *)calloc(6, sizeof(char));
-  res[0] = '%';
-  int i = 1;
-  if (writer->flags.lattice_flag) {
-    res[i++] = '#';
-  }
-  if (writer->flags.plus_flag) {
-    res[i++] = '+';
-  }
-  if (writer->flags.space_flag) {
-    res[i++] = ' ';
-  }
-  if (writer->flags.minus_flag) {
-    res[i++] = '-';
-  }
-  if (writer->flags.zero_flag) {
-    res[i++] = '0';
-  }
-  return res;
-}
-
 int parse_into_writer(WriterFormat *writer, const char *src) {
   int res = -1;
   // flags
@@ -840,37 +817,8 @@ int s21_sprintf(char *str, const char *format, ...) {
         str += s21_strlen(str) - size_before;
 
         free(formatted_arg);
-      } else if (!*(format + 1)) {
-        *str = '%';
-        ++str;
-        ++format;
       } else {
-        const char *char_to_skip = format + (skip >= 0 ? skip : 0);
-        char *add_flags = get_writer_flags(&writer);
-        for (char *ptr = add_flags; *ptr; ++ptr, ++str) {
-          *str = *ptr;
-        }
-        free(add_flags);
-        ++format;                                            // skip %
-        for (; s21_strchr(writer_flags, *format); ++format)  // skip flags
-          ;
-        for (; *format != *char_to_skip; ++str, ++format) {  // copy until skip
-          *str = *format;
-          if (*str == '.') {
-            for (; *(format + 1) == '0'; ++format)
-              ;
-            if ((*(format + 1) < '0' || *(format + 1) > '9') && skip != -1) {
-              ++str;
-              *str = '0';
-            }
-          }
-        }
-        if (skip != -1) {
-          ++format;  // skip lengths
-          if (*format == *(format - 1) && *format != 'L') {
-            ++format;
-          }
-        }
+        skip = 0;
       }
     }
   }
