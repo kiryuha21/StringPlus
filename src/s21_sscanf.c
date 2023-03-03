@@ -311,6 +311,7 @@ void process_format_string(const char* str, ReaderFormat* reader,
     int* dest = va_arg(args, int*);
     *dest = info->processed_chars;
     info->return_code = 0;
+    info->source_shift = 0;
   } else if (reader->specification == '%') {
     info->source_shift = spaces_until_data + 1;
     info->return_code = 0;

@@ -13,8 +13,10 @@ START_TEST(sprintf_basic) {
   if (my_str != NULL && std_str != NULL) {
     int my_res, std_res;
 
-    my_res = s21_sprintf(my_str, "%d   aaaa %lld %hd %hhd", 1000000000, 1000000000, 1000000000, 1000000000);
-    std_res = sprintf(std_str, "%d   aaaa %lld %hd %hhd", 1000000000, 1000000000LL, 1000000000, 1000000000);
+    my_res = s21_sprintf(my_str, "%d   aaaa %lld %hd %hhd", 1000000000,
+                         1000000000, 1000000000, 1000000000);
+    std_res = sprintf(std_str, "%d   aaaa %lld %hd %hhd", 1000000000,
+                      1000000000LL, 1000000000, 1000000000);
     ck_assert_str_eq(my_str, std_str);
     ck_assert_int_eq(my_res, std_res);
     for (int i = 0; i < str_size && my_str[i] && std_str[i]; ++i) {
@@ -64,6 +66,27 @@ START_TEST(sscanf_floats) {
   ck_assert_ldouble_eq_tol(e1, e2, 0.1);
 }
 
+START_TEST(sscanf_signed) {
+  signed char a1, a2;
+  short b1, b2;
+  int c1, c2;
+  long d1, d2;
+  long long e1, e2;
+
+  int my_ret = s21_sscanf("100 32000 -2000000000 5000000000 -10000000000",
+                          "%hhd%hd%i%li%lli", &a2, &b2, &c2, &d2, &e2);
+  int std_ret = sscanf("100 32000 -2000000000 5000000000 -10000000000",
+                       "%hhd%hd%i%li%lli", &a1, &b1, &c1, &d1, &e1);
+
+  ck_assert_int_eq(std_ret, my_ret);
+
+  ck_assert_int_eq(a1, a2);
+  ck_assert_int_eq(b1, b2);
+  ck_assert_int_eq(c1, c2);
+  ck_assert_int_eq(d1, d2);
+  ck_assert_int_eq(e1, e2);
+}
+
 START_TEST(sscanf_errors) {
   int a1, a2;
 
@@ -76,7 +99,7 @@ START_TEST(sscanf_errors) {
   int a3, a4;
 
   std_ret = sscanf("", "%n%d", &a1, &a3);
-  my_ret = s21_sscanf("", "%n%d", &a1, &a4);
+  my_ret = s21_sscanf("", "%n%d", &a2, &a4);
 
   ck_assert_int_eq(std_ret, my_ret);
 }
@@ -356,6 +379,7 @@ Suite* string_suite(void) {
   tcase_add_test(sscanf_cases, sscanf_strings);
   tcase_add_test(sscanf_cases, sscanf_floats);
   tcase_add_test(sscanf_cases, sscanf_errors);
+  tcase_add_test(sscanf_cases, sscanf_signed);
 
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strerror_cases);
