@@ -1,5 +1,6 @@
 #include <check.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "s21_string.h"
@@ -7,7 +8,57 @@
 
 START_TEST(sprintf_basic) {}
 
-START_TEST(sscanf_basic) {}
+START_TEST(sscanf_strings) {
+  char* b1 = calloc(20, sizeof(char));
+  char* b2 = calloc(20, sizeof(char));
+  char* b3 = calloc(20, sizeof(char));
+  char* b4 = calloc(20, sizeof(char));
+
+  if (b1 && b2 && b3 && b4) {
+    int std_ret = sscanf("abc cdef", "%20s%3s", b1, b2);
+    int my_ret = sscanf("abc cdef", "%20s%3s", b3, b4);
+
+    ck_assert_int_eq(std_ret, my_ret);
+    ck_assert_str_eq(b1, b3);
+    ck_assert_str_eq(b2, b4);
+  }
+
+  free(b1);
+  free(b2);
+  free(b3);
+  free(b4);
+}
+
+START_TEST(sscanf_floats) {
+  float c1, c2;
+  double d1, d2;
+  long double e1, e2;
+
+  int std_ret = sscanf("1.1e+1 1e+1 -1.2", "%f%lG%LG", &c1, &d1, &e1);
+  int my_ret = s21_sscanf("1.1e+1 1e+1 -1.2", "%f%lG%LG", &c2, &d2, &e2);
+
+  ck_assert_int_eq(std_ret, my_ret);
+  ck_assert_float_eq_tol(c1, c2, 0.1);
+  ck_assert_double_eq_tol(d1, d2, 0.1);
+  ck_assert_ldouble_eq_tol(e1, e2, 0.1);
+}
+
+START_TEST(sscanf_errors) {
+  int a1, a2;
+
+  int std_ret = sscanf("", "%n", &a1);
+  int my_ret = s21_sscanf("", "%n", &a2);
+
+  ck_assert_int_eq(std_ret, my_ret);
+  ck_assert_int_eq(a1, a2);
+
+  int a3, a4;
+
+  std_ret = sscanf("", "%n%d", &a1, &a3);
+  my_ret = s21_sscanf("", "%n%d", &a1, &a4);
+
+  ck_assert_int_eq(std_ret, my_ret);
+}
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
 
@@ -281,7 +332,9 @@ Suite* string_suite(void) {
   tcase_add_test(sprintf_cases, sprintf_basic);
 
   TCase* sscanf_cases = tcase_create("SSCanF");
-  tcase_add_test(sscanf_cases, sscanf_basic);
+  tcase_add_test(sscanf_cases, sscanf_strings);
+  tcase_add_test(sscanf_cases, sscanf_floats);
+  tcase_add_test(sscanf_cases, sscanf_errors);
 
   suite_add_tcase(s, strlen_cases);
   suite_add_tcase(s, strerror_cases);

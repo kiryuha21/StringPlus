@@ -44,7 +44,7 @@ random_tests: $(SRC_C_FILES) $(SRC_H_FILES)
 	./$(TEST_TARGET)
 
 gcov_report:
-	$(CC) --coverage $(FLAGS) $(SRC_C_FILES) $(TEST_C_FILES) $(SRC_H_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
+	$(CC) --coverage $(FLAGS) $(SRC_C_FILES) $(TEST_C_FILES) -o $(TEST_TARGET) $(ADDITIONAL_FLAGS)
 	./$(TEST_TARGET)
 	lcov -t "$(TEST_TARGET)" -o $(TEST_TARGET).info -c -d .
 	genhtml -o report $(TEST_TARGET).info
