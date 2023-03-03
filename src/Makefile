@@ -27,7 +27,7 @@ LIB = s21_string.a
 
 REPORT_DIR = report
 
-all: clean test
+all: clean gcov_report $(LIB) test
 
 test: $(SRC_C_FILES) $(SRC_H_FILES)
 	cp ../materials/linters/.clang-format .
@@ -50,8 +50,9 @@ gcov_report:
 	genhtml -o report $(TEST_TARGET).info
 	rm *.gcda *.gcno *.info
 
+# TODO: should be corrected
 $(LIB): $(OBJ)
-	ar -rc $(LIB) $(OBJ)
+	ar rcv lib$(LIB) $(OBJ)
 	rm *.o
 
 %.o : %.c
