@@ -22,7 +22,6 @@ RANDOM_TESTS_FILE = random_format_tests.c
 TEST_H_FILES = test_commons.h
 TEST_TARGET  = s21_test
 
-OBJ = $(patsubst %.c, %.o, $(SRC_C_FILES))
 LIB = s21_string.a
 
 REPORT_DIR = report
@@ -50,13 +49,11 @@ gcov_report:
 	genhtml -o report $(TEST_TARGET).info
 	rm *.gcda *.gcno *.info
 
-# TODO: should be corrected
-$(LIB): $(OBJ)
-	ar rcv lib$(LIB) $(OBJ)
+$(LIB):
+	$(CC) -c $(SRC_C_FILES) $(ADDITIONAL_FLAGS)
+	ar rcv $(LIB) *.o
+	ranlib $(LIB)
 	rm *.o
-
-%.o : %.c
-	$(CC) $(FLAGS) -c $< -o $@ $(ADDITIONAL_FLAGS)
 
 clean_test:
 	rm -f $(TEST_TARGET)
