@@ -21,19 +21,19 @@ typedef struct WriterFormat {
 } WriterFormat;
 
 typedef struct ExtraInfo {
-  size_t written_bytes;
-  size_t left_space;
+  s21_size_t written_bytes;
+  s21_size_t left_space;
   int* bad_return;
   int* null_chars;
   int flags_applicable;
 } ExtraInfo;
 
-void init_extra_info(ExtraInfo* info, size_t written_bytes, int* bad_return,
+void init_extra_info(ExtraInfo* info, s21_size_t written_bytes, int* bad_return,
                      int* null_chars);
 
 void init_writer(WriterFormat* writer);
-int parse_into_writer(WriterFormat* writer,
-                      const char* src);  // src = pointer to '%'
+void parse_into_writer(WriterFormat* writer,
+                       const char* src);  // src = pointer to '%'
 void validate_writer_flags(WriterFormat* writer);
 int define_precision(int precision);
 

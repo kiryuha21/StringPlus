@@ -9,7 +9,7 @@ extern const char *writer_flags;
 extern const char *lengths;
 extern const char *decimal_places;
 
-void init_extra_info(ExtraInfo *info, size_t written_bytes, int *bad_return,
+void init_extra_info(ExtraInfo *info, s21_size_t written_bytes, int *bad_return,
                      int *null_chars) {
   info->written_bytes = written_bytes;
   info->bad_return = bad_return;
@@ -70,10 +70,9 @@ void validate_writer_flags(WriterFormat *writer) {
   }
 }
 
-int parse_into_writer(WriterFormat *writer, const char *src) {
-  int res = -1;
+void parse_into_writer(WriterFormat *writer, const char *src) {
   // flags
-  while (s21_strchr(writer_flags, src[writer->parsed_length]) != NULL) {
+  while (s21_strchr(writer_flags, src[writer->parsed_length]) != S21_NULL) {
     if (src[writer->parsed_length] == '-') {
       ++writer->flags.minus_flag;
     } else if (src[writer->parsed_length] == '+') {
@@ -102,10 +101,10 @@ int parse_into_writer(WriterFormat *writer, const char *src) {
 
   // precision
   if (src[writer->parsed_length] == '.') {
-    res = -2;
     ++writer->parsed_length;
     if (src[writer->parsed_length] == '*') {
       writer->precision = ASTERISK;
+      ++writer->parsed_length;
     } else {
       int precision =
           str_to_int(&src[writer->parsed_length], &writer->parsed_length);
@@ -118,37 +117,23 @@ int parse_into_writer(WriterFormat *writer, const char *src) {
   }
 
   // length
-  while (s21_strchr(lengths, src[writer->parsed_length]) != NULL) {
+  while (s21_strchr(lengths, src[writer->parsed_length]) != S21_NULL) {
     if (src[writer->parsed_length] == 'L') {
-      if (writer->length.l || writer->length.h || writer->length.L == 1) {
-        return writer->parsed_length;
-      }
       ++writer->length.L;
     } else if (src[writer->parsed_length] == 'l') {
-      if (writer->length.L || writer->length.h || writer->length.l == 2) {
-        return writer->parsed_length;
-      }
       ++writer->length.l;
     } else if (src[writer->parsed_length] == 'h') {
-      if (writer->length.l || writer->length.L || writer->length.h == 2) {
-        return writer->parsed_length;
-      }
       ++writer->length.h;
     }
 
     ++writer->parsed_length;
-    res = writer->parsed_length;
   }
 
   // specification
-  if (s21_strchr(specifications, src[writer->parsed_length]) != NULL) {
+  if (s21_strchr(specifications, src[writer->parsed_length]) != S21_NULL) {
     writer->specification = src[writer->parsed_length];
     ++writer->parsed_length;
-  } else {
-    return res;
   }
-
-  return 0;
 }
 
 int get_digits_amount(unsigned long long num, int number_system) {
@@ -159,25 +144,35 @@ int get_digits_amount(unsigned long long num, int number_system) {
   return (int)floorl(log2l((num)) / log2l(number_system)) + 1;
 }
 
-void convert_ll_to_string(ull num, int number_system, char **str) {
+char *convert_ll_to_string(ull num, int number_system) {
   int len = get_digits_amount(num, number_system);
 
-  *str = (char *)calloc(len + 4, sizeof(char));
+  char *str = (char *)calloc(len + 4, sizeof(char));
 
-  if (num == 0) {
-    **str = '0';
-    return;
-  }
+  if (str != S21_NULL) {
+    if (num == 0) {
+      *str = '0';
+    } else {
+      for (int i = len - 1; i >= 0 && num > 0; --i, num /= number_system) {
+        str[i] = (char)(decimal_places[num % number_system]);
+      }
+    }
 
-  if (*str != NULL) {
-    for (int i = len - 1; i >= 0 && num > 0; --i, num /= number_system) {
-      (*str)[i] = (char)(decimal_places[num % number_system]);
+    if (*str == '\0') {
+      char *temp = str + 1;
+      while (*temp) {
+        *(temp - 1) = *temp;
+        ++temp;
+      }
+      *(temp - 1) = *temp;
     }
   }
+
+  return str;
 }
 
 void safe_replace(char **dst, char **replacer) {
-  if (*dst != NULL) {
+  if (*dst != S21_NULL) {
     free(*dst);
   }
   *dst = *replacer;
@@ -204,13 +199,13 @@ void signed_length_wrapper(WriterFormat *writer, long long num,
                            int number_system, char **formatted_string) {
   long long temp = apply_signed_length(&writer->length, num);
   long long res = handle_overflow(temp, writer);
-  convert_ll_to_string(res, number_system, formatted_string);
+  *formatted_string = convert_ll_to_string(res, number_system);
 }
 
 void unsigned_length_wrapper(WriterFormat *writer, ull num, int number_system,
                              char **formatted_string) {
   ull temp = apply_unsigned_length(&writer->length, num);
-  convert_ll_to_string(temp, number_system, formatted_string);
+  *formatted_string = convert_ll_to_string(temp, number_system);
 }
 
 int get_ldouble_pow(long double *num) {
@@ -250,15 +245,15 @@ void handle_nan(char **fstring, char spec, ExtraInfo *info) {
 }
 
 void handle_exp_part(char **fstring, char spec, int rounded_pow) {
-  if (s21_strchr("eE", spec) == NULL) {
+  if (s21_strchr("eE", spec) == S21_NULL) {
     return;
   }
 
   int power = rounded_pow;
   int add_len = (rounded_pow <= -100 || rounded_pow >= 100) ? 3 : 2;
 
-  size_t strlen = s21_strlen(*fstring) + 1;
-  size_t endlen = strlen + add_len;
+  s21_size_t strlen = s21_strlen(*fstring) + 1;
+  s21_size_t endlen = strlen + add_len;
   for (; endlen > strlen; --endlen) {
     (*fstring)[endlen] = (char)('0' + abs(rounded_pow % 10));
     rounded_pow /= 10;
@@ -289,9 +284,9 @@ void float_to_str(char **fstring, int len, int precision, int lattice_flag,
   }
 }
 
-size_t wchar_strlen(const wchar_t *str) {
-  size_t count = 0;
-  if (str != NULL) {
+s21_size_t wchar_strlen(const wchar_t *str) {
+  s21_size_t count = 0;
+  if (str != S21_NULL) {
     for (const wchar_t *sym = str; *sym != L'\0'; ++sym, ++count) {
     }
   }
@@ -299,8 +294,8 @@ size_t wchar_strlen(const wchar_t *str) {
 }
 
 int is_valid_string(char *str) {
-  size_t len = s21_strlen(str);
-  for (size_t i = 0; i < len; ++i) {
+  s21_size_t len = s21_strlen(str);
+  for (s21_size_t i = 0; i < len; ++i) {
     if (str[i] < 0) {
       return 0;
     }
@@ -318,7 +313,7 @@ void handle_null_char(ExtraInfo *info, WriterFormat *writer) {
 }
 
 char *rfind_ch(char *str, char ch) {
-  char *res = *str == ch ? str : NULL;
+  char *res = *str == ch ? str : S21_NULL;
   int not_found = 1;
   for (char *str_end = str + s21_strlen(str); str != str_end && not_found;
        --str_end) {
@@ -350,7 +345,7 @@ char *rfind_str_before_sym(char *str, const char *chars,
     end_ch = *end;
     *end = '\0';
   }
-  char *res = NULL;
+  char *res = S21_NULL;
   for (const char *ch = chars; *ch; ++ch) {
     char *new_find = rfind_ch(str, *ch);
     if (new_find && new_find > res) {
@@ -370,7 +365,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
 
     signed_length_wrapper(writer, num, 10, formatted_string);
 
-    if (**formatted_string == '0') {
+    if (*formatted_string != S21_NULL && **formatted_string == '0') {
       *(info->bad_return) = 0;
     }
 
@@ -401,7 +396,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     writer->width = UNKNOWN;
     writer->specification = 'c';
     *formatted_string = (char *)calloc(2, sizeof(char));
-    if (*formatted_string == NULL) {
+    if (*formatted_string == S21_NULL) {
       return FAIL;
     }
 
@@ -410,7 +405,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     if (writer->length.l) {
       wchar_t num = va_arg(vars, wchar_t);
       *formatted_string = (char *)calloc(2, sizeof(wchar_t));
-      if (*formatted_string == NULL || num < 0 || num > 127) {
+      if (*formatted_string == S21_NULL) {
         return FAIL;
       }
 
@@ -424,7 +419,7 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
     } else {
       int num = va_arg(vars, int);
       *formatted_string = (char *)calloc(2, sizeof(char));
-      if (*formatted_string == NULL || num < 0 || num > 127) {
+      if (*formatted_string == S21_NULL) {
         return FAIL;
       }
 
@@ -556,9 +551,9 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
   } else if (writer->specification == 's') {
     if (writer->length.l) {
       wchar_t *wstring = va_arg(vars, wchar_t *);
-      size_t len = wchar_strlen(wstring);
+      s21_size_t len = wchar_strlen(wstring);
       *formatted_string = (char *)calloc(len + 1, sizeof(wchar_t));
-      if (wcstombs(*formatted_string, wstring, len + 1) == (size_t)(-1)) {
+      if (wcstombs(*formatted_string, wstring, len + 1) == (s21_size_t)(-1)) {
         return FAIL;
       }
     } else {
@@ -567,15 +562,19 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
         return FAIL;
       }
 
-      *formatted_string = (char *)calloc(s21_strlen(string) + 1, sizeof(char));
-      s21_strcpy(*formatted_string, string);
+      *formatted_string = (char *)calloc(s21_strlen(string) + 6, sizeof(char));
+      if (string != NULL) {
+        s21_strcpy(*formatted_string, string);
+      } else if ((writer->precision != UNKNOWN && writer->precision >= 7)) {
+        s21_strcpy(*formatted_string, "(null)");
+      }
     }
   } else if (writer->specification == 'p') {
     writer->length.l = 1;
     writer->flags.lattice_flag = 1;
 
     void *pointer = va_arg(vars, void *);
-    if (pointer == NULL) {
+    if (pointer == S21_NULL) {
       *formatted_string = (char *)calloc(6, sizeof(char));
       char *temp = s21_insert(*formatted_string, "(nil)", 0);
       safe_replace(formatted_string, &temp);
@@ -598,12 +597,12 @@ int build_base(char **formatted_string, WriterFormat *writer, ExtraInfo *info,
   return OK;
 }
 
-size_t apply_width(char **formatted_string, WriterFormat *writer) {
-  size_t res = 0;
+s21_size_t apply_width(char **formatted_string, WriterFormat *writer) {
+  s21_size_t res = 0;
   if (writer->width != UNKNOWN && writer->specification != 'n') {
     int len = (int)s21_strlen(*formatted_string);
     if (writer->width > len) {
-      size_t diff = writer->width - len;
+      s21_size_t diff = writer->width - len;
 
       char *spacer = (char *)calloc(diff + 1, sizeof(char));
       s21_memset(spacer, ' ', diff);
@@ -637,7 +636,7 @@ void apply_precision(char **formatted_string, WriterFormat *writer,
     if (s21_strchr("iduoxX", writer->specification)) {
       if ((writer->precision != EMPTY && writer->precision != 0) ||
           **formatted_string != '0') {
-        size_t len = s21_strlen(*formatted_string);
+        s21_size_t len = s21_strlen(*formatted_string);
         if (writer->precision >= (int)len) {
           char *trimmed = s21_trim(*formatted_string, " ");
           safe_replace(formatted_string, &trimmed);
@@ -669,28 +668,28 @@ void apply_precision(char **formatted_string, WriterFormat *writer,
 }
 
 void add_to_num(char **formatted_string, const char *str, int reverse,
-                size_t left_space) {
+                s21_size_t left_space) {
   if (!reverse) {
-    size_t len = s21_strlen(str);
+    s21_size_t len = s21_strlen(str);
     if (len > left_space) {
       char *null_spaces = (char *)calloc(len - left_space + 1, sizeof(char));
       s21_memset(null_spaces, ' ', len - left_space);
       char *additional_space = s21_insert(*formatted_string, null_spaces, 0);
       safe_replace(formatted_string, &additional_space);
-      for (size_t i = 0; i < len; ++i) {
+      for (s21_size_t i = 0; i < len; ++i) {
         (*formatted_string)[i] = str[i];
       }
       free(null_spaces);
     } else {
-      size_t start = 0;
+      s21_size_t start = 0;
       for (; (*formatted_string)[start + len] == ' '; ++start) {
       }
-      for (size_t i = 0; i < len; ++i, ++start) {
+      for (s21_size_t i = 0; i < len; ++i, ++start) {
         (*formatted_string)[start] = str[i];
       }
     }
   } else {
-    size_t len = s21_strlen(str);
+    s21_size_t len = s21_strlen(str);
     if (len > left_space) {
       char *null_spaces = (char *)calloc(len - left_space + 1, sizeof(char));
       s21_memset(null_spaces, ' ', len - left_space);
@@ -699,7 +698,7 @@ void add_to_num(char **formatted_string, const char *str, int reverse,
       safe_replace(formatted_string, &additional_space);
       free(null_spaces);
     }
-    size_t i = 0;
+    s21_size_t i = 0;
     for (; (*formatted_string)[i] != ' ' && (*formatted_string); ++i)
       ;
     i += len - 1;
@@ -718,7 +717,7 @@ void apply_flags(char **formatted_string, WriterFormat *writer,
       info->flags_applicable) {
     if (writer->flags.zero_flag) {
       char *str = *formatted_string;
-      for (; *str == ' '; ++str) {
+      for (; str != S21_NULL && *str == ' '; ++str) {
         *str = '0';
       }
     }
@@ -728,9 +727,10 @@ void apply_flags(char **formatted_string, WriterFormat *writer,
     // check if 0 is already in the right place
     if (writer->specification == 'o') {
       char *already = s21_strchr(*formatted_string, '0');
-      int first = already == NULL ? 0 : 1;
+      int first = already == S21_NULL ? 0 : 1;
       if (first) {
-        for (char *ptr = *formatted_string; ptr != already; ++ptr) {
+        for (char *ptr = *formatted_string; ptr != S21_NULL && ptr != already;
+             ++ptr) {
           if (*ptr != ' ' && *ptr != '0') {
             first = 0;
           }
@@ -786,17 +786,20 @@ int s21_sprintf(char *str, const char *format, ...) {
   va_start(vars, format);
   int bad_return = -1, null_chars = 0;
   char *start = str;
+  int res = 0;
 
   while (*format != '\0') {
     for (; *format != '%' && *format; ++str, ++format) {
       *str = *format;
+      ++res;
     }
+    *str = '\0';
     if (*format) {
       WriterFormat writer;
       init_writer(&writer);
-      int skip = parse_into_writer(&writer, format + 1);
+      parse_into_writer(&writer, format + 1);
       validate_writer_flags(&writer);
-      if (skip == 0 && writer.specification != UNKNOWN) {
+      if (writer.specification != UNKNOWN) {
         format += writer.parsed_length + 1;
 
         if (writer.width == ASTERISK) {
@@ -809,23 +812,27 @@ int s21_sprintf(char *str, const char *format, ...) {
         ExtraInfo info;
         init_extra_info(&info, s21_strlen(start), &bad_return, &null_chars);
 
-        char *formatted_arg = NULL;
+        char *formatted_arg = S21_NULL;
         build_format_string(&formatted_arg, &writer, &info, vars);
 
-        size_t size_before = s21_strlen(str);
-        s21_strcat(str, formatted_arg);
-        str += s21_strlen(str) - size_before;
+        s21_size_t arg_size = s21_strlen(formatted_arg);
+        if (formatted_arg != S21_NULL) {
+          s21_memmove(str, formatted_arg, arg_size + 1);
+        }
+        if (writer.specification == 'c' && *formatted_arg == '\0') {
+          *str = '\0';
+          ++str;
+          ++res;
+        }
+        str += arg_size;
+        res += (int)arg_size;
 
         free(formatted_arg);
-      } else {
-        skip = 0;
       }
     }
   }
 
   *(str + 1) = '\0';
 
-  va_end(vars);
-  int len = (int)s21_strlen(start);
-  return (len + null_chars) ? (len + null_chars) : (bad_return);
+  return res;
 }

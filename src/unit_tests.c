@@ -68,6 +68,7 @@ START_TEST(sprintf_ints) {
   free(my_str);
   free(std_str);
 }
+END_TEST
 
 START_TEST(sprintf_floats) {
   int str_size = 10000;
@@ -118,6 +119,7 @@ START_TEST(sprintf_floats) {
   free(my_str);
   free(std_str);
 }
+END_TEST
 
 START_TEST(sprintf_strings) {
   int str_size = 10000;
@@ -146,6 +148,7 @@ START_TEST(sprintf_strings) {
   free(my_str);
   free(std_str);
 }
+END_TEST
 
 START_TEST(sprintf_pointers) {
   int str_size = 10000;
@@ -168,6 +171,7 @@ START_TEST(sprintf_pointers) {
   free(my_str);
   free(std_str);
 }
+END_TEST
 
 START_TEST(sscanf_strings_chars) {
   char* b1 = calloc(20, sizeof(char));
@@ -197,6 +201,7 @@ START_TEST(sscanf_strings_chars) {
   ck_assert(a1 == a3);
   ck_assert(a2 == a4);
 }
+END_TEST
 
 START_TEST(sscanf_floats) {
   float c1, c2;
@@ -211,6 +216,7 @@ START_TEST(sscanf_floats) {
   ck_assert_double_eq_tol(d1, d2, 0.1);
   ck_assert_ldouble_eq_tol(e1, e2, 0.1);
 }
+END_TEST
 
 START_TEST(sscanf_signed) {
   signed char a1, a2;
@@ -232,6 +238,7 @@ START_TEST(sscanf_signed) {
   ck_assert_int_eq(d1, d2);
   ck_assert_int_eq(e1, e2);
 }
+END_TEST
 
 START_TEST(sscanf_unsigned) {
   unsigned char a1, a2;
@@ -253,6 +260,7 @@ START_TEST(sscanf_unsigned) {
   ck_assert_int_eq(d1, d2);
   ck_assert_int_eq(e1, e2);
 }
+END_TEST
 
 START_TEST(sscanf_skip_assignment) {
   int a1, a2;
@@ -263,6 +271,7 @@ START_TEST(sscanf_skip_assignment) {
   ck_assert_int_eq(std_res, my_res);
   ck_assert_int_eq(a1, a2);
 }
+END_TEST
 
 START_TEST(sscanf_extra_values) {
   double a1, a2;
@@ -281,6 +290,7 @@ START_TEST(sscanf_extra_values) {
   ck_assert(isinf(a1));
   ck_assert(isinf(a2));
 }
+END_TEST
 
 START_TEST(sscanf_wchar_values) {
   wchar_t* a1 = calloc(20, sizeof(wchar_t));
@@ -305,17 +315,24 @@ START_TEST(sscanf_wchar_values) {
   ck_assert_int_eq(std_res, my_res);
   ck_assert(b1 == b2);
 }
+END_TEST
 
 START_TEST(sscanf_pointer) {
   void *p1, *p2, *p3, *p4;
 
+#if defined(__linux__)
   int std_res = sscanf("(nil) 0xFFFFF", "%p%p", &p1, &p2);
   int my_res = s21_sscanf("(nil) 0xFFFFF", "%p%p", &p3, &p4);
+#elif __APPLE__
+  int std_res = sscanf("0x0 0xFFFFF", "%p%p", &p1, &p2);
+  int my_res = s21_sscanf("0x0 0xFFFFF", "%p%p", &p3, &p4);
+#endif
 
   ck_assert_int_eq(std_res, my_res);
   ck_assert_ptr_eq(p1, p3);
   ck_assert_ptr_eq(p2, p4);
 }
+END_TEST
 
 START_TEST(sscanf_errors) {
   int a1, a2;
@@ -333,32 +350,41 @@ START_TEST(sscanf_errors) {
 
   ck_assert_int_eq(std_ret, my_ret);
 }
+END_TEST
 
 START_TEST(strlen_basic) { strlen_test_common("normal string"); }
+END_TEST
 
 START_TEST(strlen_empty) { strlen_test_common(""); }
+END_TEST
 
 START_TEST(strlen_with_null_terminator) { strlen_test_common("aaa\0bbb"); }
+END_TEST
 
 START_TEST(memcmp_equal) { memcmp_test_common("aaa\0bbb\n", "aaa\0bbb\n", 7); }
+END_TEST
 
 START_TEST(memcmp_unequal) {
   memcmp_test_common("aaa\0ccc\n", "aaa\0bbb\n", 7);
 }
+END_TEST
 
 START_TEST(memcmp_size_limit) {
   memcmp_test_common("aaa\0bbb\n", "aaa\0ccc\n", 4);
 }
+END_TEST
 
 START_TEST(memcmp_overflow_limit) {
   memcmp_test_common("aaa\0bbb\n", "aaa\0bbb\n", 20);
 }
+END_TEST
 
 START_TEST(strerror_basic) {
-  for (int i = 0; i < sys_nerr + 1; ++i) {
+  for (int i = 0; i < s21_sys_nerr + 1; ++i) {
     ck_assert_str_eq(strerror(i), s21_strerror(i));
   }
 }
+END_TEST
 
 START_TEST(strrchr_basic) {
   char* str = "normal string";
@@ -366,6 +392,7 @@ START_TEST(strrchr_basic) {
   char* std_res = strrchr(str, 'n');
   ck_assert_str_eq(my_res, std_res);
 }
+END_TEST
 
 START_TEST(strncat_basic) {
   char str1[15] = "Hello, ";
@@ -376,16 +403,74 @@ START_TEST(strncat_basic) {
 
   ck_assert_str_eq(std_res, my_res);
 }
+END_TEST
 
 START_TEST(strcat_basic) {
-  char str1[15] = "Hello, ";
-  char str2[15] = "Hello, ";
+  char* str1 = (char*)calloc(100, sizeof(char));
+  char* str2 = (char*)calloc(100, sizeof(char));
 
-  char* std_res = strcat(str1, "World");
-  char* my_res = s21_strcat(str2, "World");
+  if (str1 && str2) {
+    char* std_res = strcat(str1, "sht");
+    char* my_res = s21_strcat(str2, "sht");
 
-  ck_assert_str_eq(std_res, my_res);
+    ck_assert_str_eq(std_res, my_res);
+    ck_assert_str_eq(str1, str2);
+
+    strcpy(str1, "Hello ");
+    strcpy(str2, "Hello ");
+
+    std_res = strcat(str1, "World");
+    my_res = s21_strcat(str2, "World");
+
+    ck_assert_str_eq(std_res, my_res);
+    ck_assert_str_eq(str1, str2);
+
+    strcpy(str1, "");
+    strcpy(str2, "");
+
+    std_res = strcat(str1, "");
+    my_res = s21_strcat(str2, "");
+
+    ck_assert_str_eq(std_res, my_res);
+    ck_assert_str_eq(str1, str2);
+
+    strcpy(str1, "loooooooooooooong");
+    strcpy(str2, "loooooooooooooong");
+
+    std_res = strcat(str1, "sht");
+    my_res = s21_strcat(str2, "sht");
+
+    ck_assert_str_eq(std_res, my_res);
+    ck_assert_str_eq(str1, str2);
+
+    for (int i = 'A'; i < 'z'; ++i) {
+      std_res = strcat(str1, (char*)(&i));
+      my_res = s21_strcat(str2, (char*)(&i));
+
+      ck_assert_str_eq(std_res, my_res);
+      ck_assert_str_eq(str1, str2);
+    }
+
+    strcpy(str1, "abcdef");
+    strcpy(str2, "abcdef");
+
+    memset(str1, '\0', 2);
+    memset(str2, '\0', 2);
+
+    std_res = strcat(str1, "ab");
+    my_res = s21_strcat(str2, "ab");
+
+    ck_assert_str_eq(std_res, my_res);
+    ck_assert_str_eq(str1, str2);
+
+    ck_assert_int_eq(std_res[3], my_res[3]);
+    ck_assert_int_eq(str1[2], str2[2]);
+  }
+
+  free(str1);
+  free(str2);
 }
+END_TEST
 
 START_TEST(strcpy_basic) {
   char str1[30] = "Hello, ";
@@ -397,6 +482,7 @@ START_TEST(strcpy_basic) {
 
   ck_assert_str_eq(std_res, my_res);
 }
+END_TEST
 
 START_TEST(memchr_basic) {
   char* haystack = "aaa\0bcd\n";
@@ -406,6 +492,7 @@ START_TEST(memchr_basic) {
 
   ck_assert_mem_eq(std_res, my_res, 3);
 }
+END_TEST
 
 START_TEST(strpbrk_basic) {
   char* haystack = "aaabbbcde";
@@ -416,6 +503,7 @@ START_TEST(strpbrk_basic) {
 
   ck_assert_str_eq(std_res, my_res);
 }
+END_TEST
 
 START_TEST(memcpy_basic) {
   char str1[256];
@@ -431,6 +519,7 @@ START_TEST(memcpy_basic) {
 
   ck_assert_mem_eq(std_res, my_res, 256);
 }
+END_TEST
 
 START_TEST(memset_basic) {
   char str1[15] = "Hello, ";
@@ -441,23 +530,28 @@ START_TEST(memset_basic) {
 
   ck_assert_str_eq(std_res, my_res);
 }
+END_TEST
 
 START_TEST(to_upper_basic) {
   change_case_test_common("aAa 111 BbB", "AAA 111 BBB", 1);
 }
+END_TEST
 
 START_TEST(to_lower_basic) {
   change_case_test_common("aAa 111 BbB", "aaa 111 bbb", 0);
 }
+END_TEST
 
 START_TEST(insert_basic) {
   insert_test_common("Hello, World!", "Amazing ", 7, "Hello, Amazing World!");
 }
+END_TEST
 
 START_TEST(trim_basic) {
   trim_test_common("\n\tHello\nto\teveryone\n\t", "\n\t",
                    "Hello\nto\teveryone");
 }
+END_TEST
 
 START_TEST(strcmp_basic) {
   char* first = "test";
@@ -468,6 +562,7 @@ START_TEST(strcmp_basic) {
 
   ck_assert_int_eq(my_res, std_res);
 }
+END_TEST
 
 START_TEST(strchr_basic) {
   char* haystack = "tests";
@@ -477,6 +572,7 @@ START_TEST(strchr_basic) {
 
   ck_assert_str_eq(my_res, std_res);
 }
+END_TEST
 
 START_TEST(strstr_basic) {
   char* haystack = "test";
@@ -486,6 +582,7 @@ START_TEST(strstr_basic) {
 
   ck_assert_str_eq(my_res, std_res);
 }
+END_TEST
 
 START_TEST(strstr_doesnt_find) {
   char* haystack = "test";
@@ -495,6 +592,7 @@ START_TEST(strstr_doesnt_find) {
 
   ck_assert_ptr_eq(my_res, std_res);
 }
+END_TEST
 
 START_TEST(strtok_basic) {
   char s21_haystack[] = "co\no,l un--it tee\n\n,est";
@@ -502,6 +600,7 @@ START_TEST(strtok_basic) {
 
   strtok_test_common(s21_haystack, str_haystack, ",-");
 }
+END_TEST
 
 START_TEST(strtok_doesnt_find) {
   char* s21_haystack = "Hello, world!";
@@ -509,6 +608,7 @@ START_TEST(strtok_doesnt_find) {
 
   strtok_test_common(s21_haystack, str_haystack, ".");
 }
+END_TEST
 
 START_TEST(strtok_only_delims) {
   char* s21_haystack = "._.";
@@ -516,14 +616,19 @@ START_TEST(strtok_only_delims) {
 
   strtok_test_common(s21_haystack, str_haystack, "._");
 }
+END_TEST
 
 START_TEST(strcspn_basic) { strspn_test_common("000111222", "21", 0); }
+END_TEST
 
 START_TEST(strcspn_zero_res) { strspn_test_common("000111222", "0", 0); }
+END_TEST
 
 START_TEST(strspn_basic) { strspn_test_common("000111222", "01", 1); }
+END_TEST
 
 START_TEST(strspn_zero_res) { strspn_test_common("000111222", "12", 1); }
+END_TEST
 
 Suite* string_suite(void) {
   Suite* s = suite_create("String");
@@ -645,7 +750,7 @@ Suite* string_suite(void) {
   return s;
 }
 
-int main(void) {
+int main() {
   Suite* s = string_suite();
   SRunner* sr = srunner_create(s);
 

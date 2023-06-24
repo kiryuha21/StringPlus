@@ -41,7 +41,7 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 
   // length
-  while (s21_strchr(lengths, src[reader->parsed_length]) != NULL) {
+  while (s21_strchr(lengths, src[reader->parsed_length]) != S21_NULL) {
     if (src[reader->parsed_length] == 'L') {
       ++reader->length.L;
     } else if (src[reader->parsed_length] == 'l') {
@@ -54,16 +54,16 @@ void parse_into_reader(ReaderFormat* reader, const char* src) {
   }
 
   // specification
-  if (s21_strchr(specifications, src[reader->parsed_length]) != NULL) {
+  if (s21_strchr(specifications, src[reader->parsed_length]) != S21_NULL) {
     reader->specification = src[reader->parsed_length];
     ++reader->parsed_length;
   }
 }
 
 int is_blank(const char* str) {
-  size_t len = s21_strlen(str);
-  for (size_t i = 0; i < len; ++i) {
-    if (str[i] != ' ') {
+  s21_size_t len = s21_strlen(str);
+  for (s21_size_t i = 0; i < len; ++i) {
+    if (!isspace(str[i])) {
       return 0;
     }
   }
@@ -74,7 +74,7 @@ int is_blank(const char* str) {
 int define_width(ReaderFormat* reader, const char* str) {
   int len = (int)s21_strlen(str);
   char* closest_space = s21_strchr(str, ' ');
-  if (closest_space == NULL) {
+  if (closest_space == S21_NULL) {
     if (reader->width == UNKNOWN) {
       return len;
     }
@@ -96,7 +96,7 @@ int define_width(ReaderFormat* reader, const char* str) {
 
 int dist_to_non_space(const char* str) {
   int res = 0;
-  for (; *str == ' '; ++str, ++res)
+  for (int i = 0; isspace(str[i]); ++i, ++res)
     ;
   return res;
 }
@@ -117,7 +117,10 @@ int char_to_num(char ch) {
   if (ch >= 'A' && ch <= 'F') {
     return ch - 'A' + 10;
   }
-  return ch - 'a' + 10;
+  if (ch >= 'a' && ch <= 'f') {
+    return ch - 'a' + 10;
+  }
+  return 0;
 }
 
 void sign_check(const char** str, int* width, int* negative) {
@@ -141,7 +144,12 @@ ull string_to_ull(const char* str, int width, int base, int* negative) {
 
   unsigned long long res = 0;
   unsigned long long mul_base = 1;
-  for (int i = width - 1; i >= 0 && isxdigit(str[i]); --i, mul_base *= base) {
+
+  int last_valid_pos = 0;
+  for (int i = 0; isxdigit(str[i]) && i < width; ++i, ++last_valid_pos)
+    ;
+
+  for (int i = last_valid_pos - 1; i >= 0; --i, mul_base *= base) {
     res += mul_base * char_to_num(str[i]);
   }
 
@@ -166,7 +174,7 @@ long contains_char_in_first(const char* str, char sym, int width) {
   char* temp = calloc(width + 1, sizeof(char));
   s21_strncpy(temp, str, width);
   char* search_res = s21_strchr(temp, sym);
-  if (search_res == NULL) {
+  if (search_res == S21_NULL) {
     free(temp);
     return FAIL;
   }
@@ -176,8 +184,8 @@ long contains_char_in_first(const char* str, char sym, int width) {
 }
 
 int starts_with_anycase_str(const char* str, const char* substr) {
-  size_t len = s21_strlen(substr);
-  for (size_t i = 0; i < len; ++i) {
+  s21_size_t len = s21_strlen(substr);
+  for (s21_size_t i = 0; i < len; ++i) {
     if (tolower(substr[i]) != tolower(str[i])) {
       return 0;
     }
@@ -231,7 +239,7 @@ long double parse_float(const char* str, int width) {
 
   int pass;
   int point_search = (int)contains_char_in_first(str, '.', width);
-  if (point_search == FAIL && s21_strpbrk(str, "Ee") == NULL) {
+  if (point_search == FAIL && s21_strpbrk(str, "Ee") == S21_NULL) {
     long long signed_res = (long long)string_to_ull(str, width, 10, &pass);
     return signed_res * (is_negative ? -1 : 1);
   }
@@ -276,7 +284,7 @@ void process_format_string(const char* str, ReaderFormat* reader,
                            AssignmentInfo* info, va_list args) {
   // default values to be possibly changed for certain specs
   int spaces_until_data = dist_to_non_space(str);
-  if (s21_strchr("cn", reader->specification) == NULL) {
+  if (s21_strchr("cn", reader->specification) == S21_NULL) {
     info->source_shift = spaces_until_data;
     str += spaces_until_data;
   }
@@ -295,8 +303,13 @@ void process_format_string(const char* str, ReaderFormat* reader,
       wchar_t* dest = va_arg(args, wchar_t*);
       mbstowcs(dest, str, width);
     } else {
-      char* dest = va_arg(args, char*);
-      s21_strncpy(dest, str, width);
+      if (*str == '\0') {
+        info->return_code = 0;
+      } else {
+        char* dest = va_arg(args, char*);
+        s21_strncpy(dest, str, width);
+        dest[width] = '\0';
+      }
     }
   } else if (reader->specification == 'c') {
     if (reader->length.l) {
@@ -308,8 +321,8 @@ void process_format_string(const char* str, ReaderFormat* reader,
     }
     info->source_shift = 1;
   } else if (reader->specification == 'n') {
-    int* dest = va_arg(args, int*);
-    *dest = info->processed_chars;
+    long long* dest = va_arg(args, long long*);
+    assign_signed_casted_deref(dest, info->processed_chars, &reader->length);
     info->return_code = 0;
     info->source_shift = 0;
   } else if (reader->specification == '%') {
@@ -328,7 +341,7 @@ void process_format_string(const char* str, ReaderFormat* reader,
     }
     converted *= (is_negative ? -1 : 1);
     long long res = apply_signed_length(&reader->length, converted);
-    *dest = res;
+    assign_signed_casted_deref(dest, res, &reader->length);
   } else if (s21_strchr("ouxX", reader->specification)) {
     unsigned long long* dest = va_arg(args, unsigned long long*);
     unsigned long long converted;
@@ -342,13 +355,20 @@ void process_format_string(const char* str, ReaderFormat* reader,
     }
     converted *= (is_negative ? -1 : 1);
     unsigned long long res = apply_unsigned_length(&reader->length, converted);
-    *dest = res;
+    assign_unsigned_casted_deref(dest, res, &reader->length);
   } else if (reader->specification == 'p') {
     int pass;
     void** dest = va_arg(args, void**);
+#if defined(__linux__)
     if (starts_with_anycase_str(str, "(nil)") && width >= 5) {
-      *dest = NULL;
-    } else {
+      *dest = S21_NULL;
+    }
+#elif __APPLE__
+    if (starts_with_anycase_str(str, "0x0") && width >= 3) {
+      *dest = S21_NULL;
+    }
+#endif
+    else {
       *dest = (void*)(string_to_ull(str, width, 16, &pass));
     }
   } else if (s21_strchr("eEfgG", reader->specification)) {
@@ -371,14 +391,22 @@ int s21_sscanf(const char* str, const char* format, ...) {
 
   int return_res = 0;
   int mismatch_found = 0;
-  for (int processed_chars = 0; *format != '\0' && !mismatch_found;
-       ++processed_chars) {
+  for (int processed_chars = 0; *format != '\0' && !mismatch_found;) {
     if (*format != '%') {
-      if (*format == *str) {
-        ++str;
+      if (isspace(*format)) {
         ++format;
+        if (isspace(*str)) {
+          ++str;
+          ++processed_chars;
+        }
       } else {
-        mismatch_found = 1;
+        if (*format == *str) {
+          ++str;
+          ++format;
+          ++processed_chars;
+        } else {
+          mismatch_found = 1;
+        }
       }
     } else {
       ReaderFormat reader;
@@ -390,7 +418,7 @@ int s21_sscanf(const char* str, const char* format, ...) {
           va_end(args);
           return -1;
         }
-        if (reader.specification != 'c' && is_blank(str)) {
+        if (reader.specification != 'c' && is_blank(str) && !return_res) {
           va_end(args);
           return -1;
         }
@@ -400,6 +428,7 @@ int s21_sscanf(const char* str, const char* format, ...) {
       init_assignment_info(&info, UNKNOWN, UNKNOWN, processed_chars);
 
       process_format_string(str, &reader, &info, args);
+      processed_chars += info.source_shift;
 
       str += info.source_shift;
       format += reader.parsed_length + 1;

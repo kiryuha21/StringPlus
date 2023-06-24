@@ -1,7 +1,15 @@
 CC = gcc
 
 FLAGS = -Wall -Wextra -Werror -std=c11 -fanalyzer -pedantic
-ADDITIONAL_FLAGS = -lcheck -lsubunit -lm
+
+ADDITIONAL_FLAGS = -lcheck
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	ADDITIONAL_FLAGS += -lsubunit -lm
+endif
+#ifeq ($(UNAME_S),Darwin)
+#	something for MACOS
+#endif
 
 SRC_C_FILES = s21_add.c \
 			  s21_calc.c \

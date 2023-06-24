@@ -55,3 +55,31 @@ ull apply_unsigned_length(Lengths* lens, ull num) {
   }
   return res;
 }
+
+void assign_signed_casted_deref(long long* ref, long long val, Lengths* lens) {
+  if (lens->l == 1 || lens->L == 1) {
+    *((long*)ref) = (long)val;
+  } else if (lens->l >= 2 || lens->L >= 2) {
+    *((long long*)ref) = (long long)val;
+  } else if (lens->h == 1) {
+    *((short*)ref) = (short)val;
+  } else if (lens->h >= 2) {
+    *((signed char*)ref) = (signed char)val;
+  } else {
+    *((int*)ref) = (int)val;
+  }
+}
+
+void assign_unsigned_casted_deref(ull* ref, ull val, Lengths* lens) {
+  if (lens->l == 1 || lens->L == 1) {
+    *((unsigned long*)ref) = (unsigned long)val;
+  } else if (lens->l >= 2 || lens->L >= 2) {
+    *((unsigned long long*)ref) = (unsigned long long)val;
+  } else if (lens->h == 1) {
+    *((unsigned short*)ref) = (unsigned short)val;
+  } else if (lens->h >= 2) {
+    *((unsigned char*)ref) = (unsigned char)val;
+  } else {
+    *((unsigned int*)ref) = (unsigned int)val;
+  }
+}

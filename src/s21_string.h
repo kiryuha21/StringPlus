@@ -1,8 +1,8 @@
 #ifndef C2_S21_STRINGPLUS_0_S21_STRING_H
 #define C2_S21_STRINGPLUS_0_S21_STRING_H
 
-#ifndef NULL
-#define NULL ((void*)0)
+#ifndef S21_NULL
+#define S21_NULL ((void*)0)
 #endif
 
 #define EMPTY (-30)
@@ -15,7 +15,7 @@
 
 typedef unsigned long long ull;
 
-typedef unsigned long size_t;
+typedef unsigned long s21_size_t;
 
 typedef struct IntStringMap {
   int key;
@@ -23,7 +23,7 @@ typedef struct IntStringMap {
 } IntStringMap;
 
 #if defined(__linux__)
-static const IntStringMap sys_errlist[] = {
+static const IntStringMap s21_sys_errlist[] = {
     {0, "Success"},
     {1, "Operation not permitted"},
     {2, "No such file or directory"},
@@ -160,8 +160,8 @@ static const IntStringMap sys_errlist[] = {
     {133, "Memory page has hardware error"},
     {95, "Operation not supported"}};
 #elif __APPLE__
-static const IntStringMap sys_errlist[] = {
-    {0, "Success"},
+static const IntStringMap s21_sys_errlist[] = {
+    {0, "Undefined error: 0"},
     {1, "Operation not permitted"},
     {2, "No such file or directory"},
     {3, "No such process"},
@@ -270,10 +270,11 @@ static const IntStringMap sys_errlist[] = {
     {105, "Previous owner died"},
     {106, "Interface output queue is full"}};
 #endif
-static const int sys_nerr = sizeof(sys_errlist) / sizeof(sys_errlist[0]);
+static const int s21_sys_nerr =
+    sizeof(s21_sys_errlist) / sizeof(s21_sys_errlist[0]);
 
 // s21_search.c:
-void* s21_memchr(const void* str, int c, size_t n);
+void* s21_memchr(const void* str, int c, s21_size_t n);
 char* s21_strchr(const char* src, int sym);
 char* s21_strpbrk(const char* str1, const char* str2);
 char* s21_strrchr(const char* str, int c);
@@ -283,29 +284,29 @@ char* s21_strstr(const char* haystack, const char* needle);
 char* s21_strtok(char* restrict str, const char* restrict delim);
 char* s21_strerror(int errnum);
 char* s21_strcat(char* restrict dest, const char* restrict src);
-char* s21_strncat(char* dest, const char* src, size_t n);
+char* s21_strncat(char* dest, const char* src, s21_size_t n);
 
 // s21_cpy.c:
-void* s21_memcpy(void* dest, const void* src, size_t n);
-void* s21_memmove(void* dest, const void* src, size_t n);
-void* s21_memset(void* str, int c, size_t n);
+void* s21_memcpy(void* dest, const void* src, s21_size_t n);
+void* s21_memmove(void* dest, const void* src, s21_size_t n);
+void* s21_memset(void* str, int c, s21_size_t n);
 char* s21_strcpy(char* restrict dest, const char* restrict src);
-char* s21_strncpy(char* dest, const char* src, size_t n);
+char* s21_strncpy(char* dest, const char* src, s21_size_t n);
 
 // s21_cmp.c:
-int s21_memcmp(const void* str1, const void* str2, size_t n);
+int s21_memcmp(const void* str1, const void* str2, s21_size_t n);
 int s21_strcmp(const char* str1, const char* str2);
-int s21_strncmp(const char* str1, const char* str2, size_t n);
+int s21_strncmp(const char* str1, const char* str2, s21_size_t n);
 
 // s21_calc.c:
-size_t s21_strlen(const char* str);
-size_t s21_strspn(const char* str1, const char* str2);
-size_t s21_strcspn(const char* str1, const char* str2);
+s21_size_t s21_strlen(const char* str);
+s21_size_t s21_strspn(const char* str1, const char* str2);
+s21_size_t s21_strcspn(const char* str1, const char* str2);
 
 // s21_extras.c
 void* s21_to_upper(const char* str);
 void* s21_to_lower(const char* str);
-void* s21_insert(const char* src, const char* str, size_t start_index);
+void* s21_insert(const char* src, const char* str, s21_size_t start_index);
 void* s21_trim(const char* src, const char* trim_chars);
 
 // s21_format_commons.c
@@ -318,9 +319,13 @@ typedef struct Lengths {
 } Lengths;
 
 void init_lengths(Lengths* lens);
+unsigned int strchr_without_terminator(const char* str, char c);
 
+// format commons
 long long apply_signed_length(Lengths* lens, long long num);
 ull apply_unsigned_length(Lengths* lens, ull num);
+void assign_signed_casted_deref(long long* ref, long long val, Lengths* lens);
+void assign_unsigned_casted_deref(ull* ref, ull val, Lengths* lens);
 
 // format functions
 int s21_sprintf(char* str, const char* format, ...);
